@@ -956,5 +956,68 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 </script>
+
+<style>
+  .rg-photos{ margin-top:48px; padding:48px 24px 56px; background:#F0EFEA; border-top:3px solid #16382C; }
+  .rg-photos-inner{ max-width:900px; margin:0 auto; }
+  .rg-photos-eyebrow{ font-family:'SFMono-Regular',Consolas,monospace; font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#16382C; margin:0 0 10px; }
+  .rg-photos-title{ font-family:system-ui,-apple-system,sans-serif; font-weight:800; font-size:clamp(22px,3vw,30px); text-transform:uppercase; letter-spacing:-0.01em; margin:0 0 8px; color:#14161A; }
+  .rg-photos-sub{ font-family:system-ui,-apple-system,sans-serif; font-size:14px; color:#55585F; margin:0 0 24px; }
+  .rg-photo-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:14px; margin-bottom:22px; }
+  .rg-photo-placeholder{ grid-column:1/-1; border:1.5px dashed #DCDBD4; border-radius:12px; padding:40px 20px; text-align:center; font-style:italic; color:#8a8d93; font-family:system-ui,-apple-system,sans-serif; font-size:14px; }
+  .rg-photo-grid img{ width:100%; max-height:60vh; object-fit:contain; background:#e7e6e0; border-radius:10px; display:block; border:1px solid #DCDBD4; cursor:zoom-in; transition:opacity 0.2s ease; }
+  .rg-photo-grid img:hover{ opacity:0.88; }
+  .rg-photo-caption{ font-family:system-ui,-apple-system,sans-serif; font-size:13px; font-style:italic; color:#55585F; border-top:1px dashed #DCDBD4; padding-top:14px; margin:0; }
+  .rg-lightbox{ position:fixed; inset:0; z-index:1000; display:none; align-items:center; justify-content:center; padding:24px; }
+  .rg-lightbox.open{ display:flex; }
+  .rg-lightbox-backdrop{ position:absolute; inset:0; background:rgba(10,10,10,0.82); cursor:zoom-out; }
+  .rg-lightbox-img{ position:relative; max-width:92vw; max-height:90vh; object-fit:contain; border-radius:6px; box-shadow:0 30px 70px -20px rgba(0,0,0,0.6); }
+  .rg-lightbox-close{ position:fixed; top:20px; right:24px; width:40px; height:40px; border-radius:50%; border:1px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.1); color:#fff; font-size:22px; line-height:1; cursor:pointer; appearance:none; z-index:1001; }
+</style>
+<section id="photos" class="rg-photos">
+  <div class="rg-photos-inner">
+    <p class="rg-photos-eyebrow">Source Photographs</p>
+    <h2 class="rg-photos-title">Juego del Castillo de los Aztecas</h2>
+    <p class="rg-photos-sub">The physical board and rules this game was digitized from.</p>
+    <div class="rg-photo-grid" id="rg-photo-grid">
+      <img src="../images/juego-del-castillo-de-los-aztecas-board.jpg" alt="Original board photograph of Juego del Castillo de los Aztecas">
+    </div>
+    <p class="rg-photo-caption" id="rg-photo-caption">Original board is located at the Museum of Archaeology and Anthropology, University of Cambridge.</p>
+  </div>
+</section>
+
+<div class="rg-lightbox" id="rg-lightbox" aria-hidden="true">
+  <div class="rg-lightbox-backdrop" data-rg-close></div>
+  <button type="button" class="rg-lightbox-close" data-rg-close aria-label="Close">&times;</button>
+  <img class="rg-lightbox-img" id="rg-lightbox-img" src="" alt="">
+</div>
+
+<script>
+(function(){
+  var lightbox = document.getElementById('rg-lightbox');
+  var lightboxImg = document.getElementById('rg-lightbox-img');
+  document.querySelectorAll('.rg-photo-grid img').forEach(function(img){
+    img.addEventListener('click', function(){
+      lightboxImg.src = img.src;
+      lightboxImg.alt = img.alt;
+      lightbox.classList.add('open');
+      lightbox.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    });
+  });
+  function closeLightbox(){
+    lightbox.classList.remove('open');
+    lightbox.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+  lightbox.querySelectorAll('[data-rg-close]').forEach(function(el){
+    el.addEventListener('click', closeLightbox);
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') closeLightbox();
+  });
+})();
+</script>
+
 </body>
 </html>
