@@ -210,6 +210,18 @@
     height: 8px;
     width: 100%;
   }
+  .card-thumb{
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: var(--paper-dim);
+  }
+  .card-thumb img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
   .card-body{
     padding: 30px 28px 28px;
     display: flex;
@@ -331,7 +343,7 @@
   <section class="hero">
     <div class="eyebrow"><span class="dot"></span> Interactive Historical Board Game Website</div>
     <h1 class="title">Race Games<span class="accent">.</span></h1>
-    <p class="subhead">From the Nineteenth Century to Today — nineteenth-century board games that you can actually play.</p>
+    <p class="subhead">From the Nineteenth Century to Today — historic board games that you can play.</p>
   </section>
 
 </div>
@@ -348,8 +360,8 @@
 <div class="wrap">
 
   <div class="dispatch">
-    <p class="dispatch-label">Why am I playing?</p>
-    <p class="dispatch-text">— Nineteenth-century Mexican board games constructed racial imaginaries. When you play these games, try to identify the racial ideas built into the gameplay. This type of cultural production was more than just fun and games. —</p>
+    <p class="dispatch-label">Why am I playing</p>
+    <p class="dispatch-text">Nineteenth-century Mexican board games contributed to the construction of racial imaginaries. When you play these games, try to identify the racial ideas built into the gameplay. This type of cultural production was more than just fun and games.</p>
   </div>
 
   <div class="section-label">
@@ -359,24 +371,30 @@
 
   <div class="games">
 
-    <a class="card rust" href="games/los-charros-contrabandistas.html">
+    <div class="card rust">
       <div class="card-stripe"></div>
+      <div class="card-thumb">
+        <img src="images/los-charros-board.jpg" alt="Original board photograph of Los Charros Contrabandistas" loading="lazy">
+      </div>
       <div class="card-body">
         <div class="card-eyebrow">Pursuit &amp; Chase</div>
         <h3>Los Charros Contrabandistas</h3>
-        <p class="card-translation">"The Cowboy Bandits"</p>
+        <p class="card-translation">"The Smuggler Horsemen"</p>
         <p class="card-blurb">A 64-space dice race across the Mexican countryside, digitized square by square from an antique photograph. Roll, move, and try to outrun the field to the finish.</p>
         <div class="chips">
           <span class="chip">64 SPACES</span>
           <span class="chip">2–4 PLAYERS</span>
           <span class="chip">DICE GAME</span>
         </div>
-        <span class="play-btn">Play the game <span class="arrow">→</span></span>
+        <a class="play-btn" href="games/los-charros-contrabandistas.html">Play the game <span class="arrow">→</span></a>
       </div>
-    </a>
+    </div>
 
-    <a class="card jade" href="games/juego-del-castillo-de-los-aztecas.html">
+    <div class="card jade">
       <div class="card-stripe"></div>
+      <div class="card-thumb">
+        <img src="images/juego-del-castillo-de-los-aztecas-board.jpg" alt="Original board photograph of Juego del Castillo de los Aztecas" loading="lazy">
+      </div>
       <div class="card-body">
         <div class="card-eyebrow">Siege &amp; Strategy</div>
         <h3>Juego del Castillo de los Aztecas</h3>
@@ -387,9 +405,9 @@
           <span class="chip">STRATEGY</span>
           <span class="chip">NO DICE</span>
         </div>
-        <span class="play-btn">Play the game <span class="arrow">→</span></span>
+        <a class="play-btn" href="games/juego-del-castillo-de-los-aztecas.html">Play the game <span class="arrow">→</span></a>
       </div>
-    </a>
+    </div>
 
   </div>
 
