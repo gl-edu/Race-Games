@@ -18,6 +18,7 @@
     --rust: #8C3B22;
     --jade: #16382C;
     --gold: #C9A227;
+    --indigo: #2C3E5C;
   }
 
   *{ box-sizing: border-box; }
@@ -303,6 +304,10 @@
   .card.jade .card-eyebrow{ color: var(--jade); }
   .card.jade .play-btn{ background: var(--jade); }
 
+  .card.indigo .card-stripe{ background: var(--indigo); }
+  .card.indigo .card-eyebrow{ color: var(--indigo); }
+  .card.indigo .play-btn{ background: var(--indigo); }
+
   /* ---------- Footer ---------- */
   footer{
     padding: 40px 0 56px;
@@ -337,7 +342,7 @@
 
   <nav class="nav">
     <div class="nav-mark"><span class="dot"></span> RACE&nbsp;GAMES</div>
-    <div class="nav-count">02 GAMES ARCHIVED</div>
+    <div class="nav-count">03 GAMES ARCHIVED</div>
   </nav>
 
   <section class="hero">
@@ -406,6 +411,25 @@
           <span class="chip">NO DICE</span>
         </div>
         <a class="play-btn" href="games/juego-del-castillo-de-los-aztecas.html">Play the game <span class="arrow">→</span></a>
+      </div>
+    </div>
+
+    <div class="card indigo">
+      <div class="card-stripe"></div>
+      <div class="card-thumb">
+        <img src="images/la-guerra-de-los-kikapoos-board.jpg" alt="Original board photograph of La Guerra de los Kikapoos" loading="lazy">
+      </div>
+      <div class="card-body">
+        <div class="card-eyebrow">War &amp; Capture</div>
+        <h3>La Guerra de los Kikapoos</h3>
+        <p class="card-translation">"The Kickapoo War"</p>
+        <p class="card-blurb">A checkers-style capture game reimagining conflict along the Rio Grande — sixteen pieces and two territorial commanders per side, with mandatory captures and multi-jump chains.</p>
+        <div class="chips">
+          <span class="chip">64 SPACES</span>
+          <span class="chip">2 PLAYERS</span>
+          <span class="chip">CAPTURE GAME</span>
+        </div>
+        <a class="play-btn" href="games/la-guerra-de-los-kikapoos.html">Play the game <span class="arrow">→</span></a>
       </div>
     </div>
 
