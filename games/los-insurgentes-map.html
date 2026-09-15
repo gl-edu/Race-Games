@@ -63,8 +63,12 @@
 
   .turn-panel{ display:flex; gap:18px; flex-wrap:wrap; align-items:center; justify-content:center; margin-top:6px; }
   #rollBtn{ transition:background-color .2s ease; }
-  .handoff-banner{ display:none; text-align:center; padding:22px 20px; border-radius:10px; color:#fdf6e6; width:100%; }
-  .handoff-banner.show{ display:block; }
+  .handoff-row{ display:none; gap:14px; width:100%; align-items:stretch; flex-wrap:wrap; }
+  .handoff-row.show{ display:flex; }
+  .dice-box{ background:#fffdf8; border:1px solid var(--line); border-radius:10px; padding:14px 22px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; flex-shrink:0; }
+  .dice-box-label{ font-family:'IM Fell English SC', Georgia, serif; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink-soft); }
+  .dice-box .hb-dice{ display:flex; gap:8px; }
+  .handoff-banner{ text-align:center; padding:20px; border-radius:10px; color:#fdf6e6; flex:1; min-width:200px; display:flex; flex-direction:column; align-items:center; justify-content:center; }
   .handoff-banner .hb-title{ font-size:12px; text-transform:uppercase; letter-spacing:0.08em; opacity:0.85; margin-bottom:6px; }
   .handoff-banner .hb-name{ font-family:'Cinzel Decorative', Georgia, serif; font-size:24px; margin-bottom:14px; }
   .handoff-banner button{ background:#fdf6e6; color:var(--ink); font-weight:700; }
@@ -199,10 +203,16 @@
     </div>
 
     <div class="panel turn-panel" id="turnPanel">
-      <div class="handoff-banner" id="handoffBanner">
-        <div class="hb-title">Pásale el dispositivo a</div>
-        <div class="hb-name" id="handoffName">—</div>
-        <button id="handoffReadyBtn">Listo, es mi turno</button>
+      <div class="handoff-row" id="handoffRow">
+        <div class="dice-box" id="diceBox">
+          <div class="dice-box-label" id="diceBoxLabel">Tirada anterior</div>
+          <div class="hb-dice" id="handoffDice"></div>
+        </div>
+        <div class="handoff-banner" id="handoffBanner">
+          <div class="hb-title">Pásale el dispositivo a</div>
+          <div class="hb-name" id="handoffName">—</div>
+          <button id="handoffReadyBtn">Listo, es mi turno</button>
+        </div>
       </div>
       <div id="rollControls" style="display:flex; gap:18px; flex-wrap:wrap; align-items:center; justify-content:center;">
         <button id="rollBtn">Tirar dado(s)</button>
@@ -616,14 +626,15 @@ function updateStatus(){
 function showHandoff(){
   const p = state.players[state.turn];
   document.getElementById("rollControls").style.display = "none";
-  document.getElementById("diceDisplay").innerHTML = ""; // clear the previous player's dice so the next player doesn't see a stale result
-  const banner = document.getElementById("handoffBanner");
-  banner.style.background = p.color;
+  document.getElementById("diceDisplay").innerHTML = ""; // clear so the incoming player's own roll area starts fresh
+  document.getElementById("handoffDice").innerHTML = lastDiceHTML; // show what was just rolled, in its own box
+  document.getElementById("diceBoxLabel").textContent = rollLabel(lastRollerName);
+  document.getElementById("handoffBanner").style.background = p.color;
   document.getElementById("handoffName").textContent = p.name;
-  banner.classList.add("show");
+  document.getElementById("handoffRow").classList.add("show");
 }
 function hideHandoff(){
-  document.getElementById("handoffBanner").classList.remove("show");
+  document.getElementById("handoffRow").classList.remove("show");
   document.getElementById("rollControls").style.display = "flex";
 }
 document.getElementById("handoffReadyBtn").addEventListener("click", hideHandoff);
@@ -650,6 +661,14 @@ function startGame(){
 }
 
 /* ============ DICE FACES (real pips, not digits) ============ */
+let lastDiceHTML = "";
+let lastRollerName = "";
+function rollLabel(name){
+  // "Jugador N" is a common noun + number, so it takes the article: "del Jugador 1".
+  // A custom/proper name (anything else, e.g. "María") never takes it: "de María".
+  if(/^Jugador\s+\d+$/i.test(name)) return "Tirada del " + name;
+  return "Tirada de " + name;
+}
 const PIP_PATTERNS = {
   1: [[1,1]],
   2: [[0,2],[2,0]],
@@ -674,7 +693,9 @@ function rollDice(){
   const total = useSingleDie ? d1 : (d1+d2);
 
   const dd = document.getElementById("diceDisplay");
-  dd.innerHTML = dieFaceHTML(d1) + (d2 ? dieFaceHTML(d2) : '');
+  lastDiceHTML = dieFaceHTML(d1) + (d2 ? dieFaceHTML(d2) : '');
+  lastRollerName = state.players[state.turn].name;
+  dd.innerHTML = lastDiceHTML;
 
   const p = state.players[state.turn];
   p.turnStart = p.pos;
