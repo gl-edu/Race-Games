@@ -41,56 +41,6 @@
     padding: 0 28px;
   }
 
-  /* ---------- Nav ---------- */
-  .nav{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 22px 0;
-  }
-  .nav-mark{
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 700;
-    font-size: 13px;
-    letter-spacing: 0.08em;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .nav-mark .dot{
-    width: 9px; height: 9px; border-radius: 50%;
-    background: var(--red);
-    display: inline-block;
-  }
-  .nav-count{
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    color: var(--ink-soft);
-    letter-spacing: 0.04em;
-  }
-
-  /* ---------- Track divider (signature element) ---------- */
-  .track{
-    width: 100%;
-    height: 22px;
-    display: block;
-    margin: 0;
-  }
-  .track path{
-    stroke: var(--ink);
-    stroke-opacity: 0.16;
-  }
-  .track .pip{
-    fill: var(--red);
-  }
-  .track.animate path{
-    stroke-dasharray: 3 9;
-    animation: creep 14s linear infinite;
-  }
-  @keyframes creep{
-    to{ stroke-dashoffset: -240; }
-  }
-
   /* ---------- Hero ---------- */
   .hero{
     padding: 56px 0 40px;
@@ -134,9 +84,31 @@
     line-height: 1.4;
   }
 
+  /* ---------- Track divider (signature element) ---------- */
+  .track{
+    width: 100%;
+    height: 22px;
+    display: block;
+    margin: 0;
+  }
+  .track path{
+    stroke: var(--ink);
+    stroke-opacity: 0.16;
+  }
+  .track .pip{
+    fill: var(--red);
+  }
+  .track.animate path{
+    stroke-dasharray: 3 9;
+    animation: creep 14s linear infinite;
+  }
+  @keyframes creep{
+    to{ stroke-dashoffset: -240; }
+  }
+
   /* ---------- Dispatch / description placeholder ---------- */
   .dispatch{
-    margin: 44px 0 8px;
+    margin: 72px 0 8px;
     padding: 26px 28px;
     border: 1.5px dashed var(--line);
     border-radius: 14px;
@@ -344,14 +316,8 @@
 
 <div class="wrap">
 
-  <nav class="nav">
-    <div class="nav-mark"><span class="dot"></span> RACE&nbsp;GAMES</div>
-    <div class="nav-count">04 GAMES ARCHIVED</div>
-  </nav>
-
   <section class="hero">
-    <div class="eyebrow"><span class="dot"></span> Interactive Historical Board Game Website</div>
-    <h1 class="title">Race Games<span class="accent">.</span></h1>
+    <h1 class="title">Race Games</h1>
     <p class="subhead">From the Nineteenth Century to Today — historic board games that you can play.</p>
   </section>
 
@@ -470,7 +436,6 @@
 
 <div class="wrap">
   <footer>
-    <p class="foot-note">Each game is rebuilt in the browser from close-up photographs of the original board, with the source rules kept in-game alongside an English summary.</p>
     <p class="foot-mark">Race Games &middot; Digital Archive</p>
   </footer>
 </div>
