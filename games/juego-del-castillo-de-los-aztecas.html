@@ -369,6 +369,9 @@
 </head>
 <body>
 <a href="../index.html" style="position:fixed;top:14px;left:14px;z-index:9999;display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:#14161A;color:#FAFAF7;text-decoration:none;font-family:Inter,system-ui,sans-serif;font-size:12px;font-weight:600;letter-spacing:0.03em;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,0.25);opacity:0.85;">&larr;&nbsp;RACE GAMES</a>
+<div style="position:fixed;top:14px;right:14px;z-index:9999;display:inline-flex;align-items:center;gap:2px;padding:6px 8px;background:#e9ddc0;border:1.5px solid #241c14;border-radius:999px;box-shadow:2px 2px 0 rgba(0,0,0,0.15);font-family:'IM Fell English SC', serif;font-size:12px;letter-spacing:0.04em;">
+  <button type="button" class="rg-lang-btn" data-lang="en" style="background:none;border:none;cursor:pointer;padding:3px 7px;border-radius:999px;color:#241c14;font:inherit;">EN</button><span style="opacity:0.4;">/</span><button type="button" class="rg-lang-btn" data-lang="es" style="background:none;border:none;cursor:pointer;padding:3px 7px;border-radius:999px;color:#241c14;font:inherit;">ES</button><span style="opacity:0.4;">/</span><button type="button" class="rg-lang-btn" data-lang="pt" style="background:none;border:none;cursor:pointer;padding:3px 7px;border-radius:999px;color:#241c14;font:inherit;">PT</button>
+</div>
 <div class="app" id="app"></div>
 
 <script>
@@ -456,6 +459,140 @@ function jumpLanding(sq, dir){ return findByPos(sq.row+2*dir[0], sq.absX+2*dir[1
 let pieces = {};           // squareId -> 'attacker' | 'defender'
 let placedDefenders = [];  // squareIds chosen during placement
 
+/* ============== I18N ============== */
+const RG_STRINGS = {
+  es: {
+    masthead: 'Un asalto al estilo del siglo XIX',
+    credits: 'Adaptado de un impreso original del siglo XIX &mdash; &laquo;De venta en La Perla, Seminario, 3&raquo;',
+    attackerDefault: 'Atacantes', defenderDefault: 'Aztecas',
+    placeDefendersMsg: 'Coloca a tus 3 defensores en las casillas negras del castillo.',
+    defendersReadyMsg: 'Defensores listos. Pulsa “Comenzar la partida”.',
+    placeMoreMsg: (n)=> 'Coloca '+n+' defensor(es) mas.',
+    mustCaptureMsg: 'Hay una pieza que puede comer: debes mover esa.',
+    mustContinueMsg: 'Debes seguir capturando con la misma pieza.',
+    noDefenderMoveMsg: 'Los defensores no tienen movimiento posible: pasan turno.',
+    introText: 'El castillo esta guardado por tres Aztecas. Los soldados atacantes se lanzan al asalto para desalojarlos y ocupar sus ocho casas. Los defensores se mueven y comen en cualquier direccion, como en las damas; los atacantes solo avanzan, casilla a casilla, y jamas pueden comer &mdash; pero pueden obligar a un defensor a hacerlo.',
+    attackersLabel: 'Atacantes', defendersLabel: 'Defensores',
+    attackersDesc: '21 piezas. Avanzan en diagonal hacia el castillo. Ganan si ocupan las 8 casas del castillo.',
+    defendersDesc: '3 piezas. Se mueven y comen en cualquier direccion. Ganan si dejan a los atacantes sin movimiento.',
+    playerNameLabel: 'Nombre del jugador',
+    startButton: 'Comenzar',
+    placementTurn: (name)=> name+' colocando defensores',
+    gameOverTurn: 'Partida terminada',
+    turnLabel: (name)=> 'Turno: '+name,
+    capturedTally: (n)=> 'Atacantes capturados: '+n,
+    placementHint: (n)=> 'Haz clic en las casillas negras del castillo para colocar a tus 3 defensores ('+n+'/3).',
+    suggestedPlacement: 'Colocacion sugerida',
+    beginGame: 'Comenzar la partida',
+    attackerWinTitle: 'Los atacantes toman el castillo',
+    defenderWinTitle: 'Los defensores resisten el asalto',
+    attackerWinMsg: (att,def)=> att+' han ocupado las ocho casas del castillo. '+def+' no lograron defenderlo.',
+    defenderWinMsg: (att,def)=> def+' han dejado sin movimiento a '+att+'. El castillo permanece a salvo.',
+    playAgain: 'Jugar de nuevo',
+    boardAlt: 'Tablero original fotografiado del Juego del Castillo de los Aztecas',
+    rulesSummary: 'Reglas originales &amp; resumen',
+    originalHeading: 'Modo de jugarlo (original)',
+    summaryHeading: null,
+    summaryBody: null,
+    photosEyebrow: 'Fotografías originales',
+    photoCaption: 'El tablero original se encuentra en el Museo de Arqueología y Antropología de la Universidad de Cambridge.'
+  },
+  en: {
+    masthead: 'A 19th-century style assault',
+    credits: 'Adapted from an original 19th-century print &mdash; &laquo;De venta en La Perla, Seminario, 3&raquo; (sold at La Perla, Seminario St. 3)',
+    attackerDefault: 'Attackers', defenderDefault: 'Aztecs',
+    placeDefendersMsg: 'Place your 3 defenders on the black squares of the castle.',
+    defendersReadyMsg: 'Defenders ready. Click “Begin the game.”',
+    placeMoreMsg: (n)=> 'Place '+n+' more defender(s).',
+    mustCaptureMsg: 'A piece can capture: you must move that one.',
+    mustContinueMsg: 'You must keep capturing with the same piece.',
+    noDefenderMoveMsg: 'The defenders have no move available: turn passes.',
+    introText: 'The castle is guarded by three Aztecs. The attacking soldiers storm in to drive them out and occupy their eight squares. Defenders move and capture in any direction, as in checkers; attackers only ever advance, one square at a time, and can never capture &mdash; but they can force a defender to do so.',
+    attackersLabel: 'Attackers', defendersLabel: 'Defenders',
+    attackersDesc: '21 pieces. Advance diagonally toward the castle. Win by occupying all 8 castle squares.',
+    defendersDesc: '3 pieces. Move and capture in any direction. Win by leaving the attackers with no legal move.',
+    playerNameLabel: 'Player name',
+    startButton: 'Start',
+    placementTurn: (name)=> name+' placing defenders',
+    gameOverTurn: 'Game over',
+    turnLabel: (name)=> 'Turn: '+name,
+    capturedTally: (n)=> 'Attackers captured: '+n,
+    placementHint: (n)=> 'Click the black castle squares to place your 3 defenders ('+n+'/3).',
+    suggestedPlacement: 'Suggested placement',
+    beginGame: 'Begin the game',
+    attackerWinTitle: 'The attackers take the castle',
+    defenderWinTitle: 'The defenders hold the assault',
+    attackerWinMsg: (att,def)=> att+' have occupied all eight squares of the castle. '+def+' failed to defend it.',
+    defenderWinMsg: (att,def)=> def+' have left '+att+' with no legal move. The castle remains safe.',
+    playAgain: 'Play again',
+    boardAlt: 'Original photographed board of Juego del Castillo de los Aztecas',
+    rulesSummary: 'Original rules &amp; summary',
+    originalHeading: 'How to play it (original)',
+    summaryHeading: 'English summary',
+    summaryBody: '<p>The original: 24 pieces, 3 defenders guarding the castle against 21 attackers starting on the bottom three rows of black squares.</p><p>Attackers move one step diagonally forward only, and can never capture. Defenders move diagonally in any direction and capture by jumping, exactly like checkers &mdash; and must capture when a capture is available.</p><p>Attackers win by clearing the defenders out and occupying all 8 castle squares. Defenders win by leaving the attackers with no legal move anywhere on the board.</p><p style="opacity:0.75; font-size:0.85rem;">The board itself is a photograph of the real object, perspective-corrected, with 21 attacker squares across the bottom three rows and 8 castle squares &mdash; both counted directly from the photo. The defenders\' starting squares and multi-jump chaining were reconstructed, since the rules text leaves those open, drawing on the wider Asalto / Fox-and-Geese family this game belongs to.</p>',
+    photosEyebrow: 'Source Photographs',
+    photoCaption: 'Original board is located at the Museum of Archaeology and Anthropology, University of Cambridge.'
+  },
+  pt: {
+    masthead: 'Um assalto ao estilo do século XIX',
+    credits: 'Adaptado de um impresso original do século XIX &mdash; &laquo;De venta en La Perla, Seminario, 3&raquo; (vendido em La Perla, rua Seminario, 3)',
+    attackerDefault: 'Atacantes', defenderDefault: 'Astecas',
+    placeDefendersMsg: 'Posicione seus 3 defensores nas casas pretas do castelo.',
+    defendersReadyMsg: 'Defensores prontos. Clique em “Começar a partida”.',
+    placeMoreMsg: (n)=> 'Posicione mais '+n+' defensor(es).',
+    mustCaptureMsg: 'Há uma peça que pode capturar: você deve movê-la.',
+    mustContinueMsg: 'Você deve continuar capturando com a mesma peça.',
+    noDefenderMoveMsg: 'Os defensores não têm movimento possível: passam a vez.',
+    introText: 'O castelo é guardado por três Astecas. Os soldados atacantes se lançam ao assalto para expulsá-los e ocupar suas oito casas. Os defensores se movem e capturam em qualquer direção, como nas damas; os atacantes apenas avançam, casa por casa, e nunca podem capturar &mdash; mas podem obrigar um defensor a fazê-lo.',
+    attackersLabel: 'Atacantes', defendersLabel: 'Defensores',
+    attackersDesc: '21 peças. Avançam na diagonal em direção ao castelo. Vencem se ocuparem as 8 casas do castelo.',
+    defendersDesc: '3 peças. Movem-se e capturam em qualquer direção. Vencem se deixarem os atacantes sem movimento.',
+    playerNameLabel: 'Nome do jogador',
+    startButton: 'Começar',
+    placementTurn: (name)=> name+' posicionando defensores',
+    gameOverTurn: 'Partida encerrada',
+    turnLabel: (name)=> 'Vez: '+name,
+    capturedTally: (n)=> 'Atacantes capturados: '+n,
+    placementHint: (n)=> 'Clique nas casas pretas do castelo para posicionar seus 3 defensores ('+n+'/3).',
+    suggestedPlacement: 'Posicionamento sugerido',
+    beginGame: 'Começar a partida',
+    attackerWinTitle: 'Os atacantes tomam o castelo',
+    defenderWinTitle: 'Os defensores resistem ao assalto',
+    attackerWinMsg: (att,def)=> att+' ocuparam as oito casas do castelo. '+def+' não conseguiram defendê-lo.',
+    defenderWinMsg: (att,def)=> def+' deixaram '+att+' sem movimento. O castelo permanece a salvo.',
+    playAgain: 'Jogar de novo',
+    boardAlt: 'Tabuleiro original fotografado do Juego del Castillo de los Aztecas',
+    rulesSummary: 'Regras originais &amp; resumo',
+    originalHeading: 'Modo de jogar (original)',
+    summaryHeading: 'Resumo em português',
+    summaryBody: '<p>O original: 24 peças, 3 defensores protegendo o castelo contra 21 atacantes que começam nas três fileiras inferiores de casas pretas.</p><p>Os atacantes se movem apenas um passo na diagonal para frente e nunca podem capturar. Os defensores se movem na diagonal em qualquer direção e capturam saltando, exatamente como nas damas &mdash; e devem capturar sempre que houver uma captura disponível.</p><p>Os atacantes vencem ao eliminar os defensores e ocupar as 8 casas do castelo. Os defensores vencem ao deixar os atacantes sem nenhum movimento legal no tabuleiro.</p><p style="opacity:0.75; font-size:0.85rem;">O tabuleiro é uma fotografia do objeto real, com a perspectiva corrigida, com 21 casas de ataque nas três fileiras inferiores e 8 casas do castelo — ambas contadas diretamente da foto. As casas iniciais dos defensores e a sequência de múltiplas capturas foram reconstruídas, já que o texto das regras deixa isso em aberto, com base na família mais ampla de jogos Asalto / Fox-and-Geese à qual este pertence.</p>',
+    photosEyebrow: 'Fotografias originais',
+    photoCaption: 'O tabuleiro original está no Museu de Arqueologia e Antropologia da Universidade de Cambridge.'
+  }
+};
+let currentLang = 'en';
+function getSavedLang(){
+  try{ const s = window.localStorage.getItem('race-games-lang'); if(s && RG_STRINGS[s]) return s; }catch(e){}
+  return 'en';
+}
+function saveLang(l){ try{ window.localStorage.setItem('race-games-lang', l); }catch(e){} }
+function S(){ return RG_STRINGS[currentLang]; }
+document.querySelectorAll('.rg-lang-btn').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    currentLang = btn.getAttribute('data-lang');
+    saveLang(currentLang);
+    document.querySelectorAll('.rg-lang-btn').forEach(function(b){
+      b.style.fontWeight = b.getAttribute('data-lang')===currentLang ? '700' : '400';
+      b.style.textDecoration = b.getAttribute('data-lang')===currentLang ? 'underline' : 'none';
+    });
+    const eyebrow = document.querySelector('.rg-photos-eyebrow');
+    if(eyebrow) eyebrow.textContent = S().photosEyebrow;
+    const caption = document.getElementById('rg-photo-caption');
+    if(caption) caption.textContent = S().photoCaption;
+    renderApp();
+  });
+});
+
 const state = {
   phase: 'intro',          // intro | placement | playing | gameover
   turn: 'attacker',
@@ -483,7 +620,7 @@ function resetGame(){
   state.mustContinueWith = null;
   state.capturedAttackers = 0;
   state.winner = null;
-  state.statusMsg = 'Coloca a tus 3 defensores en las casillas negras del castillo.';
+  state.statusMsg = S().placeDefendersMsg;
   render();
 }
 
@@ -574,7 +711,7 @@ function handlePlacementClick(id){
   if (pieces[id] === 'defender'){
     delete pieces[id];
     placedDefenders = placedDefenders.filter(x => x !== id);
-    state.statusMsg = 'Coloca a tus 3 defensores en las casillas negras del castillo.';
+    state.statusMsg = S().placeDefendersMsg;
     render();
     return;
   }
@@ -583,8 +720,8 @@ function handlePlacementClick(id){
   pieces[id] = 'defender';
   placedDefenders.push(id);
   state.statusMsg = placedDefenders.length === 3
-    ? 'Defensores listos. Pulsa "Comenzar la partida".'
-    : `Coloca ${3 - placedDefenders.length} defensor(es) mas.`;
+    ? S().defendersReadyMsg
+    : S().placeMoreMsg(3 - placedDefenders.length);
   render();
 }
 
@@ -593,7 +730,7 @@ function useDefaultPlacement(){
   placedDefenders = [];
   const row2 = Object.values(squares).filter(s => s.isBlack && s.row === 2).sort((a,b)=>a.absX-b.absX);
   for (const s of row2){ pieces[s.id] = 'defender'; placedDefenders.push(s.id); }
-  state.statusMsg = 'Defensores listos. Pulsa "Comenzar la partida".';
+  state.statusMsg = S().defendersReadyMsg;
   render();
 }
 
@@ -623,7 +760,7 @@ function selectSquare(id){
     if (state.turn === 'defender'){
       const forced = defendersWithCaptures();
       if (forced.length > 0 && !forced.includes(id)){
-        state.statusMsg = 'Hay una pieza que puede comer: debes mover esa.';
+        state.statusMsg = S().mustCaptureMsg;
         render();
         return;
       }
@@ -670,7 +807,7 @@ function tryMoveTo(fromId, toId){
     if (next.length > 0){
       state.mustContinueWith = toId;
       state.selected = toId;
-      state.statusMsg = 'Debes seguir capturando con la misma pieza.';
+      state.statusMsg = S().mustContinueMsg;
       render();
       return;
     }
@@ -687,7 +824,7 @@ function afterAttackerMove(){
   state.statusMsg = '';
   if (!defenderHasAnyMove()){
     state.turn = 'attacker';
-    state.statusMsg = 'Los defensores no tienen movimiento posible: pasan turno.';
+    state.statusMsg = S().noDefenderMoveMsg;
   }
   render();
 }
@@ -709,15 +846,16 @@ function svgFor(type){
 
 function renderApp(){
   const app = document.getElementById('app');
+  const s = S();
   app.innerHTML = `
     <header class="masthead">
       <h1>Juego del Castillo de los Aztecas</h1>
-      <div class="sub">Un asalto al estilo del siglo XIX</div>
+      <div class="sub">${s.masthead}</div>
       <div class="rule"></div>
     </header>
     <div id="screen"></div>
     <div id="rulespanel"></div>
-    <footer class="credits">Adaptado de un impreso original del siglo XIX &mdash; &laquo;De venta en La Perla, Seminario, 3&raquo;</footer>
+    <footer class="credits">${s.credits}</footer>
   `;
   renderRulesPanel();
   renderScreen();
@@ -730,8 +868,8 @@ function renderScreen(){
     document.getElementById('start-btn').addEventListener('click', () => {
       const a = document.getElementById('att-name').value.trim();
       const d = document.getElementById('def-name').value.trim();
-      if (a) state.attackerName = a;
-      if (d) state.defenderName = d;
+      state.attackerName = a || S().attackerDefault;
+      state.defenderName = d || S().defenderDefault;
       resetGame();
     });
     return;
@@ -749,66 +887,66 @@ function renderScreen(){
 }
 
 function introHTML(){
+  const s = S();
   return `
     <div class="card intro">
-      <p>El castillo esta guardado por tres Aztecas. Los soldados atacantes se lanzan al asalto para
-      desalojarlos y ocupar sus ocho casas. Los defensores se mueven y comen en cualquier direccion, como en
-      las damas; los atacantes solo avanzan, casilla a casilla, y jamas pueden comer &mdash; pero pueden
-      obligar a un defensor a hacerlo.</p>
+      <p>${s.introText}</p>
       <div class="roles">
         <div class="role-box">
-          <h3><span class="role-dot att"></span> Atacantes</h3>
-          <p>21 piezas. Avanzan en diagonal hacia el castillo. Ganan si ocupan las 8 casas del castillo.</p>
+          <h3><span class="role-dot att"></span> ${s.attackersLabel}</h3>
+          <p>${s.attackersDesc}</p>
           <div class="name-row">
-            <label for="att-name">Nombre del jugador</label>
-            <input id="att-name" type="text" placeholder="Atacantes" maxlength="20">
+            <label for="att-name">${s.playerNameLabel}</label>
+            <input id="att-name" type="text" placeholder="${s.attackerDefault}" maxlength="20">
           </div>
         </div>
         <div class="role-box">
-          <h3><span class="role-dot def"></span> Defensores</h3>
-          <p>3 piezas. Se mueven y comen en cualquier direccion. Ganan si dejan a los atacantes sin movimiento.</p>
+          <h3><span class="role-dot def"></span> ${s.defendersLabel}</h3>
+          <p>${s.defendersDesc}</p>
           <div class="name-row">
-            <label for="def-name">Nombre del jugador</label>
-            <input id="def-name" type="text" placeholder="Aztecas" maxlength="20">
+            <label for="def-name">${s.playerNameLabel}</label>
+            <input id="def-name" type="text" placeholder="${s.defenderDefault}" maxlength="20">
           </div>
         </div>
       </div>
       <div class="intro-actions">
-        <button class="btn primary" id="start-btn">Comenzar</button>
+        <button class="btn primary" id="start-btn">${s.startButton}</button>
       </div>
     </div>
   `;
 }
 
 function statusBarHTML(){
+  const s = S();
   let turnLabel, dotClass;
   if (state.phase === 'placement'){
-    turnLabel = `${state.defenderName} colocando defensores`;
+    turnLabel = s.placementTurn(state.defenderName);
     dotClass = 'def';
   } else if (state.phase === 'gameover'){
-    turnLabel = 'Partida terminada';
+    turnLabel = s.gameOverTurn;
     dotClass = state.winner === 'attacker' ? 'att' : 'def';
   } else {
-    turnLabel = state.turn === 'attacker' ? `Turno: ${state.attackerName}` : `Turno: ${state.defenderName}`;
+    turnLabel = s.turnLabel(state.turn === 'attacker' ? state.attackerName : state.defenderName);
     dotClass = state.turn === 'attacker' ? 'att' : 'def';
   }
   return `
     <div class="statusbar">
       <span class="turn-pill"><span class="role-dot ${dotClass}"></span>${turnLabel}</span>
       <span class="status-msg">${state.statusMsg || ''}</span>
-      <span class="tally">Atacantes capturados: ${state.capturedAttackers}</span>
+      <span class="tally">${s.capturedTally(state.capturedAttackers)}</span>
     </div>
   `;
 }
 
 function gameHTML(){
+  const s = S();
   return `
     ${statusBarHTML()}
     ${state.phase === 'placement' ? `
-      <p class="placement-hint">Haz clic en las casillas negras del castillo para colocar a tus 3 defensores (${placedDefenders.length}/3).</p>
+      <p class="placement-hint">${s.placementHint(placedDefenders.length)}</p>
       <div class="placement-actions">
-        <button class="btn ghost" id="default-btn">Colocacion sugerida</button>
-        <button class="btn primary" id="begin-btn" ${placedDefenders.length===3?'':'disabled'}>Comenzar la partida</button>
+        <button class="btn ghost" id="default-btn">${s.suggestedPlacement}</button>
+        <button class="btn primary" id="begin-btn" ${placedDefenders.length===3?'':'disabled'}>${s.beginGame}</button>
       </div>
     ` : ''}
     <div class="board-scroll" id="board-scroll">
@@ -819,17 +957,18 @@ function gameHTML(){
 }
 
 function winOverlayHTML(){
+  const s = S();
   const attackerWon = state.winner === 'attacker';
-  const title = attackerWon ? 'Los atacantes toman el castillo' : 'Los defensores resisten el asalto';
+  const title = attackerWon ? s.attackerWinTitle : s.defenderWinTitle;
   const msg = attackerWon
-    ? `${state.attackerName} han ocupado las ocho casas del castillo. ${state.defenderName} no lograron defenderlo.`
-    : `${state.defenderName} han dejado sin movimiento a ${state.attackerName}. El castillo permanece a salvo.`;
+    ? s.attackerWinMsg(state.attackerName, state.defenderName)
+    : s.defenderWinMsg(state.attackerName, state.defenderName);
   return `
     <div class="win-overlay">
       <div class="win-card">
         <h2>${title}</h2>
         <p>${msg}</p>
-        <button class="btn primary" id="restart-btn-2">Jugar de nuevo</button>
+        <button class="btn primary" id="restart-btn-2">${s.playAgain}</button>
       </div>
     </div>
   `;
@@ -837,12 +976,18 @@ function winOverlayHTML(){
 
 function renderRulesPanel(){
   const el = document.getElementById('rulespanel');
+  const s = S();
+  const secondCol = s.summaryHeading === null ? '' : `
+        <div class="rules-col">
+          <h4>${s.summaryHeading}</h4>
+          ${s.summaryBody}
+        </div>`;
   el.innerHTML = `
     <details class="rules">
-      <summary>Reglas originales &amp; resumen en ingles</summary>
+      <summary>${s.rulesSummary}</summary>
       <div class="rules-body">
         <div class="rules-col original">
-          <h4>Modo de jugarlo (original)</h4>
+          <h4>${s.originalHeading}</h4>
           <p>Se juega con 24 fichas o soldados, 3 de un color y 21 de otro. Los 3 defienden el castillo o
           parte superior, resguardada por los Aztecas y el Aguila, y los otros 21 lo atacan, colocandose en
           las 3 lineas de casillas negras de abajo, siendo su movimiento de avance para arriba por las casillas
@@ -852,22 +997,7 @@ function renderRulesPanel(){
           colocaran en las tres casillas negras que estan entre los Aztecas, y pueden andar y comer de todos
           lados, pero solamente una pieza en cada jugada, siempre que esta tenga atras una casilla vacia,
           ganando el juego cuando dejen sin jugada a los contrarios.</p>
-        </div>
-        <div class="rules-col">
-          <h4>English summary</h4>
-          <p>The original: 24 pieces, 3 defenders guarding the castle against 21 attackers starting on the
-          bottom three rows of black squares.</p>
-          <p>Attackers move one step diagonally forward only, and can never capture. Defenders move
-          diagonally in any direction and capture by jumping, exactly like checkers &mdash; and must capture
-          when a capture is available.</p>
-          <p>Attackers win by clearing the defenders out and occupying all 8 castle squares. Defenders win
-          by leaving the attackers with no legal move anywhere on the board.</p>
-          <p style="opacity:0.75; font-size:0.85rem;">The board itself is a photograph of the real object,
-          perspective-corrected, with 21 attacker squares across the bottom three rows and 8 castle squares
-          &mdash; both counted directly from the photo. The defenders' starting squares and multi-jump
-          chaining were reconstructed, since the rules text leaves those open, drawing on the wider Asalto /
-          Fox-and-Geese family this game belongs to.</p>
-        </div>
+        </div>${secondCol}
       </div>
     </details>
   `;
@@ -884,7 +1014,7 @@ function renderBoard(){
   const forced = state.phase === 'playing' && state.turn === 'defender' ? defendersWithCaptures() : [];
 
   let html = `<div id="boardPhotoWrap">`;
-  html += `<img id="board-photo-img" src="${window.__ASSETS__.boardPhoto}" alt="Tablero original fotografiado del Juego del Castillo de los Aztecas">`;
+  html += `<img id="board-photo-img" src="${window.__ASSETS__.boardPhoto}" alt="${S().boardAlt}">`;
 
   for (const id in squares){
     const sq = squares[id];
@@ -955,6 +1085,15 @@ function render(){
 
 /* ===================== Boot ===================== */
 document.addEventListener('DOMContentLoaded', () => {
+  currentLang = getSavedLang();
+  const eyebrow = document.querySelector('.rg-photos-eyebrow');
+  if(eyebrow) eyebrow.textContent = S().photosEyebrow;
+  const caption = document.getElementById('rg-photo-caption');
+  if(caption) caption.textContent = S().photoCaption;
+  document.querySelectorAll('.rg-lang-btn').forEach(function(b){
+    b.style.fontWeight = b.getAttribute('data-lang')===currentLang ? '700' : '400';
+    b.style.textDecoration = b.getAttribute('data-lang')===currentLang ? 'underline' : 'none';
+  });
   buildBoard();
   renderApp();
 });
