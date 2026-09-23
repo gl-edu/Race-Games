@@ -41,29 +41,49 @@
     padding: 0 28px;
   }
 
-  /* ---------- Hero ---------- */
-  .hero{
-    padding: 56px 0 40px;
-    text-align: left;
+  /* ---------- Language toggle ---------- */
+  .langbar{
+    display: flex;
+    justify-content: flex-end;
+    padding: 18px 0 0;
   }
-  .eyebrow{
+  .langtoggle{
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 2px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 11.5px;
     font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    padding: 6px 14px;
-    margin-bottom: 26px;
+    letter-spacing: 0.06em;
   }
-  .eyebrow .dot{
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--red);
+  .langtoggle button{
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ink-soft);
+    padding: 6px 8px;
+    border-radius: 6px;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+  .langtoggle button:hover{
+    color: var(--ink);
+  }
+  .langtoggle button[aria-pressed="true"]{
+    color: var(--ink);
+    background: var(--paper-dim);
+  }
+  .langtoggle .sep{
+    color: var(--line);
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    padding: 40px 0 40px;
+    text-align: left;
   }
   h1.title{
     font-family: 'Archivo Black', sans-serif;
@@ -108,7 +128,7 @@
 
   /* ---------- Dispatch / description placeholder ---------- */
   .dispatch{
-    margin: 72px 0 8px;
+    margin: 44px 0 8px;
     padding: 26px 28px;
     border: 1.5px dashed var(--line);
     border-radius: 14px;
@@ -223,6 +243,7 @@
     font-style: italic;
     color: var(--ink-soft);
     margin: 0 0 18px;
+    min-height: 1em;
   }
   .card .card-blurb{
     font-size: 15px;
@@ -293,12 +314,6 @@
     flex-wrap: wrap;
     gap: 12px;
   }
-  footer .foot-note{
-    font-size: 13px;
-    color: var(--ink-soft);
-    max-width: 520px;
-    line-height: 1.6;
-  }
   footer .foot-mark{
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
@@ -315,10 +330,19 @@
 <body>
 
 <div class="wrap">
+  <div class="langbar">
+    <div class="langtoggle" role="group" aria-label="Language">
+      <button type="button" data-lang="en" aria-pressed="true">EN</button>
+      <span class="sep">/</span>
+      <button type="button" data-lang="es" aria-pressed="false">ES</button>
+      <span class="sep">/</span>
+      <button type="button" data-lang="pt" aria-pressed="false">PT</button>
+    </div>
+  </div>
 
   <section class="hero">
-    <h1 class="title">Race Games</h1>
-    <p class="subhead">From the Nineteenth Century to Today — historic board games that you can play.</p>
+    <h1 class="title" data-i18n="title">Race Games</h1>
+    <p class="subhead" data-i18n="subhead">From the Nineteenth Century to Today — historic board games that you can play.</p>
   </section>
 
 </div>
@@ -335,13 +359,13 @@
 <div class="wrap">
 
   <div class="dispatch">
-    <p class="dispatch-label">Why am I playing?</p>
-    <p class="dispatch-text">Nineteenth-century Mexican board games contributed to the construction of racial imaginaries. When you play these games, try to identify the racial ideas built into the gameplay. This type of cultural production was more than just fun and games.</p>
+    <p class="dispatch-label" data-i18n="dispatchLabel">Why am I playing?</p>
+    <p class="dispatch-text" data-i18n="dispatchText">Nineteenth-century Mexican board games contributed to the construction of racial imaginaries. When you play these games, try to identify the racial ideas built into the gameplay. This type of cultural production was more than just fun and games.</p>
   </div>
 
   <div class="section-label">
-    <h2>The Collection</h2>
-    <div class="tally">MEXICO · 19TH CENTURY</div>
+    <h2 data-i18n="collection">The Collection</h2>
+    <div class="tally" data-i18n="tally">MEXICO · 19TH CENTURY</div>
   </div>
 
   <div class="games">
@@ -352,16 +376,16 @@
         <img src="images/la-guerra-de-los-kikapoos-board.jpg" alt="Original board photograph of La Guerra de los Kikapoos" loading="lazy">
       </div>
       <div class="card-body">
-        <div class="card-eyebrow">War &amp; Capture</div>
+        <div class="card-eyebrow" data-i18n="g1.eyebrow">War &amp; Capture</div>
         <h3>La Guerra de los Kikapoos</h3>
-        <p class="card-translation">"The Kickapoo War"</p>
-        <p class="card-blurb">A checkers-style capture game imagining conflict along the Rio Grande — sixteen pieces and two territorial commanders per side, with mandatory captures and multi-jump chains. What does the player perspective tell you about nationalism?</p>
+        <p class="card-translation" data-i18n="g1.translation">"The Kickapoo War"</p>
+        <p class="card-blurb" data-i18n="g1.blurb">A checkers-style capture game imagining conflict along the Rio Grande — sixteen pieces and two territorial commanders per side, with mandatory captures and multi-jump chains. What does the player perspective tell you about nationalism?</p>
         <div class="chips">
-          <span class="chip">64 SPACES</span>
-          <span class="chip">2 PLAYERS</span>
-          <span class="chip">CAPTURE GAME</span>
+          <span class="chip" data-i18n="chip.64spaces">64 SPACES</span>
+          <span class="chip" data-i18n="chip.2players">2 PLAYERS</span>
+          <span class="chip" data-i18n="g1.chip3">CAPTURE GAME</span>
         </div>
-        <a class="play-btn" href="games/la-guerra-de-los-kikapoos.html">Play the game <span class="arrow">→</span></a>
+        <a class="play-btn" href="games/la-guerra-de-los-kikapoos.html"><span data-i18n="playBtn">Play the game</span> <span class="arrow">→</span></a>
       </div>
     </div>
 
@@ -371,16 +395,16 @@
         <img src="images/los-charros-board.jpg" alt="Original board photograph of Los Charros Contrabandistas" loading="lazy">
       </div>
       <div class="card-body">
-        <div class="card-eyebrow">Pursuit &amp; Chase</div>
+        <div class="card-eyebrow" data-i18n="g2.eyebrow">Pursuit &amp; Chase</div>
         <h3>Los Charros Contrabandistas</h3>
-        <p class="card-translation">"The Cowboy Bandits"</p>
-        <p class="card-blurb">A 64-space dice race across urban and rural Mexico. Roll, move, and try to outrun the field to the finish. See what types of characters you encounter.</p>
+        <p class="card-translation" data-i18n="g2.translation">"The Cowboy Bandits"</p>
+        <p class="card-blurb" data-i18n="g2.blurb">A 64-space dice race across urban and rural Mexico. Roll, move, and try to outrun the field to the finish. See what types of characters you encounter.</p>
         <div class="chips">
-          <span class="chip">64 SPACES</span>
-          <span class="chip">2–4 PLAYERS</span>
-          <span class="chip">DICE GAME</span>
+          <span class="chip" data-i18n="chip.64spaces">64 SPACES</span>
+          <span class="chip" data-i18n="chip.24players">2–4 PLAYERS</span>
+          <span class="chip" data-i18n="chip.dicegame">DICE GAME</span>
         </div>
-        <a class="play-btn" href="games/los-charros-contrabandistas.html">Play the game <span class="arrow">→</span></a>
+        <a class="play-btn" href="games/los-charros-contrabandistas.html"><span data-i18n="playBtn">Play the game</span> <span class="arrow">→</span></a>
       </div>
     </div>
 
@@ -390,16 +414,16 @@
         <img src="images/juego-del-castillo-de-los-aztecas-board.jpg" alt="Original board photograph of Juego del Castillo de los Aztecas" loading="lazy">
       </div>
       <div class="card-body">
-        <div class="card-eyebrow">Siege &amp; Strategy</div>
+        <div class="card-eyebrow" data-i18n="g3.eyebrow">Siege &amp; Strategy</div>
         <h3>Juego del Castillo de los Aztecas</h3>
-        <p class="card-translation">"The Game of the Aztec Castle"</p>
-        <p class="card-blurb">A two-player siege game rebuilt from a nine-row antique board: attackers press in from the camp, defenders hold the castle. No dice — just position and nerve. What does this game suggest about national identity? </p>
+        <p class="card-translation" data-i18n="g3.translation">"The Game of the Aztec Castle"</p>
+        <p class="card-blurb" data-i18n="g3.blurb">A two-player siege game rebuilt from a nine-row antique board: attackers press in from the camp, defenders hold the castle. No dice — just position and nerve. What does this game suggest about national identity? </p>
         <div class="chips">
-          <span class="chip">2 PLAYERS</span>
-          <span class="chip">STRATEGY</span>
-          <span class="chip">NO DICE</span>
+          <span class="chip" data-i18n="chip.2players">2 PLAYERS</span>
+          <span class="chip" data-i18n="chip.strategy">STRATEGY</span>
+          <span class="chip" data-i18n="chip.nodice">NO DICE</span>
         </div>
-        <a class="play-btn" href="games/juego-del-castillo-de-los-aztecas.html">Play the game <span class="arrow">→</span></a>
+        <a class="play-btn" href="games/juego-del-castillo-de-los-aztecas.html"><span data-i18n="playBtn">Play the game</span> <span class="arrow">→</span></a>
       </div>
     </div>
 
@@ -409,16 +433,16 @@
         <img src="images/los-insurgentes-board.jpg" alt="Original board photograph of Los Insurgentes" loading="lazy">
       </div>
       <div class="card-body">
-        <div class="card-eyebrow">Campaign &amp; Cartography</div>
+        <div class="card-eyebrow" data-i18n="g4.eyebrow">Campaign &amp; Cartography</div>
         <h3>Los Insurgentes</h3>
-        <p class="card-translation">"The Insurgents"</p>
-        <p class="card-blurb">A 151-space dice race laid directly over an 1891 map of Mexico, tracing five insurgent campaigns — Hidalgo, Morelos, Mina, Guerrero, Iturbide — from Dolores to the capital. The game is a lesson in territory: intendencias, provinces, a nation drawn one campaign at a time. What kind of cartographies gets left out when this one gets made?</p>
+        <p class="card-translation" data-i18n="g4.translation">"The Insurgents"</p>
+        <p class="card-blurb" data-i18n="g4.blurb">A 151-space dice race laid directly over an 1891 map of Mexico, tracing five insurgent campaigns — Hidalgo, Morelos, Mina, Guerrero, Iturbide — from Dolores to the capital. The game is a lesson in territory: intendencias, provinces, a nation drawn one campaign at a time. What kind of cartographies gets left out when this one gets made?</p>
         <div class="chips">
-          <span class="chip">151 SPACES</span>
-          <span class="chip">2 PLAYERS</span>
-          <span class="chip">DICE GAME</span>
+          <span class="chip" data-i18n="g4.chip1">151 SPACES</span>
+          <span class="chip" data-i18n="chip.2players">2 PLAYERS</span>
+          <span class="chip" data-i18n="chip.dicegame">DICE GAME</span>
         </div>
-        <a class="play-btn" href="games/los-insurgentes-map.html">Play the game <span class="arrow">→</span></a>
+        <a class="play-btn" href="games/los-insurgentes-map.html"><span data-i18n="playBtn">Play the game</span> <span class="arrow">→</span></a>
       </div>
     </div>
 
@@ -436,9 +460,145 @@
 
 <div class="wrap">
   <footer>
-    <p class="foot-mark">Race Games &middot; Digital Archive</p>
+    <p class="foot-mark"><span>Race Games</span> &middot; <span data-i18n="footMark">Digital Archive</span></p>
   </footer>
 </div>
+
+<script>
+(function(){
+  var STRINGS = {
+    en: {
+      title: "Race Games",
+      subhead: "From the Nineteenth Century to Today — historic board games that you can play.",
+      dispatchLabel: "Why am I playing?",
+      dispatchText: "Nineteenth-century Mexican board games contributed to the construction of racial imaginaries. When you play these games, try to identify the racial ideas built into the gameplay. This type of cultural production was more than just fun and games.",
+      collection: "The Collection",
+      tally: "MEXICO · 19TH CENTURY",
+      playBtn: "Play the game",
+      footMark: "Digital Archive",
+      "chip.64spaces": "64 SPACES",
+      "chip.2players": "2 PLAYERS",
+      "chip.24players": "2–4 PLAYERS",
+      "chip.dicegame": "DICE GAME",
+      "chip.strategy": "STRATEGY",
+      "chip.nodice": "NO DICE",
+      "g1.eyebrow": "War & Capture",
+      "g1.translation": "“The Kickapoo War”",
+      "g1.blurb": "A checkers-style capture game imagining conflict along the Rio Grande — sixteen pieces and two territorial commanders per side, with mandatory captures and multi-jump chains. What does the player perspective tell you about nationalism?",
+      "g1.chip3": "CAPTURE GAME",
+      "g2.eyebrow": "Pursuit & Chase",
+      "g2.translation": "“The Cowboy Bandits”",
+      "g2.blurb": "A 64-space dice race across urban and rural Mexico. Roll, move, and try to outrun the field to the finish. See what types of characters you encounter.",
+      "g3.eyebrow": "Siege & Strategy",
+      "g3.translation": "“The Game of the Aztec Castle”",
+      "g3.blurb": "A two-player siege game rebuilt from a nine-row antique board: attackers press in from the camp, defenders hold the castle. No dice — just position and nerve. What does this game suggest about national identity?",
+      "g4.eyebrow": "Campaign & Cartography",
+      "g4.translation": "“The Insurgents”",
+      "g4.blurb": "A 151-space dice race laid directly over an 1891 map of Mexico, tracing five insurgent campaigns — Hidalgo, Morelos, Mina, Guerrero, Iturbide — from Dolores to the capital. The game is a lesson in territory: intendencias, provinces, a nation drawn one campaign at a time. What kind of cartographies gets left out when this one gets made?",
+      "g4.chip1": "151 SPACES"
+    },
+    es: {
+      title: "Raza en juego",
+      subhead: "Del siglo XIX a hoy — juegos de mesa históricos que puedes jugar.",
+      dispatchLabel: "¿Por qué estoy jugando?",
+      dispatchText: "Los juegos de mesa mexicanos del siglo XIX contribuyeron a la construcción de imaginarios raciales. Al jugar estos juegos, trata de identificar las ideas raciales integradas en la mecánica del juego. Este tipo de producción cultural fue mucho más que simple entretenimiento.",
+      collection: "La Colección",
+      tally: "MÉXICO · SIGLO XIX",
+      playBtn: "Jugar",
+      footMark: "Archivo Digital",
+      "chip.64spaces": "64 CASILLAS",
+      "chip.2players": "2 JUGADORES",
+      "chip.24players": "2–4 JUGADORES",
+      "chip.dicegame": "JUEGO DE DADOS",
+      "chip.strategy": "ESTRATEGIA",
+      "chip.nodice": "SIN DADOS",
+      "g1.eyebrow": "Guerra y Captura",
+      "g1.translation": "",
+      "g1.blurb": "Un juego de captura al estilo de las damas que imagina un conflicto a lo largo del Río Bravo: dieciséis piezas y dos comandantes territoriales por bando, con capturas obligatorias y saltos múltiples encadenados. ¿Qué te dice la perspectiva del jugador sobre el nacionalismo?",
+      "g1.chip3": "JUEGO DE CAPTURA",
+      "g2.eyebrow": "Persecución y Caza",
+      "g2.translation": "",
+      "g2.blurb": "Una carrera de dados de 64 casillas por el México urbano y rural. Tira, avanza e intenta adelantar al resto hasta la meta. Descubre qué tipos de personajes te encuentras en el camino.",
+      "g3.eyebrow": "Asedio y Estrategia",
+      "g3.translation": "",
+      "g3.blurb": "Un juego de asedio para dos jugadores, reconstruido a partir de un tablero antiguo de nueve filas: los atacantes avanzan desde el campamento, los defensores resisten en el castillo. Sin dados — solo posición y nervio. ¿Qué sugiere este juego sobre la identidad nacional?",
+      "g4.eyebrow": "Campaña y Cartografía",
+      "g4.translation": "",
+      "g4.blurb": "Una carrera de dados de 151 casillas trazada directamente sobre un mapa de México de 1891, que sigue cinco campañas insurgentes — Hidalgo, Morelos, Mina, Guerrero, Iturbide — desde Dolores hasta la capital. El juego es una lección de territorio: intendencias, provincias, una nación dibujada campaña a campaña. ¿Qué cartografías quedan fuera cuando se traza esta?",
+      "g4.chip1": "151 CASILLAS"
+    },
+    pt: {
+      title: "Raça em jogo",
+      subhead: "Do século XIX até hoje — jogos de tabuleiro históricos que você pode jogar.",
+      dispatchLabel: "Por que estou jogando?",
+      dispatchText: "Os jogos de tabuleiro mexicanos do século XIX contribuíram para a construção de imaginários raciais. Ao jogar esses jogos, tente identificar as ideias raciais embutidas na mecânica do jogo. Esse tipo de produção cultural foi muito mais do que apenas diversão.",
+      collection: "A Coleção",
+      tally: "MÉXICO · SÉCULO XIX",
+      playBtn: "Jogar",
+      footMark: "Arquivo Digital",
+      "chip.64spaces": "64 CASAS",
+      "chip.2players": "2 JOGADORES",
+      "chip.24players": "2–4 JOGADORES",
+      "chip.dicegame": "JOGO DE DADOS",
+      "chip.strategy": "ESTRATÉGIA",
+      "chip.nodice": "SEM DADOS",
+      "g1.eyebrow": "Guerra e Captura",
+      "g1.translation": "“A Guerra Kickapoo”",
+      "g1.blurb": "Um jogo de captura no estilo das damas que imagina um conflito ao longo do Rio Grande — dezesseis peças e dois comandantes territoriais por lado, com capturas obrigatórias e sequências de múltiplos saltos. O que a perspectiva do jogador revela sobre o nacionalismo?",
+      "g1.chip3": "JOGO DE CAPTURA",
+      "g2.eyebrow": "Perseguição e Caça",
+      "g2.translation": "“Os Bandidos Charros”",
+      "g2.blurb": "Uma corrida de dados de 64 casas pelo México urbano e rural. Jogue os dados, avance e tente ultrapassar os outros até a chegada. Veja que tipos de personagens você encontra pelo caminho.",
+      "g3.eyebrow": "Cerco e Estratégia",
+      "g3.translation": "“O Jogo do Castelo Asteca”",
+      "g3.blurb": "Um jogo de cerco para dois jogadores, reconstruído a partir de um tabuleiro antigo de nove fileiras: os atacantes avançam a partir do acampamento, os defensores resistem no castelo. Sem dados — apenas posição e nervos. O que este jogo sugere sobre a identidade nacional?",
+      "g4.eyebrow": "Campanha e Cartografia",
+      "g4.translation": "“Os Insurgentes”",
+      "g4.blurb": "Uma corrida de dados de 151 casas traçada diretamente sobre um mapa do México de 1891, seguindo cinco campanhas insurgentes — Hidalgo, Morelos, Mina, Guerrero, Iturbide — de Dolores até a capital. O jogo é uma lição de território: intendências, províncias, uma nação desenhada campanha por campanha. Que cartografias ficam de fora quando esta é traçada?",
+      "g4.chip1": "151 CASAS"
+    }
+  };
+
+  var STORAGE_KEY = "race-games-lang";
+  var DEFAULT_LANG = "en";
+
+  function getSavedLang(){
+    try{
+      var saved = window.localStorage.getItem(STORAGE_KEY);
+      if (saved && STRINGS[saved]) return saved;
+    } catch(e){ /* storage unavailable, fall through */ }
+    return DEFAULT_LANG;
+  }
+
+  function saveLang(lang){
+    try{ window.localStorage.setItem(STORAGE_KEY, lang); } catch(e){ /* ignore */ }
+  }
+
+  function applyLang(lang){
+    var dict = STRINGS[lang] || STRINGS[DEFAULT_LANG];
+    document.querySelectorAll("[data-i18n]").forEach(function(el){
+      var key = el.getAttribute("data-i18n");
+      if (Object.prototype.hasOwnProperty.call(dict, key)){
+        el.textContent = dict[key];
+      }
+    });
+    document.documentElement.setAttribute("lang", lang);
+    document.querySelectorAll(".langtoggle button").forEach(function(btn){
+      btn.setAttribute("aria-pressed", btn.getAttribute("data-lang") === lang ? "true" : "false");
+    });
+  }
+
+  document.querySelectorAll(".langtoggle button").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var lang = btn.getAttribute("data-lang");
+      applyLang(lang);
+      saveLang(lang);
+    });
+  });
+
+  applyLang(getSavedLang());
+})();
+</script>
 
 </body>
 </html>
