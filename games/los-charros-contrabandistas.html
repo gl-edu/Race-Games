@@ -313,10 +313,13 @@
 </head>
 <body>
 <a href="../index.html" style="position:fixed;top:14px;left:14px;z-index:9999;display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:#14161A;color:#FAFAF7;text-decoration:none;font-family:Inter,system-ui,sans-serif;font-size:12px;font-weight:600;letter-spacing:0.03em;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,0.25);opacity:0.85;">&larr;&nbsp;RACE GAMES</a>
+<div style="position:fixed;top:14px;right:14px;z-index:9999;display:inline-flex;align-items:center;gap:2px;padding:6px 8px;background:#f3ead0;border:1.5px solid #2a2016;border-radius:999px;box-shadow:2px 2px 0 rgba(0,0,0,0.15);font-family:'IM Fell English SC', serif;font-size:12px;letter-spacing:0.04em;">
+  <button type="button" class="rg-lang-btn" data-lang="en" style="background:none;border:none;cursor:pointer;padding:3px 7px;border-radius:999px;color:#2a2016;font:inherit;">EN</button><span style="opacity:0.4;">/</span><button type="button" class="rg-lang-btn" data-lang="es" style="background:none;border:none;cursor:pointer;padding:3px 7px;border-radius:999px;color:#2a2016;font:inherit;">ES</button><span style="opacity:0.4;">/</span><button type="button" class="rg-lang-btn" data-lang="pt" style="background:none;border:none;cursor:pointer;padding:3px 7px;border-radius:999px;color:#2a2016;font:inherit;">PT</button>
+</div>
 <div class="app">
   <header>
     <h1>Los Charros Contrabandistas</h1>
-    <div class="subtitle">JUEGO DE DADOS &nbsp;·&nbsp; edición digital</div>
+    <div class="subtitle" id="rgSubtitle">JUEGO DE DADOS &nbsp;·&nbsp; edici&oacute;n digital</div>
     <div class="rule"></div>
   </header>
 
@@ -397,11 +400,175 @@ const PALETTE = [
 ];
 let state = null; // built on start
 
+/* ============== I18N ============== */
+const RG_STRINGS = {
+  es: {
+    subtitle: 'JUEGO DE DADOS &nbsp;·&nbsp; edición digital',
+    setupTitle: 'Preparar la partida',
+    howManyLabel: '¿Cuántos jugadores? (2–4)',
+    startBtn: 'Comenzar el juego',
+    playerLabel: (n)=> 'Jugador '+n,
+    namePlaceholder: 'Nombre (opcional)',
+    defaultPlayerName: (n)=> 'Jugador '+n,
+    gameStartLog: 'La partida comienza. Suerte, charros.',
+    winnerBanner: (name)=> '🏆 ¡'+name+' gana la partida!',
+    turnTitle: (name)=> 'Turno de '+(name||'—'),
+    eliminatedSuffix: ' (fuera)',
+    posText: (pos,fichas)=> 'casilla '+pos+' · '+fichas+' ficha'+(fichas===1?'':'s'),
+    potText: (pot)=> 'Bote común: '+pot+' ficha'+(pot===1?'':'s'),
+    rollBtn: 'Tirar los dados',
+    newGameBtn: 'Nueva partida',
+    rulesSummary: 'Ver la explicación original (traducida)',
+    rulesItems: [
+      'Para ganar, saca tres unos en tu primer tiro; si caes en la calavera, pierdes sin remedio.',
+      'Si en el primer tiro sacas tres cincos, vas directo a la casilla 62 y sigues jugando.',
+      'Si caes en una casilla de venado, cobras del bote; si caes justo en la casilla 5, ganas el juego.',
+      'Si caes en una casilla de ladrones, pagas al bote.',
+      'Si caes en el caballo, tiras de nuevo.',
+      'Si caes en el león, quedas atrapado hasta que otro jugador te alcance.',
+      'Si caes en una casilla ocupada, ese jugador vuelve a tu casilla anterior.',
+      'Si caes en la calavera (fuera del primer tiro), pagas una ficha y retrocedes a la casilla 6. Si tu tiro pasa de la 64, retrocedes lo que sobre.'
+    ],
+    stuckLog: (name)=> name+' sigue entre las garras del león. Espera a que otro jugador lo alcance.',
+    rollLog: (name,dice,sum)=> name+' tira '+dice.join('-')+' (suma '+sum+').',
+    threeOnesLog: (name)=> '¡Tres unos en el primer tiro! '+name+' gana la partida al instante.',
+    threeFivesLog: (name)=> '¡Tres cincos! '+name+' paga su entrada y salta a la casilla 62.',
+    advanceLog: (name,pos)=> name+' avanza a la casilla '+pos+'.',
+    deerLog: (name)=> 'Casilla del venado: '+name+' cobra una ficha del bote.',
+    deerEmptyLog: 'Casilla del venado, pero el bote está vacío.',
+    winLandLog: (name)=> name+' cae justo en la casilla 5. ¡Gana la partida!',
+    thiefLog: (name)=> 'Casilla de los ladrones: '+name+' paga una ficha al bote.',
+    horseLog: (name)=> 'Casilla del caballo ligero: '+name+' tira de nuevo.',
+    lionLog: (name)=> 'Casilla del león fuerte: '+name+' queda atrapado.',
+    skullLog: (name)=> 'Calavera: '+name+' paga una ficha y retrocede a la casilla 6.',
+    bumpLog: (name,otherName,wasStuck,otherPos)=> name+' ocupa la casilla de '+otherName+(wasStuck?' y lo libera del león':'')+'; '+otherName+' vuelve a la casilla '+(otherPos||'de salida')+'.',
+    photosEyebrow: 'Fotografías originales',
+    photoCaption: 'El tablero original se encuentra en la Biblioteca Latinoamericana de la Universidad de Tulane.',
+    spaceAlt: (n)=> 'casilla '+n
+  },
+  en: {
+    subtitle: 'DICE GAME &nbsp;·&nbsp; digital edition',
+    setupTitle: 'Set up the game',
+    howManyLabel: 'How many players? (2–4)',
+    startBtn: 'Start the game',
+    playerLabel: (n)=> 'Player '+n,
+    namePlaceholder: 'Name (optional)',
+    defaultPlayerName: (n)=> 'Player '+n,
+    gameStartLog: 'The game begins. Good luck, charros.',
+    winnerBanner: (name)=> '🏆 '+name+' wins the game!',
+    turnTitle: (name)=> (name?name+'’s turn':'Turn: —'),
+    eliminatedSuffix: ' (out)',
+    posText: (pos,fichas)=> 'space '+pos+' · '+fichas+' token'+(fichas===1?'':'s'),
+    potText: (pot)=> 'Shared pot: '+pot+' token'+(pot===1?'':'s'),
+    rollBtn: 'Roll the dice',
+    newGameBtn: 'New Game',
+    rulesSummary: 'View the original rules (translated)',
+    rulesItems: [
+      'Roll three ones on your first turn and you win outright; land on the skull and you lose with no recourse.',
+      'Roll three fives on your first turn and you jump straight to space 62 and keep playing.',
+      'Land on a deer space and you collect from the pot; land exactly on space 5 and you win the game.',
+      'Land on a thieves’ space and you pay into the pot.',
+      'Land on the horse and you roll again.',
+      'Land on the lion and you’re trapped there until another player catches up to you.',
+      'Land on an occupied space and that player is sent back to your previous space.',
+      'Land on the skull (outside the first roll) and you pay a token and fall back to space 6. If your roll overshoots space 64, you fall back by the remainder.'
+    ],
+    stuckLog: (name)=> name+' is still caught in the lion’s claws. Waiting for another player to catch up.',
+    rollLog: (name,dice,sum)=> name+' rolls '+dice.join('-')+' (total '+sum+').',
+    threeOnesLog: (name)=> 'Three ones on the first roll! '+name+' wins the game instantly.',
+    threeFivesLog: (name)=> 'Three fives! '+name+' pays the entry fee and jumps to space 62.',
+    advanceLog: (name,pos)=> name+' advances to space '+pos+'.',
+    deerLog: (name)=> 'Deer space: '+name+' collects a token from the pot.',
+    deerEmptyLog: 'Deer space, but the pot is empty.',
+    winLandLog: (name)=> name+' lands right on space 5. They win the game!',
+    thiefLog: (name)=> 'Thieves’ space: '+name+' pays a token into the pot.',
+    horseLog: (name)=> 'Fleet horse space: '+name+' rolls again.',
+    lionLog: (name)=> 'Fierce lion space: '+name+' is trapped.',
+    skullLog: (name)=> 'Skull: '+name+' pays a token and falls back to space 6.',
+    bumpLog: (name,otherName,wasStuck,otherPos)=> name+' takes '+otherName+'’s space'+(wasStuck?', freeing them from the lion':'')+'; '+otherName+' goes back to space '+(otherPos||'the starting space')+'.',
+    photosEyebrow: 'Source Photographs',
+    photoCaption: 'Original board is located at the Latin American Library, Tulane University.',
+    spaceAlt: (n)=> 'space '+n
+  },
+  pt: {
+    subtitle: 'JOGO DE DADOS &nbsp;·&nbsp; edição digital',
+    setupTitle: 'Preparar a partida',
+    howManyLabel: 'Quantos jogadores? (2–4)',
+    startBtn: 'Começar o jogo',
+    playerLabel: (n)=> 'Jogador '+n,
+    namePlaceholder: 'Nome (opcional)',
+    defaultPlayerName: (n)=> 'Jogador '+n,
+    gameStartLog: 'A partida começa. Boa sorte, charros.',
+    winnerBanner: (name)=> '🏆 '+name+' vence a partida!',
+    turnTitle: (name)=> 'Vez de '+(name||'—'),
+    eliminatedSuffix: ' (fora)',
+    posText: (pos,fichas)=> 'casa '+pos+' · '+fichas+' ficha'+(fichas===1?'':'s'),
+    potText: (pot)=> 'Pote comum: '+pot+' ficha'+(pot===1?'':'s'),
+    rollBtn: 'Jogar os dados',
+    newGameBtn: 'Novo Jogo',
+    rulesSummary: 'Ver a explicação original (traduzida)',
+    rulesItems: [
+      'Para vencer, tire três uns na sua primeira jogada; se cair na caveira, você perde sem remédio.',
+      'Se na primeira jogada você tirar três cincos, vai direto para a casa 62 e continua jogando.',
+      'Se cair numa casa de veado, você recebe do pote; se cair exatamente na casa 5, você vence o jogo.',
+      'Se cair numa casa de ladrões, você paga ao pote.',
+      'Se cair no cavalo, você joga de novo.',
+      'Se cair no leão, você fica preso até que outro jogador o alcance.',
+      'Se cair numa casa ocupada, esse jogador volta à sua casa anterior.',
+      'Se cair na caveira (fora da primeira jogada), você paga uma ficha e recua para a casa 6. Se sua jogada passar da 64, você recua o que sobrar.'
+    ],
+    stuckLog: (name)=> name+' continua preso nas garras do leão. Aguardando outro jogador alcançá-lo.',
+    rollLog: (name,dice,sum)=> name+' tira '+dice.join('-')+' (soma '+sum+').',
+    threeOnesLog: (name)=> 'Três uns na primeira jogada! '+name+' vence a partida instantaneamente.',
+    threeFivesLog: (name)=> 'Três cincos! '+name+' paga a entrada e salta para a casa 62.',
+    advanceLog: (name,pos)=> name+' avança para a casa '+pos+'.',
+    deerLog: (name)=> 'Casa do veado: '+name+' recebe uma ficha do pote.',
+    deerEmptyLog: 'Casa do veado, mas o pote está vazio.',
+    winLandLog: (name)=> name+' cai exatamente na casa 5. Vence a partida!',
+    thiefLog: (name)=> 'Casa dos ladrões: '+name+' paga uma ficha ao pote.',
+    horseLog: (name)=> 'Casa do cavalo veloz: '+name+' joga de novo.',
+    lionLog: (name)=> 'Casa do leão feroz: '+name+' fica preso.',
+    skullLog: (name)=> 'Caveira: '+name+' paga uma ficha e recua para a casa 6.',
+    bumpLog: (name,otherName,wasStuck,otherPos)=> name+' ocupa a casa de '+otherName+(wasStuck?' e o liberta do leão':'')+'; '+otherName+' volta à casa '+(otherPos||'de partida')+'.',
+    photosEyebrow: 'Fotografias originais',
+    photoCaption: 'O tabuleiro original está na Biblioteca Latino-Americana da Universidade de Tulane.',
+    spaceAlt: (n)=> 'casa '+n
+  }
+};
+let currentLang = 'en';
+function getSavedLang(){
+  try{ const s = window.localStorage.getItem('race-games-lang'); if(s && RG_STRINGS[s]) return s; }catch(e){}
+  return 'en';
+}
+function saveLang(l){ try{ window.localStorage.setItem('race-games-lang', l); }catch(e){} }
+function S(){ return RG_STRINGS[currentLang]; }
+
+function applyStaticI18n(){
+  const s = S();
+  document.getElementById('rgSubtitle').innerHTML = s.subtitle;
+  const eyebrow = document.querySelector('.rg-photos-eyebrow');
+  if(eyebrow) eyebrow.textContent = s.photosEyebrow;
+  const caption = document.getElementById('rg-photo-caption');
+  if(caption) caption.textContent = s.photoCaption;
+  document.querySelectorAll('.rg-lang-btn').forEach(function(btn){
+    btn.style.fontWeight = btn.getAttribute('data-lang')===currentLang ? '700' : '400';
+    btn.style.textDecoration = btn.getAttribute('data-lang')===currentLang ? 'underline' : 'none';
+  });
+}
+document.querySelectorAll('.rg-lang-btn').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    currentLang = btn.getAttribute('data-lang');
+    saveLang(currentLang);
+    applyStaticI18n();
+    renderSidebar();
+  });
+});
+
 function freshState(names){
   return {
     started:true,
     players: names.map((n,i)=>({
-      id:i, name:n || `Jugador ${i+1}`, color: PALETTE[i].hex,
+      id:i, name:n || S().defaultPlayerName(i+1), color: PALETTE[i].hex,
       pos:0, fichas:10, stuck:false, eliminated:false, firstRollDone:false
     })),
     turnIndex:0,
@@ -453,7 +620,7 @@ function renderBoard(){
     const div = document.createElement('div');
     div.className = 'space' + outcomeClass;
     div.id = 'space-'+n;
-    div.innerHTML = `<img class="space-art" src="${SPACE_IMAGES[n]}" alt="casilla ${n}" draggable="false"><div class="num">${n}</div><div class="tokens" id="tok-${n}"></div>`;
+    div.innerHTML = `<img class="space-art" src="${SPACE_IMAGES[n]}" alt="${S().spaceAlt(n)}" draggable="false"><div class="num">${n}</div><div class="tokens" id="tok-${n}"></div>`;
     wrap.appendChild(div);
   }
   layoutSpaces();
@@ -502,28 +669,30 @@ function renderSidebar(){
 }
 
 function setupHTML(){
+  const s = S();
   return `
-    <div class="panel-title">Preparar la partida</div>
-    <label>¿Cuántos jugadores? (2–4)</label>
+    <div class="panel-title">${s.setupTitle}</div>
+    <label>${s.howManyLabel}</label>
     <select id="numPlayers" style="width:100%;padding:8px;font-family:'EB Garamond',serif;font-size:15px;border:1px solid var(--ink);background:var(--paper);">
       <option value="2">2</option>
       <option value="3">3</option>
       <option value="4">4</option>
     </select>
     <div id="nameFields"></div>
-    <button class="full" id="startBtn">Comenzar el juego</button>
+    <button class="full" id="startBtn">${s.startBtn}</button>
     ${rulesHTML()}
   `;
 }
 
 function nameFieldsHTML(n){
+  const s = S();
   let html = '';
   for(let i=0;i<n;i++){
     html += `
       <label style="display:flex;align-items:center;gap:8px;">
-        <span class="swatch" style="background:${PALETTE[i].hex}"></span> Jugador ${i+1}
+        <span class="swatch" style="background:${PALETTE[i].hex}"></span> ${s.playerLabel(i+1)}
       </label>
-      <input type="text" class="pname" placeholder="Nombre (opcional)">
+      <input type="text" class="pname" placeholder="${s.namePlaceholder}">
     `;
   }
   return html;
@@ -537,38 +706,39 @@ function wireSetup(){
   document.getElementById('startBtn').addEventListener('click', ()=>{
     const names = Array.from(document.querySelectorAll('.pname')).map(i=>i.value.trim());
     state = freshState(names);
-    addLog('La partida comienza. Suerte, charros.');
+    addLog(S().gameStartLog);
     renderAll();
   });
 }
 
 function gameHTML(){
+  const s = S();
   const active = state.players[state.turnIndex];
   let banner = '';
   if(state.winner !== null){
     const w = state.players[state.winner];
-    banner = `<div class="winner-banner">🏆 ¡${w.name} gana la partida!</div>`;
+    banner = `<div class="winner-banner">${s.winnerBanner(w.name)}</div>`;
   }
   return `
     ${banner}
-    <div class="panel-title">Turno de ${state.winner===null ? active.name : '—'}</div>
+    <div class="panel-title">${s.turnTitle(state.winner===null ? active.name : null)}</div>
     <div class="status-players">
       ${state.players.map((p,i)=>`
         <div class="status-row ${i===state.turnIndex && state.winner===null?'active':''}">
           <span class="swatch" style="background:${p.color}"></span>
-          <span class="name">${p.name}${p.eliminated?' (fuera)':''}${p.stuck?' 🦁':''}</span>
-          <span class="pos">casilla ${p.pos||'—'} · ${p.fichas} fichas</span>
+          <span class="name">${p.name}${p.eliminated?s.eliminatedSuffix:''}${p.stuck?' 🦁':''}</span>
+          <span class="pos">${s.posText(p.pos||'—', p.fichas)}</span>
         </div>
       `).join('')}
     </div>
-    <div class="pot">Bote común: ${state.pot} ficha${state.pot===1?'':'s'}</div>
+    <div class="pot">${s.potText(state.pot)}</div>
     <div class="dice-row" id="diceRow">
       <div class="die" id="d1">${dieFaceHTML(state.lastDice && state.lastDice[0])}<span class="die-num" id="dn1">${state.lastDice ? state.lastDice[0] : ''}</span></div>
       <div class="die" id="d2">${dieFaceHTML(state.lastDice && state.lastDice[1])}<span class="die-num" id="dn2">${state.lastDice ? state.lastDice[1] : ''}</span></div>
       <div class="die" id="d3">${dieFaceHTML(state.lastDice && state.lastDice[2])}<span class="die-num" id="dn3">${state.lastDice ? state.lastDice[2] : ''}</span></div>
     </div>
-    <button class="full" id="rollBtn" ${state.winner!==null?'disabled':''}>Tirar los dados</button>
-    <button class="full secondary" id="resetBtn">Nueva partida</button>
+    <button class="full" id="rollBtn" ${state.winner!==null?'disabled':''}>${s.rollBtn}</button>
+    <button class="full secondary" id="resetBtn">${s.newGameBtn}</button>
     <div class="log" id="logBox">
       ${state.log.map(l=>`<p>${l}</p>`).join('')}
     </div>
@@ -577,18 +747,12 @@ function gameHTML(){
 }
 
 function rulesHTML(){
+  const s = S();
   return `
     <details class="rules">
-      <summary>Ver la explicación original (traducida)</summary>
+      <summary>${s.rulesSummary}</summary>
       <ol>
-        <li>Para ganar, saca tres unos en tu primer tiro; si caes en la calavera, pierdes sin remedio.</li>
-        <li>Si en el primer tiro sacas tres cincos, vas directo a la casilla 62 y sigues jugando.</li>
-        <li>Si caes en una casilla de venado, cobras del bote; si caes justo en la casilla 5, ganas el juego.</li>
-        <li>Si caes en una casilla de ladrones, pagas al bote.</li>
-        <li>Si caes en el caballo, tiras de nuevo.</li>
-        <li>Si caes en el león, quedas atrapado hasta que otro jugador te alcance.</li>
-        <li>Si caes en una casilla ocupada, ese jugador vuelve a tu casilla anterior.</li>
-        <li>Si caes en la calavera (fuera del primer tiro), pagas una ficha y retrocedes a la casilla 6. Si tu tiro pasa de la 64, retrocedes lo que sobre.</li>
+        ${s.rulesItems.map(li=>`<li>${li}</li>`).join('')}
       </ol>
     </details>
   `;
@@ -611,7 +775,7 @@ function doRoll(){
   if(player.eliminated){ nextTurn(); renderAll(); return; }
 
   if(player.stuck){
-    addLog(`${player.name} sigue entre las garras del león. Espera a que otro jugador lo alcance.`);
+    addLog(S().stuckLog(player.name));
     nextTurn(); renderAll(); return;
   }
 
@@ -636,13 +800,14 @@ function doRoll(){
 }
 
 function resolveRoll(player, dice){
+  const s = S();
   const sum = dice.reduce((a,b)=>a+b,0);
   const isFirst = !player.firstRollDone;
   player.firstRollDone = true;
-  addLog(`${player.name} tira ${dice.join('-')} (suma ${sum}).`);
+  addLog(s.rollLog(player.name, dice, sum));
 
   if(isFirst && dice.every(d=>d===1)){
-    addLog(`¡Tres unos en el primer tiro! ${player.name} gana la partida al instante.`);
+    addLog(s.threeOnesLog(player.name));
     state.winner = player.id;
     return;
   }
@@ -650,7 +815,7 @@ function resolveRoll(player, dice){
     player.pos = 62;
     player.fichas = Math.max(0, player.fichas-1);
     state.pot += 1;
-    addLog(`¡Tres cincos! ${player.name} paga su entrada y salta a la casilla 62.`);
+    addLog(s.threeFivesLog(player.name));
     checkOccupancyBump(player);
     advanceTurn(player, false);
     return;
@@ -659,7 +824,7 @@ function resolveRoll(player, dice){
   let newPos = player.pos + sum;
   if(newPos > 64) newPos = 64 - (newPos - 64);
   player.pos = newPos;
-  addLog(`${player.name} avanza a la casilla ${player.pos}.`);
+  addLog(s.advanceLog(player.name, player.pos));
 
   const bumped = checkOccupancyBump(player);
   let extraTurn = false;
@@ -667,25 +832,25 @@ function resolveRoll(player, dice){
   if(!bumped){
     const type = SPACE_TYPES[player.pos];
     if(type === 'deer'){
-      if(state.pot > 0){ state.pot -= 1; player.fichas += 1; addLog(`Casilla del venado: ${player.name} cobra una ficha del bote.`); }
-      else addLog(`Casilla del venado, pero el bote está vacío.`);
+      if(state.pot > 0){ state.pot -= 1; player.fichas += 1; addLog(s.deerLog(player.name)); }
+      else addLog(s.deerEmptyLog);
     } else if(type === 'win'){
-      addLog(`${player.name} cae justo en la casilla 5. ¡Gana la partida!`);
+      addLog(s.winLandLog(player.name));
       state.winner = player.id;
       return;
     } else if(type === 'thief'){
       if(player.fichas > 0){ player.fichas -= 1; state.pot += 1; }
-      addLog(`Casilla de los ladrones: ${player.name} paga una ficha al bote.`);
+      addLog(s.thiefLog(player.name));
     } else if(type === 'horse'){
-      addLog(`Casilla del caballo ligero: ${player.name} tira de nuevo.`);
+      addLog(s.horseLog(player.name));
       extraTurn = true;
     } else if(type === 'lion'){
       player.stuck = true;
-      addLog(`Casilla del león fuerte: ${player.name} queda atrapado.`);
+      addLog(s.lionLog(player.name));
     } else if(type === 'skull'){
       if(player.fichas > 0){ player.fichas -= 1; state.pot += 1; }
       player.pos = 6;
-      addLog(`Calavera: ${player.name} paga una ficha y retrocede a la casilla 6.`);
+      addLog(s.skullLog(player.name));
     }
   }
 
@@ -698,7 +863,7 @@ function checkOccupancyBump(player){
     const wasStuck = other.stuck;
     other.stuck = false;
     other.pos = player.previousPos ?? 0;
-    addLog(`${player.name} ocupa la casilla de ${other.name}${wasStuck ? ' y lo libera del león' : ''}; ${other.name} vuelve a la casilla ${other.pos || 'de salida'}.`);
+    addLog(S().bumpLog(player.name, other.name, wasStuck, other.pos));
     return true;
   }
   return false;
@@ -733,6 +898,8 @@ function renderAll(){
   renderSidebar();
   if(state) renderTokens();
 }
+currentLang = getSavedLang();
+applyStaticI18n();
 renderAll();
 </script>
 <style>
@@ -793,6 +960,7 @@ renderAll();
   document.addEventListener('keydown', function(e){
     if (e.key === 'Escape') closeLightbox();
   });
+  if (typeof applyStaticI18n === 'function') applyStaticI18n();
 })();
 </script>
 </body>
