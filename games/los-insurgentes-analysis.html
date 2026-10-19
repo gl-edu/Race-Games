@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Analyze: Los Insurgentes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700;800;900&family=Libre+Franklin:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #FAFAF7;
+    --paper-dim: #F0EFEA;
+    --ink: #14161A;
+    --ink-soft: #55585F;
+    --line: #DCDBD4;
+    --red: #E8402C;
+    --indigo: #7A5C0E; /* accent (deep gold) */
+    --indigo-soft: #E6E9EF;
+  }
+  *{ box-sizing: border-box; }
+  html, body{ margin: 0; background: var(--paper); color: var(--ink); }
+  body{
+    font-family: 'Libre Franklin', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  button{ font-family: inherit; }
+
+  /* ---------- Back pill ---------- */
+  .back-pill{
+    position: fixed; top: 14px; left: 14px; z-index: 9999;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; background: var(--ink); color: var(--paper);
+    text-decoration: none; font-size: 12px; font-weight: 600; letter-spacing: 0.03em;
+    border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,0.25); opacity: 0.85;
+  }
+  .back-pill:hover{ opacity: 1; }
+
+  .wrap{ max-width: 1280px; margin: 0 auto; padding: 0 28px; }
+
+  /* ---------- Language toggle ---------- */
+  .langbar{ display: flex; justify-content: flex-end; padding: 18px 0 0; }
+  .langtoggle{ display: inline-flex; align-items: center; gap: 2px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em; }
+  .langtoggle button{
+    font: inherit; letter-spacing: inherit; background: none; border: none; cursor: pointer;
+    color: var(--ink-soft); padding: 6px 8px; border-radius: 6px;
+    transition: color .15s ease, background .15s ease;
+  }
+  .langtoggle button:hover{ color: var(--ink); }
+  .langtoggle button[aria-pressed="true"]{ color: var(--ink); background: var(--paper-dim); }
+  .langtoggle .sep{ color: var(--line); }
+
+  /* ---------- Header ---------- */
+  header.intro{ padding: 22px 0 26px; border-bottom: 2px solid var(--ink); margin-bottom: 30px; }
+  .eyebrow{
+    font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--indigo); margin: 0 0 10px;
+  }
+  h1{
+    font-family: 'Bitter', serif; font-weight: 900; text-transform: uppercase;
+    font-size: clamp(30px, 5vw, 54px); line-height: 1.02; letter-spacing: -0.01em; margin: 0 0 12px;
+  }
+  .intro-row{ display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: flex-end; justify-content: space-between; }
+  .hint{ margin: 0; color: var(--ink-soft); font-size: 15px; max-width: 620px; }
+  .play-link{
+    display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+    font-weight: 700; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--paper); background: var(--indigo); padding: 12px 18px; border-radius: 2px;
+  }
+  .play-link:hover{ transform: translateX(2px); }
+
+  /* ---------- Analysis layout ---------- */
+  .analysis{
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(200px, 1fr) auto minmax(200px, 1fr);
+    gap: 0 36px;
+    align-items: start;
+    padding: 44px 0 70px;
+  }
+  .col{ position: relative; align-self: stretch; }
+  .leaders{ position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; z-index: 3; transition: opacity .3s ease; }
+  .leaders line{ stroke: var(--ink); stroke-width: 1.25; }
+  .leaders circle{ fill: var(--ink); }
+
+  /* Callout labels around the image */
+  .callout{
+    position: absolute; left: 0; right: 0;
+    display: block; width: 100%; text-align: left;
+    background: #fff; border: 1.5px solid var(--ink); border-radius: 2px;
+    padding: 10px 12px 10px; cursor: pointer; z-index: 2;
+    box-shadow: 3px 3px 0 var(--ink);
+    transition: transform .15s ease, box-shadow .15s ease, opacity .3s ease;
+    color: var(--ink);
+  }
+  .callout:hover, .callout:focus-visible{ transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--indigo); outline: none; }
+  .callout .num{
+    display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--red); color: #fff; font-size: 11px; font-weight: 800; margin-right: 8px; vertical-align: 1px;
+  }
+  .callout .ct{ font-family: 'Bitter', serif; font-weight: 800; font-size: 15.5px; text-transform: uppercase; letter-spacing: 0.01em; }
+  .callout .cl{ display: block; margin-top: 4px; font-size: 12.5px; line-height: 1.45; color: var(--ink-soft); }
+  .callout .more{ display: block; margin-top: 7px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--indigo); }
+
+  /* The image frame */
+  .stage-col{ position: relative; z-index: 2; }
+  .frame{
+    position: relative;
+    width: min(calc((100vw - 56px) * 0.52), calc(74vh * 1.405), 800px);
+    aspect-ratio: 1.405;
+    overflow: hidden;
+    background: #d9d3c2;
+    border: 2px solid var(--ink);
+    box-shadow: 6px 6px 0 var(--indigo);
+    touch-action: manipulation;
+  }
+  .layer{
+    position: absolute; left: 0; top: 0;
+    transform-origin: 0 0;
+    transition: transform .75s cubic-bezier(.65,.05,.25,1);
+    will-change: transform;
+  }
+  .layer img{ display: block; width: 100%; height: 100%; user-select: none; -webkit-user-drag: none; }
+  .layer svg{ position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+
+  .hot{ fill: rgba(255,255,255,0); stroke: rgba(232,64,44,0); stroke-width: 2; vector-effect: non-scaling-stroke; cursor: pointer; transition: fill .2s ease, stroke .2s ease; }
+  .hotg:hover .hot, .hotg.hover .hot{ fill: rgba(232,64,44,0.10); stroke: rgba(232,64,44,0.9); stroke-dasharray: 5 4; }
+  .zoomed .hot{ pointer-events: none; }
+  .zoomed .hotg.active .hot{ stroke: var(--red); stroke-width: 3; stroke-dasharray: none; fill: none; }
+
+  .dim{ fill: rgba(20,22,26,0.55); fill-rule: evenodd; opacity: 0; transition: opacity .5s ease .25s; pointer-events: none; }
+  .zoomed .dim{ opacity: 1; }
+
+
+  /* Numbered badges on the image */
+  .badge{
+    position: absolute; z-index: 3; width: 28px; height: 28px; margin: -14px 0 0 -14px;
+    border-radius: 50%; border: 2px solid #fff; background: var(--red); color: #fff;
+    font-weight: 800; font-size: 13px; cursor: pointer; display: grid; place-items: center; padding: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,.35);
+    transition: opacity .25s ease, transform .2s ease;
+  }
+  .badge::after{
+    content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid var(--red);
+    animation: pulse 2.4s ease-out infinite; opacity: 0;
+  }
+  @keyframes pulse{ 0%{ transform: scale(.7); opacity: .8; } 80%,100%{ transform: scale(1.5); opacity: 0; } }
+  .badge:hover{ transform: scale(1.12); }
+  .zoomed .badge{ opacity: 0; pointer-events: none; }
+
+  /* Back-to-full-view button over the frame */
+  .reset{
+    position: absolute; z-index: 4; top: 12px; left: 12px;
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--paper); color: var(--ink); border: 1.5px solid var(--ink); border-radius: 999px;
+    padding: 7px 13px; font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; cursor: pointer;
+    opacity: 0; pointer-events: none; transform: translateY(-6px); transition: opacity .25s ease, transform .25s ease;
+  }
+  .zoomed .reset{ opacity: 1; pointer-events: auto; transform: none; transition-delay: .4s; }
+
+  /* "What am I playing?" tab on the border */
+  .kika-tab{
+    position: absolute; z-index: 5; left: 50%; top: -40px; transform: translateX(-50%);
+    display: inline-flex; align-items: center; gap: 10px; white-space: nowrap;
+    background: var(--indigo); color: var(--paper); border: 2px solid var(--ink); border-bottom: none;
+    border-radius: 6px 6px 0 0; padding: 10px 18px 9px;
+    font-family: 'Bitter', serif; font-weight: 800; font-size: 15px; letter-spacing: .02em; text-transform: uppercase;
+    cursor: pointer; box-shadow: 4px -2px 0 var(--ink);
+    transition: background .2s ease, top .2s ease;
+  }
+  .kika-tab:hover{ background: #5e470a; top: -44px; }
+  .kika-tab .plus{ display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--paper); color: var(--indigo); font-family: 'Libre Franklin', sans-serif; font-size: 15px; line-height: 1; }
+
+  /* Explanation panel (shown while zoomed) */
+  .panel{
+    position: absolute; z-index: 6; top: 0; left: 0; right: 0;
+    background: #fff; border: 2px solid var(--ink); box-shadow: 6px 6px 0 var(--ink);
+    padding: 22px 22px 18px;
+    opacity: 0; transform: translateX(14px); pointer-events: none;
+    transition: opacity .3s ease, transform .35s ease;
+    max-height: 100%; overflow: auto;
+  }
+  .is-zoomed .panel{ opacity: 1; transform: none; pointer-events: auto; transition-delay: .35s; }
+  .panel .p-top{ display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .panel .p-num{ font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--red); }
+  .panel .p-close{ background: none; border: none; font-size: 22px; line-height: 1; cursor: pointer; color: var(--ink-soft); padding: 2px 4px; }
+  .panel .p-close:hover{ color: var(--ink); }
+  .panel h2{ font-family: 'Bitter', serif; font-weight: 800; font-size: 24px; line-height: 1.1; text-transform: uppercase; margin: 0 0 14px; }
+  .panel .p-body p{ margin: 0 0 12px; font-size: 15px; line-height: 1.62; }
+  .placeholder{ color: #8a8c91; font-style: italic; }
+  .panel .p-nav{ display: flex; justify-content: space-between; gap: 8px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .panel .p-nav button{
+    background: none; border: 1.5px solid var(--ink); border-radius: 2px; padding: 8px 12px; cursor: pointer;
+    font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink);
+  }
+  .panel .p-nav button:hover{ background: var(--ink); color: var(--paper); }
+
+  .is-zoomed .callout, .is-zoomed .leaders{ opacity: 0; pointer-events: none; }
+
+  .credit{ margin: 0; font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; max-width: 640px; }
+
+  /* Topic list (small screens) */
+  .topics{ display: none; }
+
+  /* ---------- Modal ---------- */
+  .modal-back{
+    position: fixed; inset: 0; z-index: 10000; background: rgba(20,22,26,.6);
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+    opacity: 0; pointer-events: none; transition: opacity .25s ease;
+  }
+  .modal-back.open{ opacity: 1; pointer-events: auto; }
+  .modal{
+    position: relative; width: min(820px, 100%); max-height: calc(100vh - 48px); overflow: auto;
+    background: var(--paper); border: 2px solid var(--ink); box-shadow: 8px 8px 0 var(--indigo);
+    padding: 42px clamp(22px, 5vw, 56px) 40px;
+    transform: translateY(14px) scale(.98); transition: transform .3s ease;
+  }
+  .modal-back.open .modal{ transform: none; }
+  .modal .m-close{ position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 28px; line-height: 1; cursor: pointer; color: var(--ink-soft); }
+  .modal .m-close:hover{ color: var(--ink); }
+  .modal h2{ font-family: 'Bitter', serif; font-weight: 900; text-transform: uppercase; font-size: clamp(28px, 4vw, 42px); line-height: 1.05; margin: 0 0 22px; padding-bottom: 18px; border-bottom: 2px solid var(--ink); }
+  .modal .m-body p{ font-size: 17px; line-height: 1.7; margin: 0 0 16px; }
+
+  /* ---------- Small screens ---------- */
+  @media (max-width: 960px){
+    .analysis{ grid-template-columns: 1fr; padding: 0 0 40px; }
+    .col.side, .leaders{ display: none; }
+    .stage-col{ display: flex; flex-direction: column; align-items: center; }
+    .frame{ width: 100%; }
+    .panel{ position: relative; display: none; margin-top: 18px; width: 100%; transform: none; max-height: none; }
+    .is-zoomed .panel{ display: block; }
+    .kika-tab{ position: relative; left: auto; top: auto; transform: none; margin-bottom: -2px; }
+    .kika-tab:hover{ top: auto; }
+    .topics{ display: grid; gap: 10px; width: 100%; margin-top: 24px; }
+    .is-zoomed .topics{ display: none; }
+    .topics button{
+      display: flex; align-items: center; gap: 10px; text-align: left; width: 100%;
+      background: #fff; border: 1.5px solid var(--ink); border-radius: 2px; padding: 12px 14px; cursor: pointer;
+      font-family: 'Bitter', serif; font-weight: 800; font-size: 15px; text-transform: uppercase; color: var(--ink);
+    }
+    .topics .num{ display: inline-grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--red); color: #fff; font-family: 'Libre Franklin', sans-serif; font-size: 11px; font-weight: 800; }
+    .credit{ margin-top: 26px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .layer, .panel, .callout, .badge::after{ transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<a class="back-pill" href="../index.html">&larr;&nbsp;RACE GAMES</a>
+
+<div class="wrap">
+  <div class="langbar">
+    <div class="langtoggle" role="group" aria-label="Language">
+      <button type="button" data-lang="en" aria-pressed="true">EN</button>
+      <span class="sep">/</span>
+      <button type="button" data-lang="es" aria-pressed="false">ES</button>
+      <span class="sep">/</span>
+      <button type="button" data-lang="pt" aria-pressed="false">PT</button>
+    </div>
+  </div>
+
+  <header class="intro">
+    <p class="eyebrow" data-i18n="eyebrow">Let's analyze the game</p>
+    <h1>Los Insurgentes</h1>
+    <div class="intro-row">
+      <p class="hint" data-i18n="hint">Click a numbered area — or one of the labels — to zoom in and read about it.</p>
+      <a class="play-link" href="los-insurgentes-map.html"><span data-i18n="playLink">Play the game</span> <span>→</span></a>
+    </div>
+  </header>
+
+  <section class="analysis" id="analysis">
+    <svg class="leaders" id="leaders" aria-hidden="true"></svg>
+
+    <div class="col side" id="colLeft"></div>
+
+    <div class="stage-col">
+      <button type="button" class="kika-tab" id="kikaTab"><span data-i18n="kikaTab">What am I playing?</span> <span class="plus">+</span></button>
+      <div class="frame" id="frame">
+        <div class="layer" id="layer">
+          <img src="../images/los-insurgentes-board.jpg" alt="Los Insurgentes, a historical race game by Antonio García Cubas printed over a map of Mexico, 1891" id="boardImg">
+          <svg id="overlay" viewBox="0 0 1400 1050" preserveAspectRatio="none"></svg>
+        </div>
+        <button type="button" class="reset" id="reset">← <span data-i18n="reset">Full view</span></button>
+      </div>
+
+      <div class="topics" id="topics"></div>
+    </div>
+
+    <div class="col side" id="colRight">
+      <aside class="panel" id="panel" aria-live="polite">
+        <div class="p-top">
+          <span class="p-num" id="pNum"></span>
+          <button type="button" class="p-close" id="pClose" aria-label="Close">×</button>
+        </div>
+        <h2 id="pTitle"></h2>
+        <div class="p-body" id="pBody"></div>
+        <div class="p-nav">
+          <button type="button" id="pPrev">← <span data-i18n="prev">Previous</span></button>
+          <button type="button" id="pNext"><span data-i18n="next">Next</span> →</button>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <p class="credit" data-i18n="credit">Los Insurgentes, juego histórico para niños, by Antonio García Cubas, Mexico City, 1891. Original board located at the Museum of Archaeology and Anthropology, University of Cambridge.</p>
+</div>
+
+<div class="modal-back" id="modalBack" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <button type="button" class="m-close" id="mClose" aria-label="Close">×</button>
+    <p class="eyebrow" data-i18n="eyebrow">Let's analyze the game</p>
+    <h2 id="mTitle"></h2>
+    <div class="m-body" id="mBody"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  /* =====================================================================
+     ✏️  EDIT YOUR TEXT HERE
+     ---------------------------------------------------------------------
+     Each area has a short "label" (shown in the box beside the image)
+     and a "body" (shown when the area is clicked). "body" is a list of
+     paragraphs — add as many as you like, each in "quotes", separated
+     by commas. Any paragraph that starts with "[" is styled as a grey
+     placeholder, so you can see at a glance what still needs writing.
+     ===================================================================== */
+  var CONTENT = {
+    heroes: {
+      en: { title: "The heroes' gallery", label: "Eight portraits turn the independence war into a pantheon of great men.",
+            body: ["In the top right corner, beneath an eagle with spread wings, the title announces “Los Insurgentes, a historical game for children, by Antonio García Cubas, 1891.” Around it hang eight framed portraits, Allende, Iturbide, Guerrero, Matamoros, Nicolás Bravo, Morelos, Hidalgo and Mina, drawn like engraved calling cards.",
+                   "The gallery tells players how to read everything else on the board. Independence is the work of individual leaders, each with a face and a name. García Cubas wrote history this way throughout his career, as a story of great men who led the nation forward.",
+                   "The portraits also smooth over real differences between these men. Mina was a Spaniard who crossed the Atlantic to fight Spain. Iturbide spent most of the war as a royalist officer hunting insurgents. Guerrero, often described as having African and Indigenous ancestry, appears in the same formal dress and engraving style as the others. In the gallery they all become one national family.",
+                   "What the gallery leaves out is just as telling. Tens of thousands of mostly Indigenous and mestizo farmworkers, miners and townspeople filled the insurgent armies. On the board they appear only as numbers in the space texts, 300 men leaving Dolores, 50,000 at Celaya, 80,000 at Calderón, but never as faces."] },
+      es: { title: "La galería de héroes", label: "Ocho retratos convierten la guerra de independencia en un panteón de grandes hombres.",
+            body: ["En la esquina superior derecha, bajo un águila con las alas abiertas, el título anuncia «Los Insurgentes, juego histórico para niños, por Antonio García Cubas, 1891». A su alrededor cuelgan ocho retratos enmarcados, Allende, Iturbide, Guerrero, Matamoros, Nicolás Bravo, Morelos, Hidalgo y Mina, dibujados como tarjetas de visita grabadas.",
+                   "La galería les indica a los jugadores cómo leer todo lo demás en el tablero. La independencia es obra de líderes individuales, cada uno con rostro y nombre. García Cubas escribió la historia de esta manera a lo largo de su carrera, como el relato de grandes hombres que llevaron adelante a la nación.",
+                   "Los retratos también suavizan diferencias reales entre estos hombres. Mina era un español que cruzó el Atlántico para combatir a España. Iturbide pasó la mayor parte de la guerra como oficial realista persiguiendo insurgentes. Guerrero, a quien a menudo se describe con ascendencia africana e indígena, aparece con la misma vestimenta formal y el mismo estilo de grabado que los demás. En la galería, todos se vuelven una sola familia nacional.",
+                   "Lo que la galería deja fuera es igual de revelador. Decenas de miles de campesinos, mineros y habitantes de los pueblos, en su mayoría indígenas y mestizos, llenaron los ejércitos insurgentes. En el tablero solo aparecen como cifras en los textos de las casillas, 300 hombres al salir de Dolores, 50,000 en Celaya, 80,000 en Calderón, pero nunca como rostros."] },
+      pt: { title: "A galeria de heróis", label: "Oito retratos transformam a guerra de independência num panteão de grandes homens.",
+            body: ["No canto superior direito, sob uma águia de asas abertas, o título anuncia “Los Insurgentes, jogo histórico para crianças, por Antonio García Cubas, 1891”. Em volta dele estão oito retratos emoldurados, Allende, Iturbide, Guerrero, Matamoros, Nicolás Bravo, Morelos, Hidalgo e Mina, desenhados como cartões de visita gravados.",
+                   "A galeria ensina aos jogadores como ler todo o resto do tabuleiro. A independência é obra de líderes individuais, cada um com rosto e nome. García Cubas escreveu a história desse modo ao longo de toda a sua carreira, como o relato de grandes homens que conduziram a nação adiante.",
+                   "Os retratos também atenuam diferenças reais entre esses homens. Mina era um espanhol que atravessou o Atlântico para combater a Espanha. Iturbide passou a maior parte da guerra como oficial realista perseguindo insurgentes. Guerrero, frequentemente descrito como de ascendência africana e indígena, aparece com a mesma roupa formal e o mesmo estilo de gravura que os demais. Na galeria, todos se tornam uma única família nacional.",
+                   "O que a galeria deixa de fora é igualmente revelador. Dezenas de milhares de lavradores, mineiros e moradores dos povoados, em sua maioria indígenas e mestiços, encheram os exércitos insurgentes. No tabuleiro eles aparecem apenas como números nos textos das casas, 300 homens saindo de Dolores, 50.000 em Celaya, 80.000 em Calderón, mas nunca como rostos."] }
+    },
+    dolores: {
+      en: { title: "Dolores, where everyone starts", label: "Every game begins with Hidalgo's call to revolt in 1810.",
+            body: ["Space 1, marked by a small square near the center of the map, is Dolores. The booklet's text for it recalls Father Hidalgo, Allende and Aldama raising the cry of insurrection at dawn on September 16, 1810. The very first roll of the game is made with a single die, so that a player who rolls a one lands on Dolores and collects four tantos at once. The next steps follow Hidalgo to Atotonilco, where he takes up a banner of the Virgin of Guadalupe, and on to Guanajuato.",
+                   "The booklet frames these first steps with care. Hidalgo's army is formed from “the peasants gathered by the ringing of the bell,” who are never named. The Virgin's banner, meanwhile, is compared to the standard of Covadonga, the legendary first victory of Christian Spain against the Moors. Even at its starting line, the Mexican nation is given a Spanish founding story.",
+                   "Starting here fixes the nation's origin story. No player can begin anywhere else, and no earlier history appears on the board. Mexico's past starts with a priest's call to arms in 1810, the same date the Porfirian state celebrated every September 16.",
+                   "Look at how crowded this corner of the map is. Hidalgo's red route, Mina's blue route and Iturbide's dashed route all wind through the Bajío, the farming and mining region around Guanajuato. A token that leaves Dolores early in the game comes back to these same towns dozens of spaces later, under a different leader and years later in time. The repetition teaches that this region is the heart of the patria, the place the nation keeps returning to."] },
+      es: { title: "Dolores, donde todos empiezan", label: "Cada partida comienza con el llamado de Hidalgo a la rebelión en 1810.",
+            body: ["La casilla 1, marcada con un pequeño cuadro cerca del centro del mapa, es Dolores. El texto del folleto recuerda al cura Hidalgo, a Allende y a Aldama lanzando el grito de insurrección en la madrugada del 16 de septiembre de 1810. La primera tirada del juego se hace con un solo dado, de modo que quien saca un punto cae en Dolores y obtiene desde luego cuatro tantos. Los pasos siguientes acompañan a Hidalgo a Atotonilco, donde toma un estandarte de la Virgen de Guadalupe, y luego a Guanajuato.",
+                   "El folleto enmarca estos primeros pasos con cuidado. El ejército de Hidalgo se forma «con los campesinos congregados al toque de campana», que nunca reciben nombre. El estandarte de la Virgen, por su parte, se compara con el de Covadonga, la legendaria primera victoria de la España cristiana contra los moros. Incluso en su punto de partida, a la nación mexicana se le da un relato fundacional español.",
+                   "Empezar aquí fija el relato de origen de la nación. Ningún jugador puede comenzar en otro lugar, y en el tablero no aparece ninguna historia anterior. El pasado de México empieza con el llamado a las armas de un cura en 1810, la misma fecha que el Estado porfiriano celebraba cada 16 de septiembre.",
+                   "Observa lo poblado que está este rincón del mapa. La ruta roja de Hidalgo, la azul de Mina y la línea tricolor de Iturbide serpentean por el Bajío, la región agrícola y minera en torno a Guanajuato. Una ficha que sale de Dolores al principio del juego regresa a estos mismos pueblos decenas de casillas después, bajo otro caudillo y años más tarde. La repetición enseña que esta región es el corazón de la patria, el lugar al que la nación siempre vuelve."] },
+      pt: { title: "Dolores, onde todos começam", label: "Toda partida começa com o chamado de Hidalgo à revolta em 1810.",
+            body: ["A casa 1, marcada por um pequeno quadrado perto do centro do mapa, é Dolores. O texto do folheto lembra o padre Hidalgo, Allende e Aldama lançando o grito de insurreição na madrugada de 16 de setembro de 1810. O primeiro lance da partida é feito com um só dado, de modo que quem tira um cai em Dolores e ganha logo quatro tantos. Os passos seguintes acompanham Hidalgo até Atotonilco, onde ele toma um estandarte da Virgem de Guadalupe, e depois até Guanajuato.",
+                   "O folheto enquadra esses primeiros passos com cuidado. O exército de Hidalgo se forma com “os camponeses reunidos ao toque do sino”, que nunca recebem nome. O estandarte da Virgem, por sua vez, é comparado ao de Covadonga, a lendária primeira vitória da Espanha cristã contra os mouros. Mesmo na linha de partida, a nação mexicana ganha um relato fundador espanhol.",
+                   "Começar aqui fixa o relato de origem da nação. Nenhum jogador pode começar em outro lugar, e nenhuma história anterior aparece no tabuleiro. O passado do México começa com o chamado às armas de um padre em 1810, a mesma data que o Estado porfiriano celebrava todo 16 de setembro.",
+                   "Repare em como este canto do mapa está cheio. A rota vermelha de Hidalgo, a azul de Mina e a tricolor de Iturbide serpenteiam pelo Bajío, a região agrícola e mineira em torno de Guanajuato. Uma ficha que sai de Dolores no começo do jogo volta a essas mesmas cidades dezenas de casas depois, sob outro líder e anos mais tarde. A repetição ensina que essa região é o coração da pátria, o lugar ao qual a nação sempre retorna."] }
+    },
+    north: {
+      en: { title: "Betrayal in the north", label: "The most dangerous stretch of the board, where treason sends you back to the start.",
+            body: ["In the upper left, Hidalgo's red route climbs north through the desert toward the United States, where the leaders hoped to find weapons. At space 38, Acatita de Baján, they were betrayed by Ignacio Elizondo and captured in March 1811. From there the route follows the prisoners through Monclova, Mapimí and Santa Rosalía to space 46, Chihuahua, where Allende, Aldama and Jiménez were shot in June and Hidalgo in July.",
+                   "The rules turn this history into the harshest part of the game. The booklet says treason “is punished severely,” and a player who lands on 38 starts the whole game over from Dolores. Landing on 46 costs four tantos and sends the player back to Saltillo (37), one step before the betrayal, so a bad roll can trap a player in the same loop again.",
+                   "Here players do not just read about the leaders' fall, they suffer it as a loss of money and progress. Betrayal and execution become the costliest events in the nation's story, and loyalty to the cause becomes something the game rewards.",
+                   "The next space shows how freely the game stitches the war together. After Chihuahua, space 47 is Carácuaro, Morelos's parish, more than a thousand kilometers south. The booklet tells players to “follow the red line that joins space 46, Chihuahua, with 47, Carácuaro,” and the map draws it, one long red stroke running diagonally across the country. The game literally draws a line between two separate uprisings so that they read as one continuous road."] },
+      es: { title: "Traición en el norte", label: "El tramo más peligroso del tablero, donde la traición te devuelve al principio.",
+            body: ["Arriba a la izquierda, la ruta roja de Hidalgo sube hacia el norte por el desierto rumbo a los Estados Unidos, donde los caudillos esperaban conseguir armas. En la casilla 38, Acatita de Baján, fueron traicionados por Ignacio Elizondo y apresados en marzo de 1811. Desde allí la ruta sigue a los prisioneros por Monclova, Mapimí y Santa Rosalía hasta la casilla 46, Chihuahua, donde Allende, Aldama y Jiménez fueron fusilados en junio e Hidalgo en julio.",
+                   "Las reglas convierten esta historia en la parte más dura del juego. El folleto dice que «la traición debe ser severamente castigada», y el jugador que cae en la 38 comenzará el juego de nuevo desde Dolores. Caer en la 46 cuesta cuatro tantos y obliga a retroceder al Saltillo (37), un paso antes de la traición, así que una mala tirada puede atrapar al jugador otra vez en el mismo ciclo.",
+                   "Aquí los jugadores no solo leen sobre la caída de los caudillos, la sufren como una pérdida de dinero y de avance. La traición y la ejecución se vuelven los episodios más costosos del relato nacional, y la lealtad a la causa se vuelve algo que el juego premia.",
+                   "La casilla siguiente muestra con cuánta libertad el juego cose la guerra. Después de Chihuahua, la casilla 47 es Carácuaro, la parroquia de Morelos, a más de mil kilómetros al sur. El folleto indica «sígase la línea roja que une las casillas 46, ó sea Chihuahua, con la 47, Carácuaro», y el mapa la traza, un largo trazo rojo que cruza el país en diagonal. El juego literalmente dibuja una línea entre dos levantamientos distintos para que se lean como un solo camino continuo."] },
+      pt: { title: "Traição no norte", label: "O trecho mais perigoso do tabuleiro, onde a traição manda você de volta ao início.",
+            body: ["No alto à esquerda, a rota vermelha de Hidalgo sobe para o norte pelo deserto em direção aos Estados Unidos, onde os líderes esperavam conseguir armas. Na casa 38, Acatita de Baján, eles foram traídos por Ignacio Elizondo e capturados em março de 1811. Dali a rota acompanha os prisioneiros por Monclova, Mapimí e Santa Rosalía até a casa 46, Chihuahua, onde Allende, Aldama e Jiménez foram fuzilados em junho e Hidalgo em julho.",
+                   "As regras transformam essa história na parte mais dura do jogo. O folheto diz que a traição “deve ser severamente castigada”, e o jogador que cai na 38 recomeça o jogo inteiro a partir de Dolores. Cair na 46 custa quatro tantos e manda o jogador de volta a Saltillo (37), um passo antes da traição, então um lance ruim pode prender o jogador outra vez no mesmo ciclo.",
+                   "Aqui os jogadores não apenas leem sobre a queda dos líderes, eles a sofrem como perda de dinheiro e de progresso. A traição e a execução tornam-se os episódios mais caros da história nacional, e a lealdade à causa torna-se algo que o jogo recompensa.",
+                   "A casa seguinte mostra com quanta liberdade o jogo costura a guerra. Depois de Chihuahua, a casa 47 é Carácuaro, a paróquia de Morelos, a mais de mil quilômetros ao sul. O folheto manda “seguir a linha vermelha que une a casa 46, Chihuahua, à 47, Carácuaro”, e o mapa a desenha, um longo traço vermelho que atravessa o país na diagonal. O jogo literalmente traça uma linha entre dois levantes distintos para que sejam lidos como um único caminho contínuo."] }
+    },
+    finish: {
+      en: { title: "The finish line", label: "The race ends in Mexico City, and the player who gets there first wins as Iturbide.",
+            body: ["Space 151 is Mexico City, marked by a small square like Dolores. Its text celebrates the solemn entry of the Army of the Three Guarantees on September 27, 1821, “the Consummation of Independence.” The first player to reach it collects the pot, minus two tantos for the narrator.",
+                   "The last twelve spaces, 140 to 151, follow Agustín de Iturbide's route, from the Plan of Iguala in February 1821 through Valladolid, Querétaro, Puebla and Córdoba, where he signed the treaty with the last viceroy. Landing on Iguala pays four tantos. So whoever wins the game does so in Iturbide's footsteps.",
+                   "That is a striking choice. Iturbide spent most of the war as a royalist officer. Earlier on the same board, at space 94, players lose two tantos when insurgents are defeated outside Valladolid “by Llano and Iturbide.” The booklet does not hide this. It explains that the viceroy put Iturbide in charge of the campaign against the insurgents in the south, and that only after fighting them did he begin writing to Guerrero, which led to “the union of both chiefs.” Iturbide later made himself emperor and remained a divisive figure for nineteenth-century liberals, but García Cubas, who valued moderation, gives him the ending anyway. The game resolves the war as reconciliation, with former enemies united on the road to the capital.",
+                   "Notice, too, what sits just north of the finish. Space 109, San Cristóbal Ecatepec, is where Morelos was executed in 1815. A player who lands there pays four tantos, and the opponent rolls twice. The victory lap ends a short distance from where the insurgency's greatest leader died."] },
+      es: { title: "La meta", label: "La carrera termina en la Ciudad de México, y quien llega primero gana como Iturbide.",
+            body: ["La casilla 151 es la Ciudad de México, marcada con un pequeño cuadro como Dolores. Su texto celebra la «entrada solemne del Ejército de las Tres Garantías» el 27 de septiembre de 1821, la «Consumación de la Independencia». El primer jugador que llega gana los tantos del plato, menos dos que corresponden al relator.",
+                   "Las últimas doce casillas, de la 140 a la 151, siguen la ruta de Agustín de Iturbide, desde el Plan de Iguala en febrero de 1821 hasta Valladolid, Querétaro, Puebla y Córdoba, donde firmó los tratados con el último virrey. Caer en Iguala da cuatro tantos. Así, quien gana el juego lo hace siguiendo los pasos de Iturbide.",
+                   "Es una elección llamativa. Iturbide pasó la mayor parte de la guerra como oficial realista. Antes, en el mismo tablero, en la casilla 94, los jugadores pierden dos tantos cuando los insurgentes son derrotados frente a Valladolid «por Llano e Iturbide». El folleto no lo oculta. Explica que el virrey confió a Iturbide la campaña del Sur contra los independientes, y que solo después de combatirlos entabló correspondencia con Guerrero, de la que resultó «la unión de ambos jefes». Iturbide se proclamó después emperador y siguió siendo una figura polémica para los liberales del siglo XIX, pero García Cubas, que valoraba la moderación, le concede el final de todos modos. El juego resuelve la guerra como reconciliación, con antiguos enemigos unidos en el camino a la capital.",
+                   "Fíjate también en lo que está justo al norte de la meta. La casilla 109, San Cristóbal Ecatepec, es donde Morelos fue fusilado en 1815. El jugador que cae allí paga cuatro tantos y el contrario juega dos veces. La vuelta de la victoria termina a poca distancia del lugar donde murió el más grande caudillo de la insurrección."] },
+      pt: { title: "A chegada", label: "A corrida termina na Cidade do México, e quem chega primeiro vence como Iturbide.",
+            body: ["A casa 151 é a Cidade do México, marcada por um pequeno quadrado como Dolores. Seu texto celebra a entrada solene do Exército das Três Garantias em 27 de setembro de 1821, “a Consumação da Independência”. O primeiro jogador a chegar leva o pote, menos dois tantos para o narrador.",
+                   "As últimas doze casas, da 140 à 151, seguem a rota de Agustín de Iturbide, do Plano de Iguala em fevereiro de 1821 até Valladolid, Querétaro, Puebla e Córdoba, onde ele assinou o tratado com o último vice-rei. Cair em Iguala rende quatro tantos. Assim, quem vence o jogo o faz seguindo os passos de Iturbide.",
+                   "É uma escolha marcante. Iturbide passou a maior parte da guerra como oficial realista. Antes, no mesmo tabuleiro, na casa 94, os jogadores perdem dois tantos quando os insurgentes são derrotados diante de Valladolid “por Llano e Iturbide”. O folheto não esconde isso. Explica que o vice-rei entregou a Iturbide a campanha contra os insurgentes do Sul, e que só depois de combatê-los ele passou a se corresponder com Guerrero, o que levou à “união dos dois chefes”. Iturbide depois se fez imperador e continuou sendo uma figura polêmica para os liberais do século XIX, mas García Cubas, que valorizava a moderação, lhe dá o final mesmo assim. O jogo resolve a guerra como reconciliação, com antigos inimigos unidos no caminho para a capital.",
+                   "Repare também no que fica logo ao norte da chegada. A casa 109, San Cristóbal Ecatepec, é onde Morelos foi fuzilado em 1815. Quem cai ali paga quatro tantos, e o adversário joga duas vezes. A volta da vitória termina a pouca distância de onde morreu o maior líder da insurreição."] }
+    },
+    colonial: {
+      en: { title: "A colonial map", label: "An 1891 map drawn with the borders of 1810, so the nation seems to exist before independence.",
+            body: ["The large words across the map do not name the Mexican states of 1891. They name the divisions of the Spanish viceroyalty, the intendencias of Guadalajara, Valladolid, México, Puebla, Veracruz and Oaxaca, along with older titles like “the Kingdom of New Galicia” and “the Kingdom of New Vizcaya.” García Cubas, the country's leading mapmaker, redrew New Spain as it stood in 1810 so that players would move through the world the insurgents knew.",
+                   "The effect is subtle but powerful. The territory of Mexico is already there, outlined and complete, before the first roll of the dice. As the historian Raymond Craib argues, national maps like García Cubas's helped create the nation they claimed only to show, and once space becomes a fixed stage, history becomes a story with only one possible ending.",
+                   "That confidence was partly an illusion. In 1891, surveyors were still struggling to fix the boundaries of villages and divide their communal lands, much of them held by Indigenous communities who disputed, negotiated and reshaped those surveys. None of that unfinished, contested ground shows on the board. Its clean lines teach children to see Mexico from the state's height, as a territory already settled."] },
+      es: { title: "Un mapa colonial", label: "Un mapa de 1891 dibujado con las divisiones de 1810, para que la nación parezca existir antes de la independencia.",
+            body: ["Las grandes palabras que cruzan el mapa no nombran los estados mexicanos de 1891. Nombran las divisiones del virreinato, las intendencias de Guadalajara, Valladolid, México, Puebla, Veracruz y Oaxaca, junto con títulos más antiguos como «Reino de la Nueva Galicia» y «Reino de la Nueva Vizcaya». García Cubas, el principal cartógrafo del país, volvió a dibujar la Nueva España tal como estaba en 1810 para que los jugadores recorrieran el mundo que conocieron los insurgentes.",
+                   "El efecto es sutil pero poderoso. El territorio de México ya está ahí, delineado y completo, antes de la primera tirada. Como sostiene el historiador Raymond Craib, mapas nacionales como los de García Cubas ayudaron a crear la nación que decían solo representar, y cuando el espacio se vuelve un escenario fijo, la historia se convierte en un relato con un único final posible.",
+                   "Esa seguridad era en parte una ilusión. En 1891, los agrimensores todavía batallaban para fijar los linderos de los pueblos y repartir sus tierras comunales, muchas de ellas en manos de comunidades indígenas que disputaban, negociaban y transformaban esas mediciones. Nada de ese terreno inacabado y disputado aparece en el tablero. Sus líneas limpias enseñan a los niños a ver México desde la altura del Estado, como un territorio ya resuelto."] },
+      pt: { title: "Um mapa colonial", label: "Um mapa de 1891 desenhado com as divisões de 1810, para que a nação pareça existir antes da independência.",
+            body: ["As grandes palavras que atravessam o mapa não nomeiam os estados mexicanos de 1891. Nomeiam as divisões do vice-reino espanhol, as intendências de Guadalajara, Valladolid, México, Puebla, Veracruz e Oaxaca, junto com títulos mais antigos como “Reino da Nova Galícia” e “Reino da Nova Biscaia”. García Cubas, o principal cartógrafo do país, redesenhou a Nova Espanha como era em 1810 para que os jogadores percorressem o mundo que os insurgentes conheceram.",
+                   "O efeito é sutil, mas poderoso. O território do México já está ali, delineado e completo, antes do primeiro lance de dados. Como argumenta o historiador Raymond Craib, mapas nacionais como os de García Cubas ajudaram a criar a nação que diziam apenas mostrar, e quando o espaço se torna um palco fixo, a história vira um relato com um único final possível.",
+                   "Essa segurança era em parte uma ilusão. Em 1891, os agrimensores ainda lutavam para fixar os limites dos povoados e dividir suas terras comunais, muitas delas em mãos de comunidades indígenas que disputavam, negociavam e transformavam essas medições. Nada desse terreno inacabado e disputado aparece no tabuleiro. Suas linhas limpas ensinam as crianças a ver o México do alto do Estado, como um território já resolvido."] }
+    },
+    legend: {
+      en: { title: "The legend and the stamp", label: "A key that turns five campaigns into five lines, and a bookseller's stamp that hints at who bought the game.",
+            body: ["In the lower left corner, a small key titled “Signos” assigns each campaign its own line. According to the booklet, Hidalgo's lines and spaces are red, Morelos's green, Mina's blue, Guerrero's red with a light ring, and Iturbide's in the three colors of the flag. Read as a map, these are separate movements in different regions and years, often led by people who never met. Read as a game, they join end to end into a single numbered path from 1 to 151.",
+                   "That is the board's central move. A war that was regional, divided and full of setbacks becomes one line that every player follows in the same order. The game cannot be played in any other sequence, so the history it teaches cannot be told any other way.",
+                   "Below the key, two purple stamps read “Librería Madrileña, Juan Buxó y Cía., México,” a Mexico City bookshop. Unlike Posada's cheap prints sold on the street, this color lithograph was sold in a bookstore. Craib notes that García Cubas's lavish pictorial atlases were made for the shelves of well-off households, as images of an orderly, progressing nation rather than tools for finding one's way. This game brought the same picture of order into the family parlor, as something to play."] },
+      es: { title: "Los signos y el sello", label: "Una clave que convierte cinco campañas en cinco líneas, y el sello de un librero que sugiere quién compraba el juego.",
+            body: ["En la esquina inferior izquierda, una pequeña clave titulada «Signos» asigna a cada campaña su propia línea. Según el folleto, las líneas y casillas de Hidalgo son rojas, las de Morelos verdes, las de Mina azules, las de Guerrero rojas con anillo claro, y las de Iturbide tricolores. Leídas como mapa, son movimientos separados en regiones y años distintos, a menudo encabezados por personas que nunca se conocieron. Leídas como juego, se unen una tras otra en un solo camino numerado del 1 al 151.",
+                   "Esa es la jugada central del tablero. Una guerra regional, dividida y llena de reveses se convierte en una sola línea que todos los jugadores recorren en el mismo orden. El juego no puede jugarse en otra secuencia, así que la historia que enseña no puede contarse de otra manera.",
+                   "Debajo de la clave, dos sellos morados dicen «Librería Madrileña, Juan Buxó y Cía., México», una librería de la capital. A diferencia de las estampas baratas de Posada que se vendían en la calle, esta litografía a color se vendía en una librería. Craib señala que los lujosos atlas pintorescos de García Cubas estaban pensados para los estantes de los hogares acomodados, como imágenes de una nación ordenada y en progreso más que como herramientas para orientarse. Este juego llevaba esa misma imagen de orden a la sala familiar, como algo para jugar."] },
+      pt: { title: "A legenda e o carimbo", label: "Uma legenda que transforma cinco campanhas em cinco linhas, e o carimbo de um livreiro que sugere quem comprava o jogo.",
+            body: ["No canto inferior esquerdo, uma pequena legenda intitulada “Signos” atribui a cada campanha sua própria linha. Segundo o folheto, as linhas e casas de Hidalgo são vermelhas, as de Morelos verdes, as de Mina azuis, as de Guerrero vermelhas com anel claro, e as de Iturbide tricolores. Lidas como mapa, são movimentos separados em regiões e anos diferentes, muitas vezes liderados por pessoas que nunca se conheceram. Lidas como jogo, elas se juntam uma após a outra num único caminho numerado de 1 a 151.",
+                   "Esse é o lance central do tabuleiro. Uma guerra regional, dividida e cheia de reveses vira uma só linha que todos os jogadores percorrem na mesma ordem. O jogo não pode ser jogado em outra sequência, então a história que ele ensina não pode ser contada de outro modo.",
+                   "Abaixo da legenda, dois carimbos roxos dizem “Librería Madrileña, Juan Buxó y Cía., México”, uma livraria da capital. Ao contrário das gravuras baratas de Posada vendidas na rua, esta litografia colorida era vendida numa livraria. Craib observa que os luxuosos atlas pitorescos de García Cubas eram feitos para as estantes de lares abastados, como imagens de uma nação ordenada e em progresso, e não como ferramentas para se orientar. Este jogo levava essa mesma imagem de ordem para a sala da família, como algo para jogar."] }
+    },
+    playing: {
+      en: { title: "What am I playing?",
+            body: ["Los Insurgentes is a “historical game for children” made in 1891 by Antonio García Cubas, the most influential Mexican mapmaker of the nineteenth century. He made the Atlas geográfico, estadístico e histórico of 1858 and the country's general maps, worked for decades in the government ministry that surveyed Mexico, and wrote school geography and history books that sold more than a million copies. He admired Porfirio Díaz as the leader who had brought peace and progress. In this game he combined his two lifelong subjects, the map of Mexico and the story of how the nation was born.",
+                   "It is a race game in the family of the Game of the Goose, the same tradition as Los charros contrabandistas, but far longer. Instead of 63 spaces it has 151, laid directly over a map. The numbered circles follow the routes of five insurgent campaigns in order, Hidalgo (1 to 46), Morelos (47 to 109), Mina (110 to 133), Guerrero (134 to 139) and Iturbide (140 to 151), from the cry of Dolores in 1810 to the entry into Mexico City in 1821.",
+                   "The booklet that came with the game opens long before 1810. It begins with the fall of Tenochtitlan to Hernán Cortés in 1521, which it calls the end of “the power of the Mexican Empire,” and describes “three centuries” of Spanish rule that independence brought to a close. It then lists the intendencias of New Spain, noting that Alta California and New Mexico now belong to the United States. In a few pages, the booklet ties the Mexica past, the colonial map and the modern borders into a single national story.",
+                   "The booklet's instructions say the game needs three children, “two players and the narrator.” Each player puts six tantos into a plate. The very first roll is made with one die, and after that the players take turns rolling two ordinary dice and moving forward. Each player calls out the number they land on, and the narrator, following the booklet's history, reads aloud the place and the event that happened there and announces any prize or penalty. A player who lands on a space the other already holds sends that player back to where the newcomer started. The first to reach space 151 wins the plate, minus two tantos that go to the narrator.",
+                   "The narrator is the most revealing part of the design. One child's whole role is to read the official history aloud, and the loser of each game becomes the next narrator, so every child takes a turn as the voice of the nation's story. If only two children play, one reads for the other with the history in view. If a child plays alone, the booklet says the betting stops and the child should simply study the history, “following carefully the different routes of the insurgents.” The game is, in its own words, a “useful entertainment.”",
+                   "Along the way, history pays and history costs. Insurgent victories such as Guanajuato, Monte de las Cruces, the siege of Cuautla, Peotillos and the Plan of Iguala earn tantos from the plate. Defeats, captures and executions take them away. The betrayal at Acatita de Baján sends a player back to the very beginning, the executions at Chihuahua and the capture of Mina push players back, and the death of Morelos costs four tantos and gives the opponent two turns.",
+                   "The structure carries the game's argument. Unlike La guerra de los kikapoos or the Castillo, there is no enemy side to play. Both players are insurgents on the same road, and the royalists exist only as obstacles in the narrator's texts. The competition is among patriots, which echoes the quarrels inside the insurgency itself, such as the moment at space 28 when Allende and the others strip Hidalgo of his command.",
+                   "The dice decide how fast you move but never where you go. Every game passes through the same towns in the same order and ends at the same place, the capital in 1821. Players cannot change the outcome of independence, only race toward it. An open, uncertain war becomes a fixed itinerary across a fixed map, and the narrator makes sure they hear the official story at every step. Learning to play means learning the route, the dates and the names by heart.",
+                   "That official story also has clear limits. It is told through eight leaders and the towns they passed, on a map of the colonial state. The Indigenous and mestizo majority who fought in these armies appear only as crowd sizes, and the map shows none of the communities whose lands the state was, in 1891, still trying to survey and divide. As you explore the board, ask what kind of nation a child would have imagined after playing it, and who in that nation was missing from the game."] },
+      es: { title: "¿A qué estoy jugando?",
+            body: ["Los Insurgentes es un «juego histórico para niños» creado en 1891 por Antonio García Cubas, el cartógrafo mexicano más influyente del siglo XIX. Hizo el Atlas geográfico, estadístico e histórico de 1858 y las cartas generales del país, trabajó durante décadas en el ministerio que medía y cartografiaba México, y escribió libros escolares de geografía e historia que vendieron más de un millón de ejemplares. Admiraba a Porfirio Díaz como el gobernante que había traído paz y progreso. En este juego unió sus dos grandes temas de toda la vida, el mapa de México y el relato del nacimiento de la nación.",
+                   "Es un juego de carreras de la familia del Juego de la oca, la misma tradición que Los charros contrabandistas, pero mucho más largo. En lugar de 63 casillas tiene 151, trazadas directamente sobre un mapa. Los círculos numerados siguen en orden las rutas de cinco campañas insurgentes, Hidalgo (1 a 46), Morelos (47 a 109), Mina (110 a 133), Guerrero (134 a 139) e Iturbide (140 a 151), desde el grito de Dolores en 1810 hasta la entrada en la Ciudad de México en 1821.",
+                   "El folleto que acompañaba al juego comienza mucho antes de 1810. Empieza con la toma de Tenochtitlan por Hernán Cortés en 1521, que según el texto puso fin al «poder del Imperio Mexicano», y describe los «tres siglos» de dominación española que la independencia cerró. Luego enumera las intendencias de la Nueva España y anota que la Alta California y el Nuevo México pertenecen hoy a los Estados Unidos. En pocas páginas, el folleto une el pasado mexica, el mapa colonial y las fronteras modernas en un solo relato nacional.",
+                   "La instrucción del folleto dice que «tres deberán ser los niños que intervengan en este útil entretenimiento, dos jugadores y el relator». Cada jugador deposita seis tantos en el plato. La primera tirada se hace con un solo dado, y después los jugadores tiran por turnos con dos dados comunes y avanzan. Cada jugador nombra el número al que llega, y el relator, siguiendo la relación histórica del folleto, dice en voz alta el lugar y el suceso que allí tuvo efecto y anuncia los premios o las penas. El que cae en la casilla ocupada por el otro jugador hace retroceder a este a la casilla de la que aquel partió. El primero en llegar a la casilla 151 gana los tantos del plato, menos dos que corresponden al relator.",
+                   "El relator es la parte más reveladora del diseño. La única tarea de un niño es leer en voz alta la historia oficial, y el que pierde cada partida pasa a ser el siguiente relator, así que todos los niños se turnan como la voz del relato nacional. Si solo juegan dos niños, uno hace de relator del otro teniendo a la vista la relación histórica. Si un niño juega solo, el folleto dice que cesa el juego de interés y que el niño debe limitarse a estudiar la historia, «teniendo cuidado de seguir minuciosamente los diversos itinerarios de los insurgentes». El juego es, en sus propias palabras, un «útil entretenimiento».",
+                   "A lo largo del camino, la historia paga y la historia cobra. Victorias insurgentes como Guanajuato, el Monte de las Cruces, el sitio de Cuautla, Peotillos y el Plan de Iguala dan tantos del plato. Las derrotas, capturas y ejecuciones los quitan. La traición de Acatita de Baján manda al jugador al principio de todo, las ejecuciones de Chihuahua y la captura de Mina lo hacen retroceder, y la muerte de Morelos cuesta cuatro tantos y le da dos turnos al contrario.",
+                   "La estructura sostiene el argumento del juego. A diferencia de La guerra de los kikapoos o del Castillo, no hay bando enemigo que jugar. Los dos jugadores son insurgentes en el mismo camino, y los realistas existen solo como obstáculos en los textos del relator. La competencia es entre patriotas, lo que recuerda las disputas dentro de la propia insurgencia, como el momento en la casilla 28 en que Allende y los demás destituyen a Hidalgo del mando.",
+                   "Los dados deciden qué tan rápido avanzas, pero nunca hacia dónde vas. Cada partida pasa por los mismos pueblos en el mismo orden y termina en el mismo lugar, la capital en 1821. Los jugadores no pueden cambiar el desenlace de la independencia, solo correr hacia él. Una guerra abierta e incierta se convierte en un itinerario fijo sobre un mapa fijo, y el relator se asegura de que escuchen la historia oficial a cada paso. Aprender a jugar significa aprenderse de memoria la ruta, las fechas y los nombres.",
+                   "Esa historia oficial también tiene límites claros. Se cuenta a través de ocho caudillos y los pueblos por donde pasaron, sobre un mapa del Estado colonial. La mayoría indígena y mestiza que combatió en esos ejércitos aparece solo como cifras de multitudes, y el mapa no muestra ninguna de las comunidades cuyas tierras el Estado todavía intentaba, en 1891, medir y repartir. Mientras exploras el tablero, pregúntate qué clase de nación se habría imaginado un niño después de jugarlo, y quién faltaba en ella."] },
+      pt: { title: "O que estou jogando?",
+            body: ["Los Insurgentes é um “jogo histórico para crianças” criado em 1891 por Antonio García Cubas, o cartógrafo mexicano mais influente do século XIX. Ele fez o Atlas geográfico, estadístico e histórico de 1858 e as cartas gerais do país, trabalhou durante décadas no ministério que media e mapeava o México, e escreveu livros escolares de geografia e história que venderam mais de um milhão de exemplares. Admirava Porfirio Díaz como o governante que havia trazido paz e progresso. Neste jogo ele uniu os dois grandes temas de sua vida, o mapa do México e a história do nascimento da nação.",
+                   "É um jogo de corrida da família do Jogo do Ganso, a mesma tradição de Los charros contrabandistas, mas muito mais longo. Em vez de 63 casas, tem 151, traçadas diretamente sobre um mapa. Os círculos numerados seguem em ordem as rotas de cinco campanhas insurgentes, Hidalgo (1 a 46), Morelos (47 a 109), Mina (110 a 133), Guerrero (134 a 139) e Iturbide (140 a 151), do grito de Dolores em 1810 até a entrada na Cidade do México em 1821.",
+                   "O folheto que acompanhava o jogo começa muito antes de 1810. Ele abre com a queda de Tenochtitlan diante de Hernán Cortés em 1521, que chama de fim do “poder do Império Mexicano”, e descreve os “três séculos” de domínio espanhol que a independência encerrou. Depois enumera as intendências da Nova Espanha, observando que a Alta Califórnia e o Novo México pertencem hoje aos Estados Unidos. Em poucas páginas, o folheto une o passado mexica, o mapa colonial e as fronteiras modernas numa única história nacional.",
+                   "As instruções do folheto dizem que o jogo precisa de três crianças, “dois jogadores e o narrador”. Cada jogador coloca seis tantos num prato. O primeiro lance é feito com um só dado, e depois os jogadores se revezam lançando dois dados comuns e avançando. Cada jogador anuncia o número em que cai, e o narrador, seguindo a história do folheto, lê em voz alta o lugar e o acontecimento que ali se deu e anuncia qualquer prêmio ou castigo. Quem cai na casa ocupada pelo outro jogador faz este voltar à casa de onde o recém-chegado partiu. O primeiro a chegar à casa 151 leva o prato, menos dois tantos que ficam com o narrador.",
+                   "O narrador é a parte mais reveladora do desenho do jogo. A única tarefa de uma das crianças é ler em voz alta a história oficial, e quem perde cada partida passa a ser o próximo narrador, de modo que todas as crianças se revezam como a voz da história nacional. Se só duas crianças jogam, uma faz de narradora para a outra com a história à vista. Se uma criança joga sozinha, o folheto diz que as apostas cessam e que ela deve simplesmente estudar a história, “seguindo minuciosamente os diversos itinerários dos insurgentes”. O jogo é, em suas próprias palavras, um “útil entretenimento”.",
+                   "Ao longo do caminho, a história paga e a história cobra. Vitórias insurgentes como Guanajuato, o Monte de las Cruces, o cerco de Cuautla, Peotillos e o Plano de Iguala rendem tantos do prato. Derrotas, capturas e execuções os tiram. A traição de Acatita de Baján manda o jogador de volta ao começo de tudo, as execuções de Chihuahua e a captura de Mina fazem os jogadores recuar, e a morte de Morelos custa quatro tantos e dá ao adversário duas jogadas.",
+                   "A estrutura sustenta o argumento do jogo. Ao contrário de La guerra de los kikapoos ou do Castillo, não há lado inimigo para jogar. Os dois jogadores são insurgentes no mesmo caminho, e os realistas existem apenas como obstáculos nos textos do narrador. A competição é entre patriotas, o que ecoa as disputas dentro da própria insurgência, como o momento na casa 28 em que Allende e os outros destituem Hidalgo do comando.",
+                   "Os dados decidem a rapidez com que você avança, mas nunca para onde vai. Toda partida passa pelas mesmas cidades na mesma ordem e termina no mesmo lugar, a capital em 1821. Os jogadores não podem mudar o desfecho da independência, só correr em direção a ele. Uma guerra aberta e incerta vira um itinerário fixo sobre um mapa fixo, e o narrador garante que ouçam a história oficial a cada passo. Aprender a jogar é decorar a rota, as datas e os nomes.",
+                   "Essa história oficial também tem limites claros. Ela é contada por meio de oito líderes e das cidades por onde passaram, sobre um mapa do Estado colonial. A maioria indígena e mestiça que lutou nesses exércitos aparece apenas como tamanho de multidão, e o mapa não mostra nenhuma das comunidades cujas terras o Estado ainda tentava, em 1891, medir e dividir. Enquanto explora o tabuleiro, pergunte-se que tipo de nação uma criança imaginaria depois de jogá-lo, e quem estava faltando nela."] }
+    }
+  };
+
+  var STRINGS = {
+    en: { eyebrow: "Let's analyze the game", hint: "Click a numbered area — or one of the labels — to zoom in and read about it.",
+          playLink: "Play the game", reset: "Full view", prev: "Previous", next: "Next", kikaTab: "What am I playing?",
+          readMore: "Zoom in and learn more", of: "of", boardCenter: "Center of the board", sceneCenter: "Center of the scene", spaceAbove: "Space above", spaceBelow: "Space below",
+          credit: "Los Insurgentes, juego histórico para niños, by Antonio García Cubas, Mexico City, 1891. Original board located at the Museum of Archaeology and Anthropology, University of Cambridge." },
+    es: { eyebrow: "Analicemos el juego", hint: "Haz clic en un área numerada — o en una de las etiquetas — para acercarte y leer sobre ella.",
+          playLink: "Jugar", reset: "Vista completa", prev: "Anterior", next: "Siguiente", kikaTab: "¿A qué estoy jugando?",
+          readMore: "Acercar y saber más", of: "de", boardCenter: "Centro del tablero", sceneCenter: "Centro de la escena", spaceAbove: "Espacio arriba", spaceBelow: "Espacio abajo",
+          credit: "Los Insurgentes, juego histórico para niños, por Antonio García Cubas, Ciudad de México, 1891. Tablero original ubicado en el Museum of Archaeology and Anthropology de la Universidad de Cambridge." },
+    pt: { eyebrow: "Vamos analisar o jogo", hint: "Clique numa área numerada — ou num dos rótulos — para aproximar e ler sobre ela.",
+          playLink: "Jogar", reset: "Visão completa", prev: "Anterior", next: "Próximo", kikaTab: "O que estou jogando?",
+          readMore: "Aproximar e saber mais", of: "de", boardCenter: "Centro do tabuleiro", sceneCenter: "Centro da cena", spaceAbove: "Espaço acima", spaceBelow: "Espaço abaixo",
+          credit: "Los Insurgentes, jogo histórico para crianças, de Antonio García Cubas, Cidade do México, 1891. Tabuleiro original localizado no Museum of Archaeology and Anthropology da Universidade de Cambridge." }
+  };
+
+  /* =====================================================================
+     AREAS — positions are fractions of the photo (0 = left/top, 1 = right/bottom).
+     rect   = the clickable outline
+     zoom   = what the camera frames when the area is opened
+     anchor = where the numbered badge / leader line attaches
+     side   = which side of the image its label sits on
+     ===================================================================== */
+  var IMG_W = 1400, IMG_H = 1050;
+  var OVERVIEW = [0.090, 0.110, 0.975, 0.950];
+  // "rects" (optional) lists every outline for an area; "rect" is the one the camera and badge use
+  var AREAS = [
+    { id: "heroes",   rect: [0.664, 0.133, 0.925, 0.533], zoom: [0.650, 0.120, 0.940, 0.550], anchor: [0.925, 0.300], side: "right" },
+    { id: "dolores",  rect: [0.421, 0.514, 0.564, 0.667], zoom: [0.400, 0.490, 0.590, 0.690], anchor: [0.564, 0.560], side: "right" },
+    { id: "north",    rect: [0.118, 0.143, 0.357, 0.314], zoom: [0.100, 0.120, 0.380, 0.340], anchor: [0.118, 0.200], side: "left" },
+    { id: "finish",   rect: [0.580, 0.620, 0.700, 0.700], zoom: [0.555, 0.575, 0.725, 0.745], anchor: [0.700, 0.660], side: "right" },
+    { id: "colonial", rect: [0.114, 0.548, 0.343, 0.733], zoom: [0.100, 0.520, 0.360, 0.760], anchor: [0.114, 0.620], side: "left" },
+    { id: "legend",   rect: [0.093, 0.743, 0.207, 0.962], zoom: [0.080, 0.720, 0.235, 0.975], anchor: [0.207, 0.800], side: "left" }
+  ];
+
+  var STORAGE_KEY = "race-games-lang";
+  var lang = "en";
+  try { var s = localStorage.getItem(STORAGE_KEY); if (s && STRINGS[s]) lang = s; } catch(e){}
+
+  var $ = function(id){ return document.getElementById(id); };
+  var analysis = $("analysis"), frame = $("frame"), layer = $("layer"), overlay = $("overlay");
+  var colLeft = $("colLeft"), colRight = $("colRight"), leaders = $("leaders"), topics = $("topics");
+  var NS = "http://www.w3.org/2000/svg";
+  var active = null;
+
+  function t(key){ return (STRINGS[lang] && STRINGS[lang][key]) || STRINGS.en[key] || ""; }
+  function c(id){ return (CONTENT[id] && (CONTENT[id][lang] || CONTENT[id].en)) || { title: "", body: [] }; }
+  function svgEl(tag, attrs){ var el = document.createElementNS(NS, tag); for (var k in attrs) el.setAttribute(k, attrs[k]); return el; }
+  function px(r){ return [r[0]*IMG_W, r[1]*IMG_H, (r[2]-r[0])*IMG_W, (r[3]-r[1])*IMG_H]; }
+  function fillParas(container, paras){
+    container.innerHTML = "";
+    (paras || []).forEach(function(p){
+      var el = document.createElement("p");
+      if (/^\s*\[/.test(p)){ var sp = document.createElement("span"); sp.className = "placeholder"; sp.textContent = p; el.appendChild(sp); }
+      else el.textContent = p;
+      container.appendChild(el);
+    });
+  }
+
+  /* ---------- Build overlay (dim mask, guides, hotspots) ---------- */
+  var dim = svgEl("path", { "class": "dim" });
+  overlay.appendChild(dim);
+
+
+  var hotEls = {};
+  AREAS.forEach(function(a){
+    var g = svgEl("g", { "class": "hotg" });
+    (a.rects || [a.rect]).forEach(function(rc){
+      var p = px(rc);
+      g.appendChild(svgEl("rect", { "class": "hot", x: p[0], y: p[1], width: p[2], height: p[3], rx: a.round ? Math.min(p[2], p[3]) / 2 : 8 }));
+    });
+    g.addEventListener("click", function(){ open(a.id); });
+    g.addEventListener("mouseenter", function(){ hover(a.id, true); });
+    g.addEventListener("mouseleave", function(){ hover(a.id, false); });
+    overlay.appendChild(g);
+    hotEls[a.id] = g;
+  });
+  // Stacking: biggest area at the back so smaller ones stay clickable
+  AREAS.slice().sort(function(p, q){ return (q.rect[2]-q.rect[0])*(q.rect[3]-q.rect[1]) - (p.rect[2]-p.rect[0])*(p.rect[3]-p.rect[1]); })
+    .forEach(function(a){ overlay.appendChild(hotEls[a.id]); });
+
+  /* ---------- Badges, callouts, topic buttons ---------- */
+  var badges = {}, callouts = {}, topicBtns = {};
+  AREAS.forEach(function(a, i){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "badge"; b.textContent = i + 1;
+    b.addEventListener("click", function(){ open(a.id); });
+    b.addEventListener("mouseenter", function(){ hover(a.id, true); });
+    b.addEventListener("mouseleave", function(){ hover(a.id, false); });
+    frame.appendChild(b); badges[a.id] = b;
+
+    var co = document.createElement("button");
+    co.type = "button"; co.className = "callout";
+    co.innerHTML = '<span class="num">' + (i+1) + '</span><span class="ct"></span><span class="cl"></span><span class="more"></span>';
+    co.addEventListener("click", function(){ open(a.id); });
+    co.addEventListener("mouseenter", function(){ hover(a.id, true); });
+    co.addEventListener("mouseleave", function(){ hover(a.id, false); });
+    (a.side === "left" ? colLeft : colRight).appendChild(co); callouts[a.id] = co;
+
+    var tb = document.createElement("button");
+    tb.type = "button"; tb.innerHTML = '<span class="num">' + (i+1) + '</span><span class="tt"></span>';
+    tb.addEventListener("click", function(){ open(a.id); });
+    topics.appendChild(tb); topicBtns[a.id] = tb;
+  });
+
+  function hover(id, on){ if (!active) hotEls[id].classList.toggle("hover", on); }
+
+  /* ---------- Camera ---------- */
+  var lastK = 1;
+  function camera(region){
+    var Fw = frame.clientWidth, Fh = frame.clientHeight;
+    var Lw = Fw / (OVERVIEW[2] - OVERVIEW[0]);
+    var Lh = Lw * IMG_H / IMG_W;
+    layer.style.width = Lw + "px"; layer.style.height = Lh + "px";
+    var rw = (region[2]-region[0]) * Lw, rh = (region[3]-region[1]) * Lh;
+    var k = Math.min(Fw / rw, Fh / rh);
+    var cx = (region[0]+region[2])/2 * Lw, cy = (region[1]+region[3])/2 * Lh;
+    var tx = Fw/2 - k*cx, ty = Fh/2 - k*cy;
+    // keep the photo covering the frame where possible
+    tx = Math.min(0, Math.max(Fw - k*Lw, tx)); ty = Math.min(0, Math.max(Fh - k*Lh, ty));
+    layer.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + k + ")";
+    lastK = k;
+    return { Lw: Lw, Lh: Lh, k: k, tx: tx, ty: ty };
+  }
+  var view = null;
+  function overviewPoint(fx, fy){ // photo fraction → frame px in overview
+    return [(fx - OVERVIEW[0]) * view.Lw, (fy - OVERVIEW[1]) * view.Lh];
+  }
+
+  function areaById(id){ for (var i = 0; i < AREAS.length; i++) if (AREAS[i].id === id) return AREAS[i]; return null; }
+
+  /* ---------- Open / close ---------- */
+  function setDim(a){
+    var o = "M0,0 H" + IMG_W + " V" + IMG_H + " H0 Z";
+    var pad = 6;
+    if (!a.round){
+      var d = o;
+      (a.rects || [a.rect]).forEach(function(rc){
+        var q = px(rc), x = q[0]-pad, y = q[1]-pad, w = q[2]+2*pad, h = q[3]+2*pad;
+        d += " M" + x + "," + y + " h" + w + " v" + h + " h" + (-w) + " Z";
+      });
+      dim.setAttribute("d", d);
+      return;
+    }
+    var p = px(a.rect);
+    if (a.round){
+      var cx = p[0] + p[2]/2, cy = p[1] + p[3]/2, r = Math.min(p[2], p[3])/2 + pad;
+      dim.setAttribute("d", o + " M" + (cx - r) + "," + cy + " a" + r + "," + r + " 0 1,0 " + (2*r) + ",0 a" + r + "," + r + " 0 1,0 " + (-2*r) + ",0 Z");
+      return;
+    }
+    var x = p[0]-pad, y = p[1]-pad, w = p[2]+2*pad, h = p[3]+2*pad;
+    dim.setAttribute("d", o + " M" + x + "," + y + " h" + w + " v" + h + " h" + (-w) + " Z");
+  }
+  function renderPanel(){
+    if (!active) return;
+    var i = AREAS.indexOf(areaById(active)), data = c(active);
+    $("pNum").textContent = (i+1) + " " + t("of") + " " + AREAS.length;
+    $("pTitle").textContent = data.title;
+    fillParas($("pBody"), data.body);
+  }
+  function open(id){
+    var a = areaById(id); if (!a) return;
+    active = id;
+    Object.keys(hotEls).forEach(function(k){ hotEls[k].classList.remove("hover"); hotEls[k].classList.toggle("active", k === id); });
+    setDim(a);
+    frame.classList.add("zoomed"); frame.setAttribute("data-active", id);
+    analysis.classList.add("is-zoomed");
+    renderPanel();
+    camera(a.zoom);
+    if (history.replaceState) history.replaceState(null, "", "#" + id);
+    if (window.innerWidth <= 960){
+      var top = frame.getBoundingClientRect().top + window.scrollY - 60;
+      if (Math.abs(window.scrollY - top) > 40) window.scrollTo({ top: top, behavior: "smooth" });
+    }
+  }
+  function close(){
+    if (!active) return;
+    var was = active; active = null;
+    frame.classList.remove("zoomed"); frame.removeAttribute("data-active");
+    analysis.classList.remove("is-zoomed");
+    Object.keys(hotEls).forEach(function(k){ hotEls[k].classList.remove("active"); });
+    camera(OVERVIEW);
+    if (history.replaceState) history.replaceState(null, "", location.pathname + location.search);
+    if (callouts[was] && getComputedStyle(colLeft).display !== "none") callouts[was].focus({ preventScroll: true });
+  }
+  function step(d){
+    if (!active) return;
+    var i = AREAS.indexOf(areaById(active));
+    open(AREAS[(i + d + AREAS.length) % AREAS.length].id);
+  }
+  $("reset").addEventListener("click", close);
+  $("pClose").addEventListener("click", close);
+  $("pPrev").addEventListener("click", function(){ step(-1); });
+  $("pNext").addEventListener("click", function(){ step(1); });
+
+  /* ---------- "What am I playing?" modal ---------- */
+  var modalBack = $("modalBack"), lastFocus = null;
+  function openModal(){
+    var d = c("playing");
+    $("mTitle").textContent = d.title; fillParas($("mBody"), d.body);
+    lastFocus = document.activeElement;
+    modalBack.classList.add("open"); modalBack.setAttribute("aria-hidden", "false");
+    $("mClose").focus();
+  }
+  function closeModal(){
+    modalBack.classList.remove("open"); modalBack.setAttribute("aria-hidden", "true");
+    if (lastFocus) lastFocus.focus();
+  }
+  $("kikaTab").addEventListener("click", openModal);
+  $("mClose").addEventListener("click", closeModal);
+  modalBack.addEventListener("click", function(e){ if (e.target === modalBack) closeModal(); });
+
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape"){ if (modalBack.classList.contains("open")) closeModal(); else close(); }
+    else if (active && !modalBack.classList.contains("open")){
+      if (e.key === "ArrowRight") step(1);
+      if (e.key === "ArrowLeft") step(-1);
+    }
+  });
+
+  /* ---------- Language ---------- */
+  function applyLang(l){
+    lang = STRINGS[l] ? l : "en";
+    document.documentElement.setAttribute("lang", lang);
+    document.querySelectorAll("[data-i18n]").forEach(function(el){
+      var v = t(el.getAttribute("data-i18n")); if (v) el.textContent = v;
+    });
+    document.querySelectorAll(".langtoggle button").forEach(function(btn){
+      btn.setAttribute("aria-pressed", btn.getAttribute("data-lang") === lang ? "true" : "false");
+    });
+    AREAS.forEach(function(a){
+      var d = c(a.id);
+      callouts[a.id].querySelector(".ct").textContent = d.title;
+      var cl = callouts[a.id].querySelector(".cl");
+      cl.textContent = d.label || ""; cl.classList.toggle("placeholder", /^\s*\[/.test(d.label || ""));
+      callouts[a.id].querySelector(".more").textContent = t("readMore") + " →";
+      topicBtns[a.id].querySelector(".tt").textContent = d.title;
+      badges[a.id].setAttribute("aria-label", d.title);
+      hotEls[a.id].setAttribute("aria-label", d.title);
+    });
+    renderPanel();
+    if (modalBack.classList.contains("open")){ var d = c("playing"); $("mTitle").textContent = d.title; fillParas($("mBody"), d.body); }
+    relayout();
+  }
+  document.querySelectorAll(".langtoggle button").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var l = btn.getAttribute("data-lang"); applyLang(l);
+      try { localStorage.setItem(STORAGE_KEY, l); } catch(e){}
+    });
+  });
+
+  /* ---------- Init ---------- */
+  function relayout(){
+    // compute overview geometry for badges/labels without disturbing the current zoom
+    var saveTransition = layer.style.transition;
+    layer.style.transition = "none";
+    view = camera(OVERVIEW);
+    AREAS.forEach(function(a){
+      var p = overviewPoint(a.anchor[0], a.anchor[1]);
+      badges[a.id].style.left = p[0] + "px"; badges[a.id].style.top = p[1] + "px";
+    });
+    if (active) camera(areaById(active).zoom);
+    layer.offsetHeight; // flush
+    layer.style.transition = saveTransition;
+    var panel = $("panel"), small = getComputedStyle(colLeft).display === "none";
+    if (small && panel.parentNode !== topics.parentNode) topics.parentNode.insertBefore(panel, topics);
+    if (!small && panel.parentNode !== colRight) colRight.appendChild(panel);
+    if (small){ leaders.innerHTML = ""; return; }
+    var aRect = analysis.getBoundingClientRect(), fRect = frame.getBoundingClientRect();
+    ["left", "right"].forEach(function(side){
+      var items = AREAS.filter(function(a){ return a.side === side; })
+        .map(function(a){ return { a: a, y: overviewPoint(a.anchor[0], a.anchor[1])[1] + (fRect.top - aRect.top), h: callouts[a.id].offsetHeight }; })
+        .sort(function(p, q){ return p.y - q.y; });
+      // first pass: place each label near its anchor, pushing down to avoid overlaps
+      var cursor = 0;
+      items.forEach(function(it){ it.top = Math.max(cursor, it.y - 24); cursor = it.top + it.h + 18; });
+      // second pass: pull the stack back up so it doesn't run past the bottom of the image
+      var limit = fRect.bottom - aRect.top;
+      for (var i = items.length - 1; i >= 0; i--){ items[i].top = Math.max(0, Math.min(items[i].top, limit - items[i].h)); limit = items[i].top - 18; }
+      cursor = 0;
+      items.forEach(function(it){ it.top = Math.max(cursor, it.top); callouts[it.a.id].style.top = it.top + "px"; cursor = it.top + it.h + 18; });
+      (side === "left" ? colLeft : colRight).style.minHeight = cursor + "px";
+    });
+    leaders.innerHTML = "";
+    AREAS.forEach(function(a){
+      var co = callouts[a.id].getBoundingClientRect();
+      var p = overviewPoint(a.anchor[0], a.anchor[1]);
+      var bx = fRect.left - aRect.left + frame.clientLeft + p[0], by = fRect.top - aRect.top + frame.clientTop + p[1];
+      var sx = (a.side === "left" ? co.right : co.left) - aRect.left;
+      var sy = co.top - aRect.top + 24;
+      var dx = bx - sx, dy = by - sy, len = Math.sqrt(dx*dx + dy*dy) || 1;
+      bx -= dx/len*15; by -= dy/len*15;
+      leaders.appendChild(svgEl("line", { x1: sx, y1: sy, x2: bx, y2: by }));
+      leaders.appendChild(svgEl("circle", { cx: sx, cy: sy, r: 3 }));
+    });
+  }
+
+  window.addEventListener("resize", relayout);
+  $("boardImg").addEventListener("load", relayout);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
+
+  applyLang(lang);
+  var h = (location.hash || "").replace("#", "");
+  if (h === "playing") openModal();
+  else if (areaById(h)){ layer.style.transition = "none"; open(h); layer.offsetHeight; layer.style.transition = ""; }
+})();
+</script>
+</body>
+</html>
