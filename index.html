@@ -19,6 +19,7 @@
     --jade: #16382C;
     --gold: #C9A227;
     --indigo: #2C3E5C;
+    --river: #2F5D6B;
   }
 
   *{ box-sizing: border-box; }
@@ -309,6 +310,14 @@
   .card.gold .analyze-btn{ color: #7A5C0E; border-color: var(--gold); }
   .card.gold .analyze-btn:hover{ background: var(--gold); color: var(--ink); }
 
+  .card.river .card-stripe{ background: var(--river); }
+  .card.river .card-eyebrow{ color: var(--river); }
+  .card.river .play-btn{ background: var(--river); }
+  .card.river .analyze-btn{ color: var(--river); border-color: var(--river); }
+  .card.river .analyze-btn:hover{ background: var(--river); color: var(--paper); }
+  .card.river .card-thumb{ background: #E9E7E0; }
+  .card.river .card-thumb img{ object-fit: contain; mix-blend-mode: multiply; }
+
   /* ---------- Footer ---------- */
   footer{
     padding: 40px 0 56px;
@@ -343,7 +352,7 @@
 
   <section class="hero">
     <h1 class="title" data-i18n="title">Race Games</h1>
-    <p class="subhead" data-i18n="subhead">From the Nineteenth Century to Today — historic board games that you can play.</p>
+    <p class="subhead" data-i18n="subhead">From the Nineteenth Century to Today — historic games and puzzles that you can play.</p>
   </section>
 
 </div>
@@ -352,11 +361,11 @@
 
   <div class="dispatch">
     <p class="dispatch-label" data-i18n="dispatchLabel">Why am I playing?</p>
-    <p class="dispatch-text" data-i18n="dispatchText">Nineteenth-century Mexican board games contributed to the construction of racial imaginaries. When you play these games, try to identify the racial ideas built into the gameplay. This type of cultural production was more than just fun and games.</p>
+    <p class="dispatch-text" data-i18n="dispatchText">Nineteenth-century board games and puzzles from Mexico and Brazil contributed to the construction of racial imaginaries. When you play these games, try to identify the racial ideas built into the gameplay. This type of cultural production was more than just fun and games.</p>
   </div>
 
   <div class="section-label">
-    <h2 data-i18n="collection">The Collection</h2>
+    <h2 data-i18n="collection">The Mexico Collection</h2>
     <div class="tally" data-i18n="tally">MEXICO · 19TH CENTURY</div>
   </div>
 
@@ -444,6 +453,35 @@
 
   </div>
 
+  <div class="section-label">
+    <h2 data-i18n="collectionBr">The Brazil Collection</h2>
+    <div class="tally" data-i18n="tallyBr">BRAZIL · 19TH CENTURY</div>
+  </div>
+
+  <div class="games">
+
+    <div class="card river">
+      <div class="card-stripe"></div>
+      <div class="card-thumb">
+        <img src="images/distraccao-problema-recorte.jpg" alt="Clipping of the Problema a Premio from Distracção, 1886: the heading, its dedication, and a woodcut of a river with a canoe and six figures" loading="lazy">
+      </div>
+      <div class="card-body">
+        <div class="card-eyebrow" data-i18n="b1.eyebrow">Riddle &amp; Logic</div>
+        <h3>Problema a Premio</h3>
+        <p class="card-translation" data-i18n="b1.translation">“A Problem with a Prize” · The canoe riddle</p>
+        <p class="card-blurb" data-i18n="b1.blurb">A prize riddle from a Rio de Janeiro humor magazine, printed two years before abolition: get three enslavers and three enslaved men across a river in a two-seat canoe. The rule you must obey assumes the enslaved will kill if they ever outnumber their enslavers. What do you have to believe in order to win?</p>
+        <div class="chips">
+          <span class="chip" data-i18n="chip.puzzle">LOGIC PUZZLE</span>
+          <span class="chip" data-i18n="chip.1player">1 PLAYER</span>
+          <span class="chip" data-i18n="b1.chip3">11 CROSSINGS</span>
+        </div>
+        <a class="play-btn" href="games/problema-a-premio.html"><span data-i18n="playBtn">Play the game</span> <span class="arrow">→</span></a>
+        <a class="analyze-btn" href="games/problema-a-premio-analysis.html"><span data-i18n="analyzeBtn">Analyze the game</span> <span class="arrow">→</span></a>
+      </div>
+    </div>
+
+  </div>
+
 </div>
 
 <div class="wrap">
@@ -457,11 +495,19 @@
   var STRINGS = {
     en: {
       title: "Race Games",
-      subhead: "From the Nineteenth Century to Today — historic board games that you can play.",
+      subhead: "From the Nineteenth Century to Today — historic games and puzzles that you can play.",
       dispatchLabel: "Why am I playing?",
-      dispatchText: "Nineteenth-century Mexican board games contributed to the construction of racial imaginaries. When you play these games, try to identify the racial ideas built into the gameplay. This type of cultural production was more than just fun and games.",
-      collection: "The Collection",
+      dispatchText: "Nineteenth-century board games and puzzles from Mexico and Brazil contributed to the construction of racial imaginaries. When you play these games, try to identify the racial ideas built into the gameplay. This type of cultural production was more than just fun and games.",
+      collection: "The Mexico Collection",
       tally: "MEXICO · 19TH CENTURY",
+      collectionBr: "The Brazil Collection",
+      tallyBr: "BRAZIL · 19TH CENTURY",
+      "chip.puzzle": "LOGIC PUZZLE",
+      "chip.1player": "1 PLAYER",
+      "b1.eyebrow": "Riddle & Logic",
+      "b1.translation": "“A Problem with a Prize” · The canoe riddle",
+      "b1.blurb": "A prize riddle from a Rio de Janeiro humor magazine, printed two years before abolition: get three enslavers and three enslaved men across a river in a two-seat canoe. The rule you must obey assumes the enslaved will kill if they ever outnumber their enslavers. What do you have to believe in order to win?",
+      "b1.chip3": "11 CROSSINGS",
       playBtn: "Play the game",
       analyzeBtn: "Analyze the game",
       footMark: "Digital Archive",
@@ -488,11 +534,19 @@
     },
     es: {
       title: "Raza en juego",
-      subhead: "Del siglo XIX a hoy — juegos de mesa históricos que puedes jugar.",
+      subhead: "Del siglo XIX a hoy — juegos y acertijos históricos que puedes jugar.",
       dispatchLabel: "¿Por qué estoy jugando?",
-      dispatchText: "Los juegos de mesa mexicanos del siglo XIX contribuyeron a la construcción de imaginarios raciales. Al jugar estos juegos, trata de identificar las ideas raciales integradas en la mecánica del juego. Este tipo de producción cultural fue mucho más que simple entretenimiento.",
-      collection: "La Colección",
+      dispatchText: "Los juegos de mesa y acertijos del siglo XIX de México y Brasil contribuyeron a la construcción de imaginarios raciales. Al jugar estos juegos, trata de identificar las ideas raciales integradas en la mecánica del juego. Este tipo de producción cultural fue mucho más que simple entretenimiento.",
+      collection: "La Colección de México",
       tally: "MÉXICO · SIGLO XIX",
+      collectionBr: "La Colección de Brasil",
+      tallyBr: "BRASIL · SIGLO XIX",
+      "chip.puzzle": "ACERTIJO LÓGICO",
+      "chip.1player": "1 JUGADOR",
+      "b1.eyebrow": "Acertijo y Lógica",
+      "b1.translation": "«Un problema con premio» · El acertijo de la canoa",
+      "b1.blurb": "Un acertijo con premio de una revista humorística de Río de Janeiro, publicado dos años antes de la abolición: lleva a tres esclavizadores y tres hombres esclavizados al otro lado de un río en una canoa de dos plazas. La regla que debes obedecer supone que los esclavizados matarán si alguna vez superan en número a sus esclavizadores. ¿Qué tienes que creer para ganar?",
+      "b1.chip3": "11 CRUCES",
       playBtn: "Jugar",
       analyzeBtn: "Analizar el juego",
       footMark: "Archivo Digital",
@@ -519,11 +573,19 @@
     },
     pt: {
       title: "Raça em jogo",
-      subhead: "Do século XIX até hoje — jogos de tabuleiro históricos que você pode jogar.",
+      subhead: "Do século XIX até hoje — jogos e enigmas históricos que você pode jogar.",
       dispatchLabel: "Por que estou jogando?",
-      dispatchText: "Os jogos de tabuleiro mexicanos do século XIX contribuíram para a construção de imaginários raciais. Ao jogar esses jogos, tente identificar as ideias raciais embutidas na mecânica do jogo. Esse tipo de produção cultural foi muito mais do que apenas diversão.",
-      collection: "A Coleção",
+      dispatchText: "Os jogos de tabuleiro e enigmas do século XIX do México e do Brasil contribuíram para a construção de imaginários raciais. Ao jogar esses jogos, tente identificar as ideias raciais embutidas na mecânica do jogo. Esse tipo de produção cultural foi muito mais do que apenas diversão.",
+      collection: "A Coleção do México",
       tally: "MÉXICO · SÉCULO XIX",
+      collectionBr: "A Coleção do Brasil",
+      tallyBr: "BRASIL · SÉCULO XIX",
+      "chip.puzzle": "ENIGMA DE LÓGICA",
+      "chip.1player": "1 JOGADOR",
+      "b1.eyebrow": "Enigma e Lógica",
+      "b1.translation": "“Um problema com prêmio” · O enigma da canoa",
+      "b1.blurb": "Um enigma com prêmio de uma revista humorística do Rio de Janeiro, publicado dois anos antes da abolição: leve três escravizadores e três homens escravizados para o outro lado de um rio numa canoa de dois lugares. A regra que você precisa obedecer supõe que os escravizados matarão se algum dia superarem em número seus escravizadores. No que você precisa acreditar para vencer?",
+      "b1.chip3": "11 TRAVESSIAS",
       playBtn: "Jogar",
       analyzeBtn: "Analisar o jogo",
       footMark: "Arquivo Digital",
