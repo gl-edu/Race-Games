@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Problema a Premio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #ECEAE3;
+    --paper-light: #F6F5F0;
+    --paper-dark: #DEDBD1;
+    --ink: #1B1B1A;
+    --ink-soft: #4B4A46;
+    --line: rgba(27,27,26,0.28);
+    --river: #2F5D6B;
+    --alarm: #A3271C;
+  }
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+  body{
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: 18px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  button{ font-family: inherit; }
+  a{ color: inherit; }
+
+  .back-pill{
+    position: fixed; top: 14px; left: 14px; z-index: 9999;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; background: #14161A; color: #FAFAF7;
+    text-decoration: none; font-family: system-ui, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.03em;
+    border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,0.25); opacity: 0.85;
+  }
+  .back-pill:hover{ opacity: 1; }
+
+  .app{ max-width: 1040px; margin: 0 auto; padding: 0 20px 60px; }
+
+  /* ---------- Language toggle ---------- */
+  .langbar{ display: flex; justify-content: flex-end; padding: 18px 0 0; }
+  .langtoggle{ display: inline-flex; align-items: center; gap: 2px; font-family: system-ui, sans-serif; font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em; }
+  .langtoggle button{ font: inherit; letter-spacing: inherit; background: none; border: none; cursor: pointer; color: var(--ink-soft); padding: 6px 8px; border-radius: 6px; }
+  .langtoggle button:hover{ color: var(--ink); }
+  .langtoggle button[aria-pressed="true"]{ color: var(--ink); background: var(--paper-dark); }
+  .langtoggle .sep{ color: var(--line); }
+
+  /* ---------- Masthead ---------- */
+  header.mast{ text-align: center; padding: 18px 0 8px; }
+  .eyebrow{ font-family: 'IM Fell English SC', serif; font-size: 15px; letter-spacing: 0.14em; color: var(--river); margin: 0 0 6px; }
+  h1{
+    font-family: 'IM Fell English SC', serif; font-weight: 400;
+    font-size: clamp(38px, 7vw, 68px); line-height: 1; letter-spacing: 0.04em; margin: 0;
+  }
+  .subtitle{ font-family: 'IM Fell English', serif; font-style: italic; font-size: clamp(18px, 2.4vw, 23px); color: var(--ink-soft); margin: 6px 0 0; }
+  .rule{ height: 7px; margin: 18px auto 0; max-width: 520px; border-top: 1px solid var(--ink); border-bottom: 3px double var(--ink); }
+
+  /* ---------- Why am I playing ---------- */
+  .why{
+    margin: 26px auto 0; max-width: 760px; padding: 18px 22px;
+    border: 1.5px dashed var(--line); border-radius: 10px; background: var(--paper-light);
+  }
+  .label{ font-family: system-ui, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 8px; }
+  .why p.text{ margin: 0; font-style: italic; color: var(--ink-soft); }
+
+  /* ---------- Riddle block ---------- */
+  .riddle{
+    display: grid; grid-template-columns: 400px 1fr; gap: 26px; align-items: start;
+    margin: 30px 0 0; padding: 24px; background: var(--paper-light); border: 1px solid var(--line);
+  }
+  .riddle figure{ margin: 0; }
+  .riddle figure img{ width: 100%; height: auto; display: block; border: 1px solid var(--line); mix-blend-mode: multiply; }
+  .riddle figcaption{ font-size: 13.5px; color: var(--ink-soft); margin-top: 6px; font-style: italic; }
+  .original{ font-family: 'IM Fell English', serif; font-size: 18.5px; line-height: 1.5; margin: 0 0 6px; text-align: justify; hyphens: auto; }
+  .original .q{ display: block; margin-top: 6px; text-align: center; }
+  .trans{ margin: 16px 0 0; padding-top: 14px; border-top: 1px solid var(--line); font-size: 17px; color: var(--ink-soft); }
+  .trans[hidden]{ display: none; }
+
+  /* ---------- How to play ---------- */
+  .how{ display: grid; grid-template-columns: 1fr auto; gap: 18px 30px; align-items: start; margin: 28px 0 0; }
+  .how ol{ margin: 0; padding-left: 22px; }
+  .how li{ margin: 0 0 4px; }
+  .legend{ display: flex; flex-direction: column; gap: 8px; font-size: 16px; min-width: 190px; }
+  .legend span{ display: inline-flex; align-items: center; gap: 10px; }
+  .legend svg{ width: 32px; height: 58px; flex: none; }
+  .pieces-note{ grid-column: 1 / -1; margin: 0; font-size: 14.5px; font-style: italic; color: var(--ink-soft); }
+
+  /* ---------- Stage ---------- */
+  .stage{
+    position: relative; margin: 26px 0 0;
+    background: var(--paper-light); border: 2px solid var(--ink);
+    box-shadow: 6px 6px 0 var(--river);
+  }
+  .scene{ display: block; width: 100%; height: auto; user-select: none; -webkit-user-select: none; }
+  .scene .stroke{ fill: none; stroke: var(--ink); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+  .scene .faint{ fill: none; stroke: var(--ink); stroke-width: 0.9; opacity: .45; stroke-linecap: round; }
+  .piece, .canoe{ transition: transform 1s cubic-bezier(.55,.05,.35,1); }
+  .piece{ cursor: default; outline: none; }
+  .piece .hit{ fill: transparent; }
+  .piece.can{ cursor: pointer; }
+  .piece.can:hover .fig, .piece.can:focus-visible .fig{ transform: translateY(-4px); }
+  .piece .fig{ transition: transform .15s ease; }
+  .piece:focus-visible .ring{ opacity: 1; }
+  .piece .ring{ opacity: 0; fill: none; stroke: var(--river); stroke-width: 2.5; stroke-dasharray: 5 4; }
+  .piece.inboat .ring{ stroke: var(--river); }
+  .stage.locked .piece{ cursor: default; }
+
+  .bankbar{
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px;
+    padding: 10px 16px; border-top: 1.5px solid var(--ink); background: var(--paper);
+    font-family: system-ui, sans-serif; font-size: 12.5px; color: var(--ink-soft);
+  }
+  .bankbar .r{ text-align: right; }
+  .bankbar strong{ display: block; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink); }
+  .count{ text-align: center; font-family: 'IM Fell English SC', serif; font-size: 15px; letter-spacing: .08em; color: var(--ink); }
+  .count b{ font-family: 'EB Garamond', serif; font-size: 24px; display: block; line-height: 1; }
+
+  .caption{
+    min-height: 0; padding: 0 16px; border-top: 0 solid var(--ink); background: var(--paper-light);
+    text-align: center; overflow: hidden; max-height: 0; transition: max-height .3s ease, padding .3s ease;
+  }
+  .caption.on{ max-height: 140px; padding: 12px 16px; border-top-width: 1.5px; }
+  .caption .sn{ font-family: system-ui, sans-serif; font-size: 10.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--river); }
+  .caption .co{ font-family: 'IM Fell English', serif; font-style: italic; font-size: 19px; margin: 2px 0 0; }
+  .caption .ct{ font-size: 15.5px; color: var(--ink-soft); margin: 0; }
+
+  .controls{ display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 18px 0 0; }
+  .btn{
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none;
+    font-family: system-ui, sans-serif; font-weight: 700; font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase;
+    padding: 12px 18px; border-radius: 2px; border: 1.5px solid var(--ink); cursor: pointer;
+    background: transparent; color: var(--ink); transition: background .15s ease, color .15s ease, transform .15s ease;
+  }
+  .btn:hover:not(:disabled){ background: var(--ink); color: var(--paper-light); }
+  .btn.primary{ background: var(--river); border-color: var(--river); color: #fff; min-width: 150px; }
+  .btn.primary:hover:not(:disabled){ background: #234652; border-color: #234652; }
+  .btn:disabled{ opacity: .4; cursor: not-allowed; }
+  .linkish{ margin-left: auto; background: none; border: none; cursor: pointer; font-size: 16px; color: var(--ink-soft); text-decoration: underline; text-underline-offset: 3px; padding: 6px 2px; }
+  .linkish:hover{ color: var(--ink); }
+
+  /* ---------- Overlay notices on the stage ---------- */
+  .notice{
+    position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center;
+    padding: 18px; background: rgba(236,234,227,.72); opacity: 0; pointer-events: none; transition: opacity .3s ease;
+  }
+  .notice.open{ opacity: 1; pointer-events: auto; }
+  .notice .card{
+    width: min(560px, 100%); max-height: 100%; overflow: auto; background: var(--paper-light);
+    border: 2px solid var(--ink); box-shadow: 6px 6px 0 var(--ink); padding: 22px 24px 20px;
+  }
+  .notice.lose .card{ box-shadow: 6px 6px 0 var(--alarm); }
+  .notice h2{ font-family: 'IM Fell English SC', serif; font-weight: 400; font-size: 28px; line-height: 1.05; margin: 0 0 10px; }
+  .notice.lose h2{ color: var(--alarm); }
+  .notice p{ margin: 0 0 10px; font-size: 17px; }
+  .notice blockquote{ margin: 12px 0; padding: 8px 0 8px 14px; border-left: 3px solid var(--alarm); }
+  .notice blockquote .o{ font-family: 'IM Fell English', serif; font-style: italic; display: block; }
+  .notice blockquote .t{ display: block; font-size: 15.5px; color: var(--ink-soft); margin-top: 4px; }
+  .notice .reflect{ font-style: italic; color: var(--ink-soft); }
+  .notice .row{ display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+
+  /* ---------- Result ---------- */
+  .result{ margin: 54px 0 0; padding-top: 30px; border-top: 3px double var(--ink); }
+  .result[hidden]{ display: none; }
+  .result h2{ font-family: 'IM Fell English SC', serif; font-weight: 400; font-size: clamp(30px, 4.6vw, 44px); line-height: 1; margin: 0 0 14px; }
+  .result-grid{ display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 30px; align-items: start; }
+  .result p{ margin: 0 0 14px; }
+  .winner{ font-family: 'IM Fell English', serif; font-size: 19px; padding: 12px 16px; background: var(--paper-light); border: 1px solid var(--line); }
+  .winner .t{ display: block; font-family: 'EB Garamond', serif; font-size: 15.5px; color: var(--ink-soft); margin-top: 4px; }
+  .page-btn{ display: block; width: 100%; padding: 0; border: 2px solid var(--ink); background: var(--paper-light); cursor: zoom-in; box-shadow: 6px 6px 0 var(--river); position: relative; }
+  .page-btn img{ display: block; width: 100%; height: auto; mix-blend-mode: multiply; }
+  .page-btn .tag{ position: absolute; right: 8px; top: 8px; background: var(--ink); color: var(--paper-light); font-family: system-ui, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .06em; padding: 5px 9px; border-radius: 999px; }
+  .analyze{
+    margin-top: 22px; padding: 20px 22px; background: var(--ink); color: var(--paper-light);
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .analyze p{ margin: 0; font-size: 17px; }
+  .analyze a{
+    align-self: flex-start; display: inline-flex; gap: 8px; align-items: center; text-decoration: none;
+    font-family: system-ui, sans-serif; font-weight: 700; font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase;
+    background: var(--paper-light); color: var(--ink); padding: 12px 18px; border-radius: 2px;
+  }
+  .analyze a:hover .arr{ transform: translateX(3px); }
+  .analyze .arr{ transition: transform .15s ease; }
+
+  .credit{ margin: 40px 0 0; font-size: 14px; color: var(--ink-soft); }
+
+  /* ---------- Lightbox ---------- */
+  dialog.lightbox{ border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 96vh; }
+  dialog.lightbox::backdrop{ background: rgba(20,20,18,.82); }
+  dialog.lightbox img{ display: block; max-width: 96vw; max-height: 92vh; width: auto; height: auto; background: var(--paper-light); }
+  dialog.lightbox button{ position: fixed; top: 14px; right: 18px; background: none; border: none; color: #fff; font-size: 34px; line-height: 1; cursor: pointer; }
+
+  @media (max-width: 760px){
+    body{ font-size: 17px; }
+    .riddle{ grid-template-columns: 1fr; padding: 18px; }
+    .riddle figure{ max-width: 460px; }
+    .how{ grid-template-columns: 1fr; }
+    .legend{ flex-direction: row; flex-wrap: wrap; gap: 8px 18px; }
+    .result-grid{ grid-template-columns: 1fr; }
+    .linkish{ margin-left: 0; }
+    .bankbar{ font-size: 11.5px; padding: 8px 10px; }
+    .controls .btn{ flex: 1 1 auto; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .piece, .canoe, .piece .fig{ transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<a class="back-pill" href="../index.html">&larr;&nbsp;RACE GAMES</a>
+
+<div class="app">
+  <div class="langbar">
+    <div class="langtoggle" role="group" aria-label="Language">
+      <button type="button" data-lang="en" aria-pressed="true">EN</button>
+      <span class="sep">/</span>
+      <button type="button" data-lang="es" aria-pressed="false">ES</button>
+      <span class="sep">/</span>
+      <button type="button" data-lang="pt" aria-pressed="false">PT</button>
+    </div>
+  </div>
+
+  <header class="mast">
+    <p class="eyebrow" data-i18n="eyebrow">Distracção · Rio de Janeiro · 23 January 1886</p>
+    <h1>Problema a Premio</h1>
+    <p class="subtitle" data-i18n="subtitle">The canoe riddle</p>
+    <div class="rule"></div>
+  </header>
+
+  <section class="why">
+    <p class="label" data-i18n="whyLabel">Why am I playing?</p>
+    <p class="text" data-i18n="whyText"></p>
+  </section>
+
+  <section class="riddle" aria-labelledby="riddleLabel">
+    <figure>
+      <img src="../images/distraccao-problema-recorte.jpg" alt="Clipping from Distracção: the heading Problema a Premio, its dedication, and a woodcut of a river with a canoe and six figures on the near bank." width="492" height="307">
+      <figcaption>Distracção, 23 Jan. 1886, p. 123</figcaption>
+    </figure>
+    <div>
+      <p class="label" id="riddleLabel" data-i18n="riddleLabel">The riddle as printed</p>
+      <p class="original" lang="pt">Na margem de um rio ha tres brancos que querem passar para o outro lado com seus tres escravos. A canôa, porem, de que elles podem dispôr, só comporta duas pessoas, contando com a que fôr remando, e os brancos tem que transportar-se a si e aos pretos de maneira que em nenhuma margem haja numero maior de pretos porque então os brancos serião assassinados.<span class="q">Pergunta-se: Como passarão elles?</span></p>
+      <div class="trans" id="transBlock">
+        <p class="label" data-i18n="transLabel">Translation</p>
+        <span data-i18n="riddleTrans"></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="how">
+    <div>
+      <p class="label" data-i18n="howLabel">How to play</p>
+      <ol>
+        <li data-i18n="how1"></li>
+        <li data-i18n="how2"></li>
+        <li data-i18n="how3"></li>
+      </ol>
+    </div>
+    <div class="legend" aria-hidden="true">
+      <span><svg viewBox="0 0 60 110"><use href="#enslaver-1"/></svg><span data-i18n="legendE">Enslaver</span></span>
+      <span><svg viewBox="0 0 60 110"><use href="#enslaved-1"/></svg><span data-i18n="legendS">Enslaved person</span></span>
+    </div>
+    <p class="pieces-note" data-i18n="piecesNote"></p>
+  </section>
+
+  <section class="stage" id="stage" aria-label="River">
+    <svg class="scene" id="scene" viewBox="0 0 800 380" role="group">
+      <defs>
+        <pattern id="water" width="24" height="9" patternUnits="userSpaceOnUse">
+          <path d="M2 4.5 H15" stroke="#1B1B1A" stroke-width=".9" opacity=".55"/>
+        </pattern>
+        <pattern id="water2" width="31" height="9" patternUnits="userSpaceOnUse" patternTransform="translate(11 4)">
+          <path d="M0 4.5 H9" stroke="#1B1B1A" stroke-width=".8" opacity=".35"/>
+        </pattern>
+        <pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(-35)">
+          <path d="M0 0 V5" stroke="#1B1B1A" stroke-width=".8" opacity=".5"/>
+        </pattern>
+        <pattern id="hullhatch" width="4" height="4" patternUnits="userSpaceOnUse">
+          <path d="M0 2 H4" stroke="#1B1B1A" stroke-width=".9" opacity=".6"/>
+        </pattern>
+        <pattern id="shadowhatch" width="4" height="2.2" patternUnits="userSpaceOnUse"><path d="M0 1.1 H4" stroke="#1B1B1A" stroke-width=".9"/></pattern>
+        <!-- Figures redrawn from the woodcuts on p. 136, each in a 60 x 110 box, feet at y = 101 -->
+        <g id="fig-shadow"><ellipse cx="30" cy="106" rx="17" ry="3.2" fill="url(#shadowhatch)"/></g>
+        <!-- Enslaver: wide-brimmed hat, long light coat, outlined in ink -->
+        <g id="enslaver-base" stroke="#1B1B1A" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round">
+          <path d="M19 74 L19.5 101 L27 101 L28.5 76 Z M31.5 76 L33 101 L40.5 101 L41 74 Z" fill="#F6F5F0"/>
+          <path d="M17 101.5 Q22 99 28 101.5 Z M32 101.5 Q38 99 43 101.5 Z" fill="#1B1B1A"/>
+          <path d="M21 30 Q30 26.5 39 30 L43.5 50 L46 76 Q30 79 14 76 L16.5 50 Z" fill="#F6F5F0"/>
+          <path d="M30 30 L30 77 M27 36 L30 30 L33 36" fill="none"/>
+          <circle cx="31.6" cy="44" r=".9" fill="#1B1B1A" stroke="none"/><circle cx="31.6" cy="52" r=".9" fill="#1B1B1A" stroke="none"/>
+          <path d="M38.5 40 L43 47 M39 47 L44.5 55 M39.5 55 L45.5 64 M40 63 L46 72" stroke-width="1" fill="none"/>
+          <circle cx="30" cy="21.5" r="6.2" fill="#F6F5F0"/>
+          <path d="M33.5 18 Q36.5 21 34 26" stroke-width="1" fill="none"/>
+          <path d="M10 15.5 Q30 8.5 50 15.5 Q30 21 10 15.5 Z" fill="#F6F5F0"/>
+          <path d="M21.5 14 Q22 4 30 3.5 Q38 4 38.5 14" fill="#F6F5F0"/>
+          <path d="M22 11.5 Q30 9.5 38 11.5" stroke-width="1.4" fill="none"/>
+        </g>
+        <g id="enslaver-1"><use href="#fig-shadow"/><use href="#enslaver-base"/>
+          <path d="M21.5 31 Q15 45 17 61 M38.5 31 Q45 45 43 61" fill="none" stroke="#1B1B1A" stroke-width="1.9" stroke-linecap="round"/></g>
+        <g id="enslaver-2"><use href="#fig-shadow"/><use href="#enslaver-base"/>
+          <path d="M21.5 31 Q15 45 17 61 M38.5 31 Q49 38 46 46 Q42 49 40 46" fill="none" stroke="#1B1B1A" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></g>
+        <g id="enslaver-3"><use href="#fig-shadow"/><use href="#enslaver-base"/>
+          <path d="M21.5 31 Q12 40 14 50 M38.5 31 Q45 45 43 61" fill="none" stroke="#1B1B1A" stroke-width="1.9" stroke-linecap="round"/></g>
+        
+        <!-- Enslaved person: dark figure with a light waistcloth -->
+        <g id="enslaved-base">
+          <path d="M20.5 64 L19.5 101 L27.5 101 L29.5 68 L31.5 68 L33.5 101 L41.5 101 L39.5 64 Z" fill="#1B1B1A"/>
+          <path d="M17 101.5 Q22 99 28.5 101.5 Z M32.5 101.5 Q38 99 44 101.5 Z" fill="#1B1B1A"/>
+          <path d="M19.5 28 Q30 23.5 40.5 28 L40 47 L39.5 57 L20.5 57 L20 47 Z" fill="#1B1B1A"/>
+          <path d="M26 22 L34 22 L34 29 L26 29 Z" fill="#1B1B1A"/>
+          <ellipse cx="30" cy="15.5" rx="6.6" ry="7.6" fill="#1B1B1A"/>
+          <path d="M19 55.5 L41 55.5 L42 68 Q36.5 71.5 31.5 66 Q28.5 69.5 24 69 Q20.5 69 18 67 Z" fill="#F6F5F0" stroke="#1B1B1A" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M24 59 L23 66 M29 59 L28.5 64 M35 59 L36 67" stroke="#1B1B1A" stroke-width=".9"/>
+        </g>
+        <g id="enslaved-1"><use href="#fig-shadow"/><use href="#enslaved-base"/>
+          <path d="M22 31 Q15 44 17 58 M38 31 Q47 34 55 31" fill="none" stroke="#1B1B1A" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></g>
+        <g id="enslaved-2"><use href="#fig-shadow"/><use href="#enslaved-base"/>
+          <path d="M22 31 Q15 44 17 58 M38 31 Q46 30 53 22" fill="none" stroke="#1B1B1A" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></g>
+        <g id="enslaved-3"><use href="#fig-shadow"/><use href="#enslaved-base"/>
+          <path d="M22 31 Q12 38 8 46 M38 31 Q48 38 52 46" fill="none" stroke="#1B1B1A" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></g>
+      </defs>
+
+      <!-- distant landscape, after the woodcut -->
+      <path class="faint" d="M60 52 q22 -18 46 -6 q14 -14 34 -2 q20 -4 22 10 q-20 4 -48 2 q-30 4 -54 -4z"/>
+      <path class="faint" d="M560 40 q26 -20 54 -6 q18 -12 38 0 q26 -2 30 14 q-30 6 -66 2 q-32 4 -56 -10z"/>
+      <path class="faint" d="M440 74 q14 -10 30 -2 q12 -6 22 2 q-20 4 -52 0z"/>
+      <path class="stroke" d="M0 160 C70 150 120 128 190 132 C250 136 300 150 360 146 C420 142 470 126 540 128 C620 130 690 150 800 142"/>
+      <path class="faint" d="M210 150 C260 152 300 160 360 158 C420 156 470 146 540 148" />
+      <path class="faint" d="M250 164 H330 M380 162 H470 M300 170 H420"/>
+
+      <!-- river -->
+      <rect x="150" y="190" width="500" height="190" fill="url(#water)"/>
+      <rect x="150" y="190" width="500" height="190" fill="url(#water2)"/>
+      <path class="faint" d="M210 190 H590"/>
+
+      <!-- banks -->
+      <path d="M0 186 H196 Q226 194 234 290 L240 380 H0 Z" fill="#F6F5F0"/>
+      <path d="M196 186 Q226 194 234 290 L240 380 H214 L206 290 Q200 214 180 196 Z" fill="url(#hatch)"/>
+      <path class="stroke" d="M0 186 H196 Q226 194 234 290 L240 380"/>
+      <path d="M800 186 H604 Q574 194 566 290 L560 380 H800 Z" fill="#F6F5F0"/>
+      <path d="M604 186 Q574 194 566 290 L560 380 H586 L594 290 Q600 214 620 196 Z" fill="url(#hatch)"/>
+      <path class="stroke" d="M800 186 H604 Q574 194 566 290 L560 380"/>
+      <path class="faint" d="M18 244 h40 M94 252 h30 M150 238 h22 M30 300 h56 M120 318 h48 M10 348 h70 M110 360 h60"/>
+      <path class="faint" d="M782 244 h-40 M706 252 h-30 M650 238 h-22 M770 300 h-56 M680 318 h-48 M790 348 h-70 M690 360 h-60"/>
+
+      <g id="pieces"></g>
+
+      <!-- canoe (drawn above the pieces so riders sit inside it) -->
+      <g class="canoe" id="canoe">
+        <path d="M0 296 L156 296 Q150 312 134 318 H22 Q6 312 0 296 Z" fill="#F6F5F0"/>
+        <path d="M0 296 L156 296 Q150 312 134 318 H22 Q6 312 0 296 Z" fill="url(#hullhatch)"/>
+        <path class="stroke" d="M0 296 L156 296 Q150 312 134 318 H22 Q6 312 0 296 Z" stroke-width="2"/>
+        <path class="stroke" d="M-6 293 L4 297 M150 297 L162 293" stroke-width="2"/>
+        <path class="faint" d="M-14 326 h30 M120 328 h40"/>
+      </g>
+    </svg>
+
+    <div class="caption" id="caption" aria-live="polite">
+      <div class="sn" id="capNum"></div>
+      <p class="co" id="capOrig" lang="pt"></p>
+      <p class="ct" id="capTrans"></p>
+    </div>
+
+    <div class="bankbar">
+      <div><strong data-i18n="bankL">Starting bank</strong><span id="tallyL"></span></div>
+      <div class="count"><b id="count">0</b><span data-i18n="crossings">Crossings</span></div>
+      <div class="r"><strong data-i18n="bankR">Far bank</strong><span id="tallyR"></span></div>
+    </div>
+
+    <div class="notice lose" id="loseNotice" role="alertdialog" aria-labelledby="loseTitle">
+      <div class="card">
+        <h2 id="loseTitle" data-i18n="loseTitle">The rule is broken</h2>
+        <p id="loseText"></p>
+        <blockquote>
+          <span class="o" lang="pt">“…em nenhuma margem haja numero maior de pretos porque então os brancos serião assassinados.”</span>
+          <span class="t" data-i18n="loseQuoteTr"></span>
+        </blockquote>
+        <p class="reflect" data-i18n="loseReflect"></p>
+        <div class="row">
+          <button type="button" class="btn primary" id="loseUndo" data-i18n="undoLast">Undo last crossing</button>
+          <button type="button" class="btn" id="loseRestart" data-i18n="restart">Start over</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="notice win" id="winNotice" role="dialog" aria-labelledby="winTitle">
+      <div class="card">
+        <h2 id="winTitle" data-i18n="winTitle">Everyone is across</h2>
+        <p id="winText"></p>
+        <p class="reflect" data-i18n="winReflect"></p>
+        <div class="row">
+          <button type="button" class="btn primary" id="toResult"><span data-i18n="seeAnswer">See the winning answer</span> ↓</button>
+          <button type="button" class="btn" id="winRestart" data-i18n="restart">Start over</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="controls">
+    <button type="button" class="btn primary" id="crossBtn" data-i18n="cross">Cross</button>
+    <button type="button" class="btn" id="undoBtn" data-i18n="undo">Undo</button>
+    <button type="button" class="btn" id="restartBtn" data-i18n="restart">Start over</button>
+    <button type="button" class="linkish" id="giveUp" data-i18n="giveUp">Show me the answer</button>
+  </div>
+
+  <section class="result" id="result" hidden aria-labelledby="resultTitle">
+    <p class="eyebrow" data-i18n="resultEyebrow">Distracção · 30 January 1886</p>
+    <h2 id="resultTitle" data-i18n="resultTitle">The winning answer</h2>
+    <div class="result-grid">
+      <div>
+        <p data-i18n="resultText"></p>
+        <p class="winner"><span lang="pt">“Coube o premio á Exma. Sra. D. Maria Anselina Campello de Araujo.”</span><span class="t" data-i18n="winnerTr"></span></p>
+        <div class="controls">
+          <button type="button" class="btn primary" id="replayBtn" data-i18n="replay">Watch the published solution</button>
+        </div>
+        <div class="analyze">
+          <p data-i18n="analyzeText"></p>
+          <a href="problema-a-premio-analysis.html"><span data-i18n="analyzeCta">Analyze the riddle</span> <span class="arr">→</span></a>
+        </div>
+      </div>
+      <div>
+        <button type="button" class="page-btn" id="pageBtn">
+          <img src="../images/distraccao-solucao-1886-01-30.jpg" alt="Distracção, 30 January 1886, page 136: the solution drawn as twelve numbered woodcut scenes of the river crossing, with the prize winner named at the bottom." width="1014" height="1342" loading="lazy">
+          <span class="tag" data-i18n="enlarge">Tap to enlarge</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <p class="credit" data-i18n="credit"></p>
+</div>
+
+<dialog class="lightbox" id="lightbox">
+  <button type="button" id="lbClose" aria-label="Close">×</button>
+  <img src="../images/distraccao-solucao-1886-01-30.jpg" alt="Distracção, 30 January 1886, page 136, full size.">
+</dialog>
+
+<script>
+(function(){
+  /* =====================================================================
+     TEXT — English, Spanish, Portuguese
+     ===================================================================== */
+  var STRINGS = {
+    en: {
+      eyebrow: "Distracção · Rio de Janeiro · 23 January 1886",
+      subtitle: "The canoe riddle",
+      whyLabel: "Why am I playing?",
+      whyText: "This prize riddle ran in a Rio de Janeiro humor magazine two years before Brazil abolished slavery. Its rule turns the enslavement of Black people into a logic problem. As you play, notice what you have to believe, and what you have to do, in order to win. Whose perspective are you adopting?",
+      riddleLabel: "The riddle as printed",
+      transLabel: "Translation",
+      riddleTrans: "On the bank of a river there are three white men who want to cross to the other side with the three men they enslave. The canoe they have, however, holds only two people, counting the one rowing, and the white men must carry themselves and the Black men across so that on neither bank are there more Black men, because then the white men would be murdered. The question is: how will they cross?",
+      howLabel: "How to play",
+      how1: "Tap a figure on the bank where the canoe is waiting to put it in the canoe. Tap it again to take it out.",
+      how2: "The canoe holds two people and needs at least one to row. Press Cross to send it over.",
+      how3: "If enslaved men ever outnumber enslavers on a bank where enslavers are standing, you lose.",
+      piecesNote: "The six figures are redrawn from the woodcuts in the magazine's published solution. They keep how the magazine dressed and posed each group, so you can see the contrast it drew between enslavers and enslaved people, and judge what that contrast was meant to teach.",
+      legendE: "Enslaver", legendS: "Enslaved person",
+      bankL: "Starting bank", bankR: "Far bank",
+      bankNameL: "starting bank", bankNameR: "far bank",
+      cross: "Cross", undo: "Undo", restart: "Start over", giveUp: "Show me the answer",
+      crossings: "Crossings",
+      tally: "{e} enslavers · {s} enslaved",
+      pieceE: "Enslaver {n}", pieceS: "Enslaved person {n}",
+      whereL: "on the starting bank", whereR: "on the far bank", whereB: "in the canoe",
+      loseTitle: "The rule is broken",
+      loseText: "On the {bank}, enslaved men now outnumber the enslavers. Under the riddle's rule, the game ends here.",
+      loseQuoteTr: "“…so that on neither bank are there more Black men, because then the white men would be murdered.”",
+      loseReflect: "This is the premise you accept in order to play: that enslaved people, given the numbers, would kill. The riddle never imagines them running, refusing, or simply staying on the other side.",
+      undoLast: "Undo last crossing",
+      winTitle: "Everyone is across",
+      winBest: "You did it in {n} crossings, the shortest possible solution and the same number as the published answer.",
+      winMore: "You did it in {n} crossings. The published answer took 11.",
+      winReflect: "To win, you kept the enslaved men outnumbered at every step. That is the job the riddle gave its readers.",
+      seeAnswer: "See the winning answer",
+      resultEyebrow: "Distracção · 30 January 1886",
+      resultTitle: "The winning answer",
+      resultText: "A week later, the magazine printed the solution as twelve woodcut scenes and announced that the prize, a one-year subscription, went to a reader named D. Maria Anselina Campello de Araujo.",
+      winnerTr: "“The prize went to the Most Excellent Sra. D. Maria Anselina Campello de Araujo.”",
+      replay: "Watch the published solution", stop: "Stop",
+      scene: "Scene {n} of 12",
+      enlarge: "Tap to enlarge",
+      analyzeText: "Look closely at both pages, the riddle and the winning answer, and at what they reveal about race, slavery and play in 1880s Brazil.",
+      analyzeCta: "Analyze the riddle",
+      credit: "“Problema a premio,” Distracção, 23 Jan. 1886, p. 123, and “Solução do problema,” Distracção, 30 Jan. 1886, p. 136. Biblioteca Nacional Digital do Brasil.",
+      captions: ["Starting position.", "A white man and a Black man cross.", "The Black man stays; the white man goes back and", "hands the canoe to two Black men,", "one of whom goes back.", "Then two white men cross, but", "just in case, one of them goes back with a Black man.", "Now the two white men cross.", "The canoe is brought back by a Black man who", "brings a companion over, this one going back", "to fetch the last, which gives the following", "Result."]
+    },
+    es: {
+      eyebrow: "Distracção · Río de Janeiro · 23 de enero de 1886",
+      subtitle: "El acertijo de la canoa",
+      whyLabel: "¿Por qué estoy jugando?",
+      whyText: "Este acertijo con premio apareció en una revista humorística de Río de Janeiro dos años antes de que Brasil aboliera la esclavitud. Su regla convierte la esclavización de personas negras en un problema de lógica. Mientras juegas, fíjate en lo que tienes que creer, y en lo que tienes que hacer, para ganar. ¿Qué perspectiva estás adoptando?",
+      riddleLabel: "El acertijo tal como se publicó",
+      transLabel: "Traducción",
+      riddleTrans: "En la orilla de un río hay tres hombres blancos que quieren pasar al otro lado con los tres hombres que esclavizan. Sin embargo, la canoa de la que disponen solo lleva a dos personas, contando a la que rema, y los blancos tienen que transportarse a sí mismos y a los hombres negros de modo que en ninguna orilla haya más hombres negros, porque entonces los blancos serían asesinados. La pregunta es: ¿cómo cruzarán?",
+      howLabel: "Cómo se juega",
+      how1: "Toca una figura en la orilla donde espera la canoa para subirla. Tócala otra vez para bajarla.",
+      how2: "La canoa lleva a dos personas y necesita al menos una para remar. Pulsa Cruzar para enviarla al otro lado.",
+      how3: "Si en una orilla donde hay esclavizadores los hombres esclavizados llegan a ser más, pierdes.",
+      piecesNote: "Las seis figuras están redibujadas a partir de los grabados de la solución que publicó la revista. Conservan la manera en que la revista vestía y colocaba a cada grupo, para que puedas ver el contraste que trazaba entre esclavizadores y personas esclavizadas, y juzgar qué pretendía enseñar ese contraste.",
+      legendE: "Esclavizador", legendS: "Persona esclavizada",
+      bankL: "Orilla de partida", bankR: "Orilla opuesta",
+      bankNameL: "orilla de partida", bankNameR: "orilla opuesta",
+      cross: "Cruzar", undo: "Deshacer", restart: "Empezar de nuevo", giveUp: "Muéstrame la respuesta",
+      crossings: "Cruces",
+      tally: "{e} esclavizadores · {s} esclavizados",
+      pieceE: "Esclavizador {n}", pieceS: "Persona esclavizada {n}",
+      whereL: "en la orilla de partida", whereR: "en la orilla opuesta", whereB: "en la canoa",
+      loseTitle: "Se rompió la regla",
+      loseText: "En la {bank}, los hombres esclavizados ya superan en número a los esclavizadores. Según la regla del acertijo, el juego termina aquí.",
+      loseQuoteTr: "«…de modo que en ninguna orilla haya más hombres negros, porque entonces los blancos serían asesinados.»",
+      loseReflect: "Esta es la premisa que aceptas para jugar: que las personas esclavizadas, si son más, matarían. El acertijo nunca imagina que huyan, que se nieguen o que simplemente se queden en la otra orilla.",
+      undoLast: "Deshacer el último cruce",
+      winTitle: "Todos cruzaron",
+      winBest: "Lo lograste en {n} cruces, la solución más corta posible y el mismo número que la respuesta publicada.",
+      winMore: "Lo lograste en {n} cruces. La respuesta publicada necesitó 11.",
+      winReflect: "Para ganar, mantuviste a los hombres esclavizados en minoría en cada paso. Esa es la tarea que el acertijo les daba a sus lectores.",
+      seeAnswer: "Ver la respuesta ganadora",
+      resultEyebrow: "Distracção · 30 de enero de 1886",
+      resultTitle: "La respuesta ganadora",
+      resultText: "Una semana después, la revista publicó la solución en doce escenas grabadas en madera y anunció que el premio, una suscripción de un año, era para una lectora llamada D. Maria Anselina Campello de Araujo.",
+      winnerTr: "«El premio fue para la Excelentísima Sra. D. Maria Anselina Campello de Araujo.»",
+      replay: "Ver la solución publicada", stop: "Detener",
+      scene: "Escena {n} de 12",
+      enlarge: "Toca para ampliar",
+      analyzeText: "Mira con atención las dos páginas, el acertijo y la respuesta ganadora, y lo que revelan sobre raza, esclavitud y juego en el Brasil de la década de 1880.",
+      analyzeCta: "Analizar el acertijo",
+      credit: "«Problema a premio», Distracção, 23 de enero de 1886, p. 123, y «Solução do problema», Distracção, 30 de enero de 1886, p. 136. Biblioteca Nacional Digital do Brasil.",
+      captions: ["Posición inicial.", "Cruzan un hombre blanco y un hombre negro.", "El hombre negro se queda; el blanco regresa y", "le cede la canoa a dos hombres negros,", "uno de los cuales regresa.", "Después cruzan dos hombres blancos, pero", "por si acaso, uno de ellos regresa con un hombre negro.", "Ahora cruzan los dos hombres blancos.", "Un hombre negro devuelve la canoa y", "trae a un compañero; este regresa", "a buscar al último, lo que da lo siguiente:", "Resultado."]
+    },
+    pt: {
+      eyebrow: "Distracção · Rio de Janeiro · 23 de janeiro de 1886",
+      subtitle: "O enigma da canoa",
+      whyLabel: "Por que estou jogando?",
+      whyText: "Este problema com prêmio saiu numa revista humorística do Rio de Janeiro dois anos antes de o Brasil abolir a escravidão. Sua regra transforma a escravização de pessoas negras num problema de lógica. Enquanto joga, repare no que você precisa acreditar, e no que precisa fazer, para vencer. De quem é a perspectiva que você está adotando?",
+      riddleLabel: "O enigma como foi publicado",
+      transLabel: "Em português de hoje",
+      riddleTrans: "Na margem de um rio há três homens brancos que querem passar para o outro lado com os três homens que escravizam. A canoa de que dispõem, porém, só comporta duas pessoas, contando com quem for remando, e os brancos têm de transportar a si mesmos e aos homens negros de modo que em nenhuma margem haja número maior de negros, porque então os brancos seriam assassinados. Pergunta-se: como eles vão atravessar?",
+      howLabel: "Como jogar",
+      how1: "Toque numa figura na margem onde a canoa está esperando para colocá-la na canoa. Toque de novo para tirá-la.",
+      how2: "A canoa leva duas pessoas e precisa de pelo menos uma para remar. Aperte Atravessar para mandá-la ao outro lado.",
+      how3: "Se, numa margem onde há escravizadores, os homens escravizados ficarem em maior número, você perde.",
+      piecesNote: "As seis figuras foram redesenhadas a partir das gravuras da solução publicada pela revista. Elas mantêm o modo como a revista vestia e posicionava cada grupo, para que você veja o contraste que ela traçava entre escravizadores e pessoas escravizadas, e julgue o que esse contraste pretendia ensinar.",
+      legendE: "Escravizador", legendS: "Pessoa escravizada",
+      bankL: "Margem de partida", bankR: "Margem oposta",
+      bankNameL: "margem de partida", bankNameR: "margem oposta",
+      cross: "Atravessar", undo: "Desfazer", restart: "Recomeçar", giveUp: "Mostrar a resposta",
+      crossings: "Travessias",
+      tally: "{e} escravizadores · {s} escravizados",
+      pieceE: "Escravizador {n}", pieceS: "Pessoa escravizada {n}",
+      whereL: "na margem de partida", whereR: "na margem oposta", whereB: "na canoa",
+      loseTitle: "A regra foi quebrada",
+      loseText: "Na {bank}, os homens escravizados agora superam em número os escravizadores. Pela regra do enigma, o jogo termina aqui.",
+      loseQuoteTr: "",
+      loseReflect: "Esta é a premissa que você aceita para jogar: a de que pessoas escravizadas, em maior número, matariam. O enigma nunca imagina que elas fujam, se recusem ou simplesmente fiquem do outro lado.",
+      undoLast: "Desfazer a última travessia",
+      winTitle: "Todos atravessaram",
+      winBest: "Você conseguiu em {n} travessias, a solução mais curta possível e o mesmo número da resposta publicada.",
+      winMore: "Você conseguiu em {n} travessias. A resposta publicada precisou de 11.",
+      winReflect: "Para vencer, você manteve os homens escravizados em minoria a cada passo. Essa é a tarefa que o enigma dava a seus leitores.",
+      seeAnswer: "Ver a resposta vencedora",
+      resultEyebrow: "Distracção · 30 de janeiro de 1886",
+      resultTitle: "A resposta vencedora",
+      resultText: "Uma semana depois, a revista publicou a solução em doze cenas gravadas em madeira e anunciou que o prêmio, uma assinatura de um ano, ficou com uma leitora chamada D. Maria Anselina Campello de Araujo.",
+      winnerTr: "",
+      replay: "Ver a solução publicada", stop: "Parar",
+      scene: "Cena {n} de 12",
+      enlarge: "Toque para ampliar",
+      analyzeText: "Observe com atenção as duas páginas, o enigma e a resposta vencedora, e o que elas revelam sobre raça, escravidão e jogo no Brasil da década de 1880.",
+      analyzeCta: "Analisar o enigma",
+      credit: "“Problema a premio”, Distracção, 23 jan. 1886, p. 123, e “Solução do problema”, Distracção, 30 jan. 1886, p. 136. Biblioteca Nacional Digital do Brasil.",
+      captions: null
+    }
+  };
+
+  /* Captions exactly as printed on p. 136 */
+  var CAPTIONS_PT = ["Posição.", "Passam um branco e um preto.", "O preto fica, o branco volta e", "Cede a canôa a dous pretos", "Um dos quaes volta.", "Depois passam dous brancos, mas", "Por causa das duvidas, volta um delles com um preto", "Agora passam os dous brancos.", "A canôa é reconduzida por um preto que", "Traz um companheiro, voltando este", "A buscar o ultimo, o que dá o seguinte", "Resultado."];
+
+  /* The published solution: who rides in each crossing, and which printed scene it belongs to */
+  var SOLUTION = [
+    { e: 1, s: 1, scene: 2 }, { e: 1, s: 0, scene: 3 }, { e: 0, s: 2, scene: 4 }, { e: 0, s: 1, scene: 5 },
+    { e: 2, s: 0, scene: 6 }, { e: 1, s: 1, scene: 7 }, { e: 2, s: 0, scene: 8 }, { e: 0, s: 1, scene: 9 },
+    { e: 0, s: 2, scene: 10 }, { e: 0, s: 1, scene: 10 }, { e: 0, s: 2, scene: 11 }
+  ];
+
+  /* =====================================================================
+     GEOMETRY (SVG units, viewBox 800 x 380)
+     ===================================================================== */
+  var DOCK = { L: 236, R: 408 };          // canoe's left edge when docked
+  var SEAT = [48, 108];                    // figure centers inside the canoe
+  var BOAT_BASE = 306;                     // figure base line inside the canoe
+  var FK = 0.8;                            // figure scale (60 x 110 box -> 48 x 88)
+  var ROW_BASE = { E: 244, S: 322 };       // enslavers stand behind, enslaved in front
+  var SLOT_X = { L: [34, 92, 150], R: [650, 708, 766] };   // figure centers
+  var MOVE_MS = 1050;
+
+  /* =====================================================================
+     STATE
+     ===================================================================== */
+  var PIECES = [
+    { id: "E1", t: "E", n: 1 }, { id: "E2", t: "E", n: 2 }, { id: "E3", t: "E", n: 3 },
+    { id: "S1", t: "S", n: 1 }, { id: "S2", t: "S", n: 2 }, { id: "S3", t: "S", n: 3 }
+  ];
+  var state, history, mode = "play", replayToken = 0;
+
+  function fresh(){
+    var loc = {}; PIECES.forEach(function(p){ loc[p.id] = "L"; });
+    return { loc: loc, seats: [null, null], boat: "L", count: 0 };
+  }
+  function clone(s){ var loc = {}; for (var k in s.loc) loc[k] = s.loc[k]; return { loc: loc, seats: s.seats.slice(), boat: s.boat, count: s.count }; }
+
+  function tally(s, side){
+    var e = 0, x = 0;
+    PIECES.forEach(function(p){ if (s.loc[p.id] === side){ if (p.t === "E") e++; else x++; } });
+    return { e: e, s: x };
+  }
+  /* The rule as the published answer applies it: a bank is lost only if enslavers are there and are outnumbered. */
+  function brokenBank(s){
+    var sides = ["L", "R"];
+    for (var i = 0; i < 2; i++){ var c = tally(s, sides[i]); if (c.e > 0 && c.s > c.e) return sides[i]; }
+    return null;
+  }
+
+  /* =====================================================================
+     DRAWING
+     ===================================================================== */
+  var NS = "http://www.w3.org/2000/svg";
+  var $ = function(id){ return document.getElementById(id); };
+  var stage = $("stage"), canoe = $("canoe"), piecesLayer = $("pieces");
+  var els = {};
+  var lang = "en";
+
+  function t(key){ var d = STRINGS[lang] || STRINGS.en; return (d[key] !== undefined && d[key] !== null) ? d[key] : STRINGS.en[key]; }
+  function fmt(str, vars){ return String(str).replace(/\{(\w+)\}/g, function(_, k){ return vars[k]; }); }
+
+  PIECES.forEach(function(p){
+    var g = document.createElementNS(NS, "g");
+    g.setAttribute("class", "piece");
+    g.setAttribute("tabindex", "0");
+    g.setAttribute("role", "button");
+    g.innerHTML = '<rect class="hit" x="-8" y="-6" width="64" height="98"/>' +
+                  '<rect class="ring" x="-2" y="-2" width="52" height="90" rx="6"/>' +
+                  '<g class="fig"><use href="#' + (p.t === "E" ? "enslaver-" : "enslaved-") + p.n + '" transform="scale(' + FK + ')"/></g>';
+    g.addEventListener("click", function(){ tapPiece(p.id); });
+    g.addEventListener("keydown", function(e){ if (e.key === "Enter" || e.key === " "){ e.preventDefault(); tapPiece(p.id); } });
+    piecesLayer.appendChild(g);
+    els[p.id] = g;
+  });
+
+  function piecePos(p, s){
+    var where = s.loc[p.id];
+    if (where === "B"){
+      var seat = s.seats.indexOf(p.id);
+      return [DOCK[s.boat] + SEAT[seat] - 30*FK, BOAT_BASE - 101*FK];
+    }
+    return [SLOT_X[where][p.n - 1] - 30*FK, ROW_BASE[p.t] - 101*FK];
+  }
+
+  function render(){
+    canoe.style.transform = "translate(" + (DOCK[state.boat]) + "px, 0px)";
+    PIECES.forEach(function(p){
+      var xy = piecePos(p, state), g = els[p.id];
+      g.style.transform = "translate(" + xy[0] + "px," + xy[1] + "px)";
+      var where = state.loc[p.id];
+      var can = mode === "play" && (where === "B" || where === state.boat);
+      g.classList.toggle("can", can);
+      g.classList.toggle("inboat", where === "B");
+      g.setAttribute("aria-disabled", can ? "false" : "true");
+      g.setAttribute("aria-label", fmt(t(p.t === "E" ? "pieceE" : "pieceS"), { n: p.n }) + ", " + t(where === "B" ? "whereB" : (where === "L" ? "whereL" : "whereR")));
+    });
+    var a = tally(state, "L"), b = tally(state, "R");
+    var keep = function(str){ return str.replace(/(\d) /g, "$1\u00a0"); };
+    $("tallyL").textContent = keep(fmt(t("tally"), a));
+    $("tallyR").textContent = keep(fmt(t("tally"), b));
+    $("count").textContent = state.count;
+    var riders = state.seats.filter(Boolean).length;
+    $("crossBtn").disabled = !(mode === "play" && riders > 0);
+    $("undoBtn").disabled = !(mode === "play" && history.length > 0);
+    $("restartBtn").disabled = mode === "anim";
+    stage.classList.toggle("locked", mode !== "play");
+  }
+
+  /* =====================================================================
+     PLAY
+     ===================================================================== */
+  function tapPiece(id){
+    if (mode !== "play") return;
+    var where = state.loc[id];
+    if (where === "B"){
+      state.seats[state.seats.indexOf(id)] = null;
+      state.loc[id] = state.boat;
+    } else if (where === state.boat){
+      var free = state.seats.indexOf(null);
+      if (free === -1) return;
+      state.seats[free] = id;
+      state.loc[id] = "B";
+    } else return;
+    render();
+  }
+
+  function cross(after){
+    var riders = state.seats.filter(Boolean);
+    if (!riders.length) return;
+    mode = mode === "replay" ? "replay" : "anim";
+    state.boat = state.boat === "L" ? "R" : "L";
+    render();
+    setTimeout(function(){
+      riders.forEach(function(id){ state.loc[id] = state.boat; });
+      state.seats = [null, null];
+      state.count++;
+      render();
+      if (after) after();
+    }, MOVE_MS);
+  }
+
+  function playerCross(){
+    if (mode !== "play" || !state.seats.some(Boolean)) return;
+    history.push(clone(state));
+    cross(function(){
+      mode = "play";
+      var bad = brokenBank(state);
+      if (bad){ mode = "lost"; showLose(bad); }
+      else if (tally(state, "R").e + tally(state, "R").s === 6){ mode = "won"; showWin(); }
+      render();
+    });
+  }
+
+  function undo(){
+    if (!history.length) return;
+    state = history.pop();
+    mode = "play";
+    hideNotices();
+    render();
+  }
+  function restart(){
+    replayToken++;
+    state = fresh(); history = []; mode = "play";
+    hideNotices(); setCaption(null);
+    $("replayBtn").textContent = t("replay");
+    render();
+  }
+
+  var lostBank = null, wonCount = 0;
+  function showLose(bank){
+    lostBank = bank;
+    fillLose();
+    $("loseNotice").classList.add("open");
+    $("loseUndo").focus({ preventScroll: true });
+  }
+  function fillLose(){
+    if (!lostBank) return;
+    $("loseText").textContent = fmt(t("loseText"), { bank: t(lostBank === "L" ? "bankNameL" : "bankNameR") });
+  }
+  function showWin(){
+    wonCount = state.count;
+    fillWin();
+    $("winNotice").classList.add("open");
+    revealResult(false);
+    $("toResult").focus({ preventScroll: true });
+  }
+  function fillWin(){
+    if (!wonCount) return;
+    $("winText").textContent = fmt(t(wonCount <= 11 ? "winBest" : "winMore"), { n: wonCount });
+  }
+  function hideNotices(){
+    $("loseNotice").classList.remove("open"); $("winNotice").classList.remove("open");
+    lostBank = null;
+  }
+
+  function revealResult(scroll){
+    var r = $("result");
+    r.hidden = false;
+    if (scroll) r.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  /* =====================================================================
+     REPLAY OF THE PUBLISHED SOLUTION
+     ===================================================================== */
+  function setCaption(scene){
+    var box = $("caption");
+    if (!scene){ box.classList.remove("on"); return; }
+    box.dataset.scene = scene;
+    $("capNum").textContent = fmt(t("scene"), { n: scene });
+    $("capOrig").textContent = CAPTIONS_PT[scene - 1];
+    var tr = (STRINGS[lang] || STRINGS.en).captions;
+    $("capTrans").textContent = tr ? tr[scene - 1] : "";
+    box.classList.add("on");
+  }
+
+  function replay(){
+    if (mode === "replay"){ restart(); return; }
+    var token = ++replayToken;
+    state = fresh(); history = []; hideNotices();
+    mode = "replay";
+    $("replayBtn").textContent = t("stop");
+    stage.scrollIntoView({ behavior: "smooth", block: "center" });
+    setCaption(1);
+    render();
+    var i = 0;
+    function wait(ms, fn){ setTimeout(function(){ if (token === replayToken) fn(); }, ms); }
+    function next(){
+      if (i >= SOLUTION.length){
+        setCaption(12);
+        wait(2200, function(){ mode = "play"; $("replayBtn").textContent = t("replay"); history = []; render(); });
+        return;
+      }
+      var m = SOLUTION[i];
+      setCaption(m.scene);
+      // board the riders
+      var need = { E: m.e, S: m.s }, seat = 0;
+      PIECES.forEach(function(p){
+        if (need[p.t] > 0 && state.loc[p.id] === state.boat){ need[p.t]--; state.loc[p.id] = "B"; state.seats[seat++] = p.id; }
+      });
+      render();
+      wait(750, function(){
+        cross(function(){ i++; wait(550, next); });
+      });
+    }
+    wait(1400, next);
+  }
+
+  /* =====================================================================
+     WIRING
+     ===================================================================== */
+  $("crossBtn").addEventListener("click", playerCross);
+  $("undoBtn").addEventListener("click", undo);
+  $("restartBtn").addEventListener("click", restart);
+  $("loseUndo").addEventListener("click", undo);
+  $("loseRestart").addEventListener("click", restart);
+  $("winRestart").addEventListener("click", restart);
+  $("toResult").addEventListener("click", function(){ $("winNotice").classList.remove("open"); revealResult(true); });
+  $("giveUp").addEventListener("click", function(){ revealResult(true); });
+  $("replayBtn").addEventListener("click", replay);
+  canoe.addEventListener("click", function(){ if (mode === "play") playerCross(); });
+  canoe.style.cursor = "pointer";
+
+  var lb = $("lightbox");
+  $("pageBtn").addEventListener("click", function(){ if (lb.showModal) lb.showModal(); else window.open(lb.querySelector("img").src); });
+  $("lbClose").addEventListener("click", function(){ lb.close(); });
+  lb.addEventListener("click", function(e){ if (e.target === lb) lb.close(); });
+
+  /* =====================================================================
+     LANGUAGE
+     ===================================================================== */
+  var STORAGE_KEY = "race-games-lang";
+  function applyLang(l){
+    lang = STRINGS[l] ? l : "en";
+    document.documentElement.setAttribute("lang", lang);
+    document.querySelectorAll("[data-i18n]").forEach(function(el){
+      var v = t(el.getAttribute("data-i18n"));
+      if (typeof v === "string") el.textContent = v;
+    });
+    document.querySelectorAll(".langtoggle button").forEach(function(btn){
+      btn.setAttribute("aria-pressed", btn.getAttribute("data-lang") === lang ? "true" : "false");
+    });
+    $("loseNotice").querySelector(".t").hidden = !t("loseQuoteTr");
+    document.querySelector(".winner .t").hidden = !t("winnerTr");
+    $("replayBtn").textContent = t(mode === "replay" ? "stop" : "replay");
+    fillLose(); fillWin();
+    if ($("caption").classList.contains("on")) setCaption(+$("caption").dataset.scene);
+    render();
+  }
+  document.querySelectorAll(".langtoggle button").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var l = btn.getAttribute("data-lang"); applyLang(l);
+      try { localStorage.setItem(STORAGE_KEY, l); } catch(e){}
+    });
+  });
+
+  state = fresh(); history = [];
+  var saved = "en";
+  try { var s = localStorage.getItem(STORAGE_KEY); if (s && STRINGS[s]) saved = s; } catch(e){}
+  // place everything without animating on first paint
+  var all = [canoe].concat(PIECES.map(function(p){ return els[p.id]; }));
+  all.forEach(function(el){ el.style.transition = "none"; });
+  applyLang(saved);
+  piecesLayer.getBoundingClientRect();
+  all.forEach(function(el){ el.style.transition = ""; });
+})();
+</script>
+</body>
+</html>

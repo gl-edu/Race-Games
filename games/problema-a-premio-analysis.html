@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Analyze: Problema a Premio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700;800;900&family=Libre+Franklin:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #FAFAF7;
+    --paper-dim: #F0EFEA;
+    --ink: #14161A;
+    --ink-soft: #55585F;
+    --line: #DCDBD4;
+    --red: #E8402C;
+    --river: #2F5D6B;
+    --ar: 0.742;
+  }
+  *{ box-sizing: border-box; }
+  html, body{ margin: 0; background: var(--paper); color: var(--ink); }
+  body{ font-family: 'Libre Franklin', system-ui, sans-serif; font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  button{ font-family: inherit; }
+
+  .back-pill{
+    position: fixed; top: 14px; left: 14px; z-index: 9999;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; background: var(--ink); color: var(--paper);
+    text-decoration: none; font-size: 12px; font-weight: 600; letter-spacing: 0.03em;
+    border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,0.25); opacity: 0.85;
+  }
+  .back-pill:hover{ opacity: 1; }
+
+  .wrap{ max-width: 1280px; margin: 0 auto; padding: 0 28px; }
+
+  .langbar{ display: flex; justify-content: flex-end; padding: 18px 0 0; }
+  .langtoggle{ display: inline-flex; align-items: center; gap: 2px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em; }
+  .langtoggle button{ font: inherit; letter-spacing: inherit; background: none; border: none; cursor: pointer; color: var(--ink-soft); padding: 6px 8px; border-radius: 6px; transition: color .15s ease, background .15s ease; }
+  .langtoggle button:hover{ color: var(--ink); }
+  .langtoggle button[aria-pressed="true"]{ color: var(--ink); background: var(--paper-dim); }
+  .langtoggle .sep{ color: var(--line); }
+
+  header.intro{ padding: 22px 0 26px; border-bottom: 2px solid var(--ink); margin-bottom: 20px; }
+  .eyebrow{ font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--river); margin: 0 0 10px; }
+  h1{ font-family: 'Bitter', serif; font-weight: 900; text-transform: uppercase; font-size: clamp(30px, 5vw, 54px); line-height: 1.02; letter-spacing: -0.01em; margin: 0 0 12px; }
+  .intro-row{ display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: flex-end; justify-content: space-between; }
+  .hint{ margin: 0; color: var(--ink-soft); font-size: 15px; max-width: 620px; }
+  .intro-actions{ display: flex; flex-wrap: wrap; gap: 10px; }
+  .play-link, .about-btn{
+    display: inline-flex; align-items: center; gap: 8px; text-decoration: none; cursor: pointer;
+    font-weight: 700; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 12px 18px; border-radius: 2px;
+  }
+  .play-link{ color: var(--paper); background: var(--river); border: 1.5px solid var(--river); }
+  .about-btn{ color: var(--river); background: transparent; border: 1.5px solid var(--river); }
+  .about-btn:hover{ background: var(--river); color: var(--paper); }
+  .play-link:hover{ transform: translateX(2px); }
+  .about-btn .plus{ display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--river); color: var(--paper); font-size: 14px; line-height: 1; }
+  .about-btn:hover .plus{ background: var(--paper); color: var(--river); }
+
+  /* ---------- Page tabs ---------- */
+  .pagetabs{ display: flex; gap: 0; margin: 0 0 -2px; position: relative; z-index: 5; }
+  .pagetabs button{
+    flex: 1 1 0; text-align: left; cursor: pointer;
+    background: var(--paper-dim); color: var(--ink-soft); border: 2px solid var(--ink); border-bottom: none;
+    padding: 9px 14px 8px; margin-right: -2px;
+    font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; line-height: 1.3;
+  }
+  .pagetabs button:first-child{ border-radius: 6px 0 0 0; }
+  .pagetabs button:last-child{ border-radius: 0 6px 0 0; margin-right: 0; }
+  .pagetabs button b{ display: block; font-family: 'Bitter', serif; font-size: 15px; letter-spacing: .01em; color: var(--ink); }
+  .pagetabs button[aria-selected="true"]{ background: var(--river); color: rgba(255,255,255,.8); }
+  .pagetabs button[aria-selected="true"] b{ color: #fff; }
+
+  /* ---------- Analysis layout ---------- */
+  .analysis{
+    position: relative; display: grid;
+    grid-template-columns: minmax(200px, 1fr) auto minmax(200px, 1fr);
+    gap: 0 36px; align-items: start; padding: 40px 0 70px;
+  }
+  .col{ position: relative; align-self: stretch; }
+  .leaders{ position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; z-index: 3; transition: opacity .3s ease; }
+  .leaders line{ stroke: var(--ink); stroke-width: 1.25; }
+  .leaders circle{ fill: var(--ink); }
+
+  .callout{
+    position: absolute; left: 0; right: 0; display: block; width: 100%; text-align: left;
+    background: #fff; border: 1.5px solid var(--ink); border-radius: 2px;
+    padding: 11px 13px 12px; cursor: pointer; z-index: 2; box-shadow: 3px 3px 0 var(--ink);
+    transition: transform .15s ease, box-shadow .15s ease, opacity .3s ease; color: var(--ink);
+  }
+  .callout[hidden]{ display: none; }
+  .callout:hover, .callout:focus-visible{ transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--river); outline: none; }
+  .callout .num{ display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--red); color: #fff; font-size: 11px; font-weight: 800; margin-right: 8px; vertical-align: 1px; }
+  .callout .ct{ font-family: 'Bitter', serif; font-weight: 800; font-size: 15.5px; text-transform: uppercase; letter-spacing: 0.01em; }
+  .callout .cl{ display: block; margin-top: 5px; font-size: 13px; line-height: 1.45; color: var(--ink-soft); }
+  .callout .more{ display: block; margin-top: 7px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--river); }
+
+  .stage-col{ position: relative; z-index: 2; }
+  .frame{
+    position: relative;
+    width: min(calc((100vw - 56px) * 0.5), calc(78vh * var(--ar)), 640px);
+    aspect-ratio: var(--ar); overflow: hidden; background: #e4e2db;
+    border: 2px solid var(--ink); box-shadow: 6px 6px 0 var(--river); touch-action: manipulation;
+  }
+  .layer{ position: absolute; left: 0; top: 0; transform-origin: 0 0; transition: transform .75s cubic-bezier(.65,.05,.25,1); will-change: transform; }
+  .layer[hidden]{ display: none; }
+  .layer img{ display: block; width: 100%; height: 100%; user-select: none; -webkit-user-drag: none; }
+  .layer svg{ position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+
+  .hot{ fill: rgba(255,255,255,0); stroke: rgba(232,64,44,0); stroke-width: 2; vector-effect: non-scaling-stroke; cursor: pointer; transition: fill .2s ease, stroke .2s ease; }
+  .hot:hover, .hot.hover{ fill: rgba(232,64,44,0.10); stroke: rgba(232,64,44,0.9); stroke-dasharray: 5 4; }
+  .zoomed .hot{ pointer-events: none; }
+  .zoomed .hot.active{ stroke: var(--red); stroke-width: 3; stroke-dasharray: none; fill: none; }
+  .dim{ fill: rgba(20,22,26,0.55); fill-rule: evenodd; opacity: 0; transition: opacity .5s ease .25s; pointer-events: none; }
+  .zoomed .dim{ opacity: 1; }
+
+  .badge{
+    position: absolute; z-index: 3; width: 28px; height: 28px; margin: -14px 0 0 -14px;
+    border-radius: 50%; border: 2px solid #fff; background: var(--red); color: #fff;
+    font-weight: 800; font-size: 13px; cursor: pointer; display: grid; place-items: center; padding: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,.35); transition: opacity .25s ease, transform .2s ease;
+  }
+  .badge[hidden]{ display: none; }
+  .badge::after{ content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid var(--red); animation: pulse 2.4s ease-out infinite; opacity: 0; }
+  @keyframes pulse{ 0%{ transform: scale(.7); opacity: .8; } 80%,100%{ transform: scale(1.5); opacity: 0; } }
+  .badge:hover{ transform: scale(1.12); }
+  .zoomed .badge{ opacity: 0; pointer-events: none; }
+
+  .reset{
+    position: absolute; z-index: 4; top: 12px; left: 12px; display: inline-flex; align-items: center; gap: 6px;
+    background: var(--paper); color: var(--ink); border: 1.5px solid var(--ink); border-radius: 999px;
+    padding: 7px 13px; font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; cursor: pointer;
+    opacity: 0; pointer-events: none; transform: translateY(-6px); transition: opacity .25s ease, transform .25s ease;
+  }
+  .zoomed .reset{ opacity: 1; pointer-events: auto; transform: none; transition-delay: .4s; }
+
+  .panel{
+    position: absolute; z-index: 6; top: 0; left: 0; right: 0; background: #fff; border: 2px solid var(--ink); box-shadow: 6px 6px 0 var(--ink);
+    padding: 22px 22px 18px; opacity: 0; transform: translateX(14px); pointer-events: none;
+    transition: opacity .3s ease, transform .35s ease; max-height: 100%; overflow: auto;
+  }
+  .is-zoomed .panel{ opacity: 1; transform: none; pointer-events: auto; transition-delay: .35s; }
+  .panel .p-top{ display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .panel .p-num{ font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--red); }
+  .panel .p-close{ background: none; border: none; font-size: 22px; line-height: 1; cursor: pointer; color: var(--ink-soft); padding: 2px 4px; }
+  .panel .p-close:hover{ color: var(--ink); }
+  .panel h2{ font-family: 'Bitter', serif; font-weight: 800; font-size: 24px; line-height: 1.1; text-transform: uppercase; margin: 0 0 14px; }
+  .panel .p-body p{ margin: 0 0 12px; font-size: 15px; line-height: 1.62; }
+  .p-body p.quote, .m-body p.quote{ font-family: Georgia, 'Times New Roman', serif; font-style: italic; padding-left: 12px; border-left: 3px solid var(--river); color: var(--ink); }
+  .panel .p-nav{ display: flex; justify-content: space-between; gap: 8px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .panel .p-nav button{ background: none; border: 1.5px solid var(--ink); border-radius: 2px; padding: 8px 12px; cursor: pointer; font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
+  .panel .p-nav button:hover{ background: var(--ink); color: var(--paper); }
+
+  .is-zoomed .callout, .is-zoomed .leaders{ opacity: 0; pointer-events: none; }
+
+  .credit{ margin: 0; font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; max-width: 720px; }
+  .topics{ display: none; }
+
+  .modal-back{ position: fixed; inset: 0; z-index: 10000; background: rgba(20,22,26,.6); display: flex; align-items: center; justify-content: center; padding: 24px; opacity: 0; pointer-events: none; transition: opacity .25s ease; }
+  .modal-back.open{ opacity: 1; pointer-events: auto; }
+  .modal{ position: relative; width: min(820px, 100%); max-height: calc(100vh - 48px); overflow: auto; background: var(--paper); border: 2px solid var(--ink); box-shadow: 8px 8px 0 var(--river); padding: 42px clamp(22px, 5vw, 56px) 40px; transform: translateY(14px) scale(.98); transition: transform .3s ease; }
+  .modal-back.open .modal{ transform: none; }
+  .modal .m-close{ position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 28px; line-height: 1; cursor: pointer; color: var(--ink-soft); }
+  .modal .m-close:hover{ color: var(--ink); }
+  .modal h2{ font-family: 'Bitter', serif; font-weight: 900; text-transform: uppercase; font-size: clamp(28px, 4vw, 42px); line-height: 1.05; margin: 0 0 22px; padding-bottom: 18px; border-bottom: 2px solid var(--ink); }
+  .modal .m-body p{ font-size: 17px; line-height: 1.7; margin: 0 0 16px; }
+
+  @media (max-width: 960px){
+    .analysis{ grid-template-columns: 1fr; padding: 0 0 40px; }
+    .col.side, .leaders{ display: none; }
+    .stage-col{ display: flex; flex-direction: column; align-items: center; }
+    .pagetabs, .frame{ width: min(100%, calc(74vh * var(--ar))); }
+    .pagetabs{ width: min(100%, calc(74vh * var(--ar)) ); }
+    .panel{ position: relative; display: none; margin-top: 18px; width: 100%; transform: none; max-height: none; }
+    .is-zoomed .panel{ display: block; }
+    .topics{ display: grid; gap: 10px; width: 100%; margin-top: 24px; }
+    .is-zoomed .topics{ display: none; }
+    .topics button{ display: flex; align-items: center; gap: 10px; text-align: left; width: 100%; background: #fff; border: 1.5px solid var(--ink); border-radius: 2px; padding: 12px 14px; cursor: pointer; font-family: 'Bitter', serif; font-weight: 800; font-size: 15px; text-transform: uppercase; color: var(--ink); }
+    .topics button[hidden]{ display: none; }
+    .topics .num{ display: inline-grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--red); color: #fff; font-family: 'Libre Franklin', sans-serif; font-size: 11px; font-weight: 800; }
+    .credit{ margin-top: 26px; }
+  }
+  @media (max-width: 600px){
+    .wrap{ padding: 0 16px; }
+    .pagetabs button{ padding: 8px 10px 7px; font-size: 9.5px; }
+    .pagetabs button b{ font-size: 13.5px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .layer, .panel, .callout, .badge::after{ transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<a class="back-pill" href="../index.html">&larr;&nbsp;RACE GAMES</a>
+
+<div class="wrap">
+  <div class="langbar">
+    <div class="langtoggle" role="group" aria-label="Language">
+      <button type="button" data-lang="en" aria-pressed="true">EN</button>
+      <span class="sep">/</span>
+      <button type="button" data-lang="es" aria-pressed="false">ES</button>
+      <span class="sep">/</span>
+      <button type="button" data-lang="pt" aria-pressed="false">PT</button>
+    </div>
+  </div>
+
+  <header class="intro">
+    <p class="eyebrow" data-i18n="eyebrow">Let's analyze the game</p>
+    <h1>Problema a Premio</h1>
+    <div class="intro-row">
+      <p class="hint" data-i18n="hint">Switch between the riddle and the winning answer, then click a numbered area — or one of the labels — to zoom in and read about it.</p>
+      <div class="intro-actions">
+        <button type="button" class="about-btn" id="aboutBtn"><span data-i18n="aboutBtn">What was Distracção?</span> <span class="plus">+</span></button>
+        <a class="play-link" href="problema-a-premio.html"><span data-i18n="playLink">Play the game</span> <span>→</span></a>
+      </div>
+    </div>
+  </header>
+
+  <section class="analysis" id="analysis">
+    <svg class="leaders" id="leaders" aria-hidden="true"></svg>
+
+    <div class="col side" id="colLeft"></div>
+
+    <div class="stage-col">
+      <div class="pagetabs" role="tablist" id="pagetabs">
+        <button type="button" role="tab" data-page="riddle" aria-selected="true"><b data-i18n="tabRiddle">The riddle</b><span data-i18n="tabRiddleDate">23 Jan. 1886 · p. 123</span></button>
+        <button type="button" role="tab" data-page="solution" aria-selected="false"><b data-i18n="tabSolution">The winning answer</b><span data-i18n="tabSolutionDate">30 Jan. 1886 · p. 136</span></button>
+      </div>
+      <div class="frame" id="frame">
+        <div class="layer" id="layer-riddle">
+          <img src="../images/distraccao-problema-1886-01-23.jpg" alt="Distracção, 23 January 1886, page 123, with the Problema a premio at the bottom of the left column." id="img-riddle">
+          <svg id="overlay-riddle" viewBox="0 0 1032 1376" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="layer" id="layer-solution" hidden>
+          <img src="../images/distraccao-solucao-1886-01-30.jpg" alt="Distracção, 30 January 1886, page 136: twelve numbered woodcut scenes showing the solution, with the prize winner named at the bottom." id="img-solution">
+          <svg id="overlay-solution" viewBox="0 0 1014 1342" preserveAspectRatio="none"></svg>
+        </div>
+        <button type="button" class="reset" id="reset">← <span data-i18n="reset">Full view</span></button>
+      </div>
+
+      <div class="topics" id="topics"></div>
+    </div>
+
+    <div class="col side" id="colRight">
+      <aside class="panel" id="panel" aria-live="polite">
+        <div class="p-top">
+          <span class="p-num" id="pNum"></span>
+          <button type="button" class="p-close" id="pClose" aria-label="Close">×</button>
+        </div>
+        <h2 id="pTitle"></h2>
+        <div class="p-body" id="pBody"></div>
+        <div class="p-nav">
+          <button type="button" id="pPrev">← <span data-i18n="prev">Previous</span></button>
+          <button type="button" id="pNext"><span data-i18n="next">Next</span> →</button>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <p class="credit" data-i18n="credit"></p>
+</div>
+
+<div class="modal-back" id="modalBack" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <button type="button" class="m-close" id="mClose" aria-label="Close">×</button>
+    <p class="eyebrow" data-i18n="eyebrow">Let's analyze the game</p>
+    <h2 id="mTitle"></h2>
+    <div class="m-body" id="mBody"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  /* =====================================================================
+     ✏️  EDIT YOUR TEXT HERE
+     ---------------------------------------------------------------------
+     Each area has a short "label" (shown in the box beside the image)
+     and a "body" (shown when the area is clicked). "body" is a list of
+     paragraphs. A paragraph that starts with ">" is styled as a quotation
+     from the source. One that starts with "[" is styled as a placeholder.
+     ===================================================================== */
+  var CONTENT = {
+    dedication: {
+      en: { title: "An old puzzle, recast", label: "A river-crossing riddle more than a thousand years old, given a new cast of characters.",
+            body: ["“Problema a premio,” a problem with a prize, ran in Distracção on 23 January 1886. It was dedicated to the “masters” of the games section and above all to an expert puzzler identified as «O Paiz». Regular players would have recognized the format at once.",
+                   "River-crossing puzzles date back at least to the ninth century, when one version asked how to ferry a wolf, a goat and a cabbage without anything getting eaten. Later versions used jealous husbands and their wives, and in the nineteenth century French mathematicians reworked the problem as equations.",
+                   "Distracção was not alone in giving the puzzle racial characters. An 1881 book of parlor games published in London, Paris and New York used masters and dishonest servants, and a version with missionaries and cannibals followed a decade later. That one lasted so long that a British exam board only pulled an illustrated version from a GCSE textbook in 2020. Swapping the pieces changes almost nothing about the math, and everything about what players are asked to imagine."] },
+      es: { title: "Un acertijo antiguo, con nuevo reparto", label: "Un acertijo de cruzar el río con más de mil años, con un nuevo elenco de personajes.",
+            body: ["«Problema a premio», un problema con premio, apareció en Distracção el 23 de enero de 1886. Estaba dedicado a los «maestros» de la sección de juegos y, sobre todo, a un experto identificado como «O Paiz». Los jugadores habituales habrían reconocido el formato enseguida.",
+                   "Los acertijos de cruzar un río se remontan al menos al siglo IX, cuando una versión preguntaba cómo llevar al otro lado a un lobo, una cabra y una col sin que nadie se comiera a nadie. Versiones posteriores usaron maridos celosos y sus esposas, y en el siglo XIX matemáticos franceses convirtieron el problema en ecuaciones.",
+                   "Distracção no fue la única en darle personajes raciales. Un libro de juegos de salón de 1881, publicado en Londres, París y Nueva York, usó amos y sirvientes deshonestos, y una década después apareció una versión con misioneros y caníbales. Esta duró tanto que un organismo examinador británico solo retiró una versión ilustrada de un libro de texto escolar en 2020. Cambiar las piezas casi no altera las matemáticas, pero lo cambia todo en lo que se pide imaginar a quien juega."] },
+      pt: { title: "Um enigma antigo, com novo elenco", label: "Um enigma de travessia de rio com mais de mil anos, com um novo elenco de personagens.",
+            body: ["“Problema a premio”, um problema com prêmio, saiu na Distracção em 23 de janeiro de 1886. Era dedicado aos “mestres” da seção de jogos e, sobretudo, a um especialista identificado como «O Paiz». Os jogadores habituais teriam reconhecido o formato na hora.",
+                   "Os enigmas de travessia de rio remontam pelo menos ao século IX, quando uma versão perguntava como levar um lobo, uma cabra e um repolho para o outro lado sem que ninguém fosse comido. Versões posteriores usaram maridos ciumentos e suas esposas, e no século XIX matemáticos franceses transformaram o problema em equações.",
+                   "A Distracção não foi a única a dar ao enigma personagens raciais. Um livro de jogos de salão de 1881, publicado em Londres, Paris e Nova York, usou senhores e criados desonestos, e uma década depois surgiu uma versão com missionários e canibais. Essa durou tanto que um órgão de exames britânico só retirou uma versão ilustrada de um livro didático escolar em 2020. Trocar as peças quase não muda a matemática, mas muda tudo no que se pede que o jogador imagine."] }
+    },
+    picture: {
+      en: { title: "The picture", label: "Three enslavers in hats and jackets stand beside three enslaved men before the crossing begins.",
+            body: ["The woodcut sets the scene before a single move is made. On the near bank, three figures in white hats and jackets stand beside three Black figures who wear only loincloths, their arms held out from their bodies as if ready to fight.",
+                   "Clothing and gesture do the work of a caption. Dress marks one group as civilized and the other as barbaric, a familiar nineteenth-century trope, and posture tells readers which side is supposed to be dangerous. The picture defines race through skin color and behavior at the same time.",
+                   "The layout also resembles a chess problem as printed in the press: two opposing sides, one light and one dark, arranged for the reader to move. Chess carried the prestige of logic and science, which helped the riddle's racism pass as a test of intelligence."] },
+      es: { title: "La imagen", label: "Tres esclavizadores con sombrero y chaqueta junto a tres hombres esclavizados, antes del primer cruce.",
+            body: ["El grabado prepara la escena antes de cualquier jugada. En la orilla cercana, tres figuras con sombreros y chaquetas blancas están junto a tres figuras negras que solo llevan taparrabos, con los brazos separados del cuerpo como si estuvieran listas para pelear.",
+                   "La ropa y los gestos hacen el trabajo de un pie de foto. La vestimenta marca a un grupo como civilizado y al otro como bárbaro, un tópico muy repetido en el siglo XIX, y la postura les indica a los lectores qué bando se supone que es peligroso. La imagen define la raza a la vez por el color de piel y por la conducta.",
+                   "La composición también se parece a un problema de ajedrez impreso en la prensa: dos bandos enfrentados, uno claro y otro oscuro, dispuestos para que el lector los mueva. El ajedrez tenía el prestigio de la lógica y de la ciencia, lo que ayudaba a que el racismo del acertijo pasara por una prueba de inteligencia."] },
+      pt: { title: "A imagem", label: "Três escravizadores de chapéu e paletó ao lado de três homens escravizados, antes da primeira travessia.",
+            body: ["A gravura monta a cena antes de qualquer jogada. Na margem mais próxima, três figuras de chapéu e paletó brancos estão ao lado de três figuras negras vestidas apenas com tangas, com os braços afastados do corpo como se estivessem prontas para lutar.",
+                   "A roupa e os gestos fazem o trabalho de uma legenda. A vestimenta marca um grupo como civilizado e o outro como bárbaro, um clichê muito repetido no século XIX, e a postura diz aos leitores qual lado deve ser visto como perigoso. A imagem define raça ao mesmo tempo pela cor da pele e pelo comportamento.",
+                   "A composição também lembra um problema de xadrez impresso na imprensa: dois lados opostos, um claro e outro escuro, dispostos para o leitor mover. O xadrez tinha o prestígio da lógica e da ciência, o que ajudava o racismo do enigma a passar por um teste de inteligência."] }
+    },
+    rule: {
+      en: { title: "The rule", label: "To play at all, you have to accept that the enslaved men will kill their enslavers if they ever outnumber them.",
+            body: ["> “…em nenhuma margem haja numero maior de pretos porque então os brancos serião assassinados.”",
+                   "The sentence begins at the bottom of this column and finishes at the top of the next: on neither bank may there be more Black men, “because then the white men would be murdered.” Every puzzle needs a constraint, and this is the one Distracção chose.",
+                   "It rests on several premises at once. The white men are enslavers and the Black men are enslaved, so race and captivity become the same thing. Enslaved people are violent, simply waiting for the numbers to turn. And a clever enslaver can always stay in control.",
+                   "The rule makes the enslaved men dangerous and docile at the same time. They will kill if they outnumber the whites, yet they climb into the canoe, row it and come back whenever the solution needs them to. Nothing in the puzzle lets them run, refuse or stay on the other side. To try the riddle, readers had to take on this worldview for the length of the game, and the math made it feel neutral."] },
+      es: { title: "La regla", label: "Para siquiera jugar, hay que aceptar que los esclavizados matarán a sus esclavizadores si alguna vez los superan en número.",
+            body: ["> “…em nenhuma margem haja numero maior de pretos porque então os brancos serião assassinados.”",
+                   "La frase empieza al pie de esta columna y termina arriba de la siguiente: en ninguna orilla puede haber más hombres negros, «porque entonces los blancos serían asesinados». Todo acertijo necesita una restricción, y esta es la que eligió Distracção.",
+                   "Se apoya en varias premisas a la vez. Los blancos son esclavizadores y los negros, esclavizados, de modo que raza y cautiverio se vuelven lo mismo. Las personas esclavizadas son violentas y solo esperan a que cambien los números. Y un esclavizador astuto siempre puede mantener el control.",
+                   "La regla hace a los esclavizados peligrosos y dóciles al mismo tiempo. Matarán si superan a los blancos, pero suben a la canoa, la reman y regresan cada vez que la solución lo requiere. Nada en el acertijo les permite huir, negarse o quedarse en la otra orilla. Para intentar resolverlo, los lectores tenían que adoptar esta visión del mundo durante el juego, y las matemáticas la hacían parecer neutral."] },
+      pt: { title: "A regra", label: "Para sequer jogar, é preciso aceitar que os escravizados matarão seus escravizadores se algum dia os superarem em número.",
+            body: ["> “…em nenhuma margem haja numero maior de pretos porque então os brancos serião assassinados.”",
+                   "A frase começa no pé desta coluna e termina no alto da seguinte. Todo enigma precisa de uma restrição, e foi esta que a Distracção escolheu.",
+                   "Ela se apoia em várias premissas ao mesmo tempo. Os brancos são escravizadores e os negros, escravizados, de modo que raça e cativeiro passam a ser a mesma coisa. Pessoas escravizadas são violentas e só esperam os números virarem. E um escravizador esperto sempre consegue manter o controle.",
+                   "A regra torna os escravizados perigosos e dóceis ao mesmo tempo. Eles matarão se superarem os brancos, mas sobem na canoa, remam e voltam sempre que a solução precisa. Nada no enigma permite que fujam, se recusem ou fiquem do outro lado. Para tentar resolvê-lo, os leitores tinham de adotar essa visão de mundo durante o jogo, e a matemática fazia com que ela parecesse neutra."] }
+    },
+    prize: {
+      en: { title: "The prize", label: "A year's subscription, and praise “in big letters,” for whoever kept the enslaved men outnumbered.",
+            body: ["Readers had until Tuesday to send in their answers. If anyone got it right, the magazine promised to print an illustrated solution in the next issue. The prize was a one-year subscription, plus a well-deserved compliment printed in bold type.",
+                   "That small reward gave readers a material reason to work out, step by step, how enslavers could move enslaved people without losing control of them. It echoes a far more violent genre in the same newspapers: advertisements offering rewards for the capture of people who had escaped slavery.",
+                   "Printing the names of winners also built a community of players. Each week the magazine showed that any literate reader could earn recognition by mastering its rules. That promise of merit came with the rules' racial assumptions attached."] },
+      es: { title: "El premio", label: "Una suscripción de un año, y un elogio «en letras gordas», para quien mantuviera en minoría a los esclavizados.",
+            body: ["Los lectores tenían hasta el martes para enviar sus respuestas. Si alguien acertaba, la revista prometía publicar una solución ilustrada en el número siguiente. El premio era una suscripción de un año, además de un elogio bien merecido impreso en letras gruesas.",
+                   "Esa pequeña recompensa les daba a los lectores un motivo material para calcular, paso a paso, cómo los esclavizadores podían trasladar a personas esclavizadas sin perder el control sobre ellas. Recuerda un género mucho más violento que llenaba los mismos periódicos: los anuncios que ofrecían recompensas por capturar a personas que habían escapado de la esclavitud.",
+                   "Publicar los nombres de los ganadores también creaba una comunidad de jugadores. Cada semana la revista mostraba que cualquier lector alfabetizado podía ganar reconocimiento dominando sus reglas. Esa promesa de mérito venía con los supuestos raciales de las reglas incluidos."] },
+      pt: { title: "O prêmio", label: "Uma assinatura de um ano, e um elogio “em letras gordas”, para quem mantivesse os escravizados em minoria.",
+            body: ["Os leitores tinham até terça-feira para mandar as respostas. Se alguém acertasse, a revista prometia publicar uma solução ilustrada no número seguinte. O prêmio era uma assinatura de um ano, mais um elogio bem merecido impresso em negrito.",
+                   "Essa pequena recompensa dava aos leitores um motivo material para calcular, passo a passo, como os escravizadores podiam transportar pessoas escravizadas sem perder o controle sobre elas. Ela lembra um gênero muito mais violento que enchia os mesmos jornais: os anúncios que ofereciam recompensas pela captura de pessoas que tinham fugido da escravidão.",
+                   "Publicar os nomes dos vencedores também formava uma comunidade de jogadores. Toda semana a revista mostrava que qualquer leitor alfabetizado podia ganhar reconhecimento dominando suas regras. Essa promessa de mérito vinha junto com os pressupostos raciais das regras."] }
+    },
+    scenes: {
+      en: { title: "Twelve scenes", label: "A full page of woodcuts walks readers through every crossing.",
+            body: ["One week later, on 30 January 1886, Distracção printed the answer as twelve numbered scenes filling an entire page. Chess problems usually got a short list of numbered moves. Illustrating every step was an expensive novelty, and a sign of how much the magazine was investing in its games.",
+                   "The scenes are nearly identical: the same riverbanks, the same tiny figures, the same canoe. Only the people move, while the clouds shift from frame to frame to suggest time passing.",
+                   "The repetition flattens six people into game pieces, interchangeable and easy to count. Yet the drawings keep reminding readers that the pieces stand for real people, sorted along a fixed line between Black and white."] },
+      es: { title: "Doce escenas", label: "Una página entera de grabados guía a los lectores por cada cruce.",
+            body: ["Una semana después, el 30 de enero de 1886, Distracção publicó la respuesta en doce escenas numeradas que ocupaban una página completa. Los problemas de ajedrez solían resolverse con una breve lista de jugadas numeradas. Ilustrar cada paso era una novedad costosa y una señal de cuánto invertía la revista en sus juegos.",
+                   "Las escenas son casi idénticas: las mismas orillas, las mismas figuras diminutas, la misma canoa. Solo se mueven las personas, mientras las nubes cambian de un cuadro a otro para sugerir el paso del tiempo.",
+                   "La repetición reduce a seis personas a piezas de juego, intercambiables y fáciles de contar. Aun así, los dibujos recuerdan constantemente que las piezas representan a personas reales, clasificadas según una línea fija entre negro y blanco."] },
+      pt: { title: "Doze cenas", label: "Uma página inteira de gravuras conduz os leitores por cada travessia.",
+            body: ["Uma semana depois, em 30 de janeiro de 1886, a Distracção publicou a resposta em doze cenas numeradas que ocupavam uma página inteira. Os problemas de xadrez costumavam ser resolvidos com uma lista curta de lances numerados. Ilustrar cada passo era uma novidade cara e um sinal de quanto a revista investia em seus jogos.",
+                   "As cenas são quase idênticas: as mesmas margens, as mesmas figuras minúsculas, a mesma canoa. Só as pessoas se movem, enquanto as nuvens mudam de um quadro para outro para sugerir a passagem do tempo.",
+                   "A repetição reduz seis pessoas a peças de jogo, intercambiáveis e fáceis de contar. Mesmo assim, os desenhos lembram o tempo todo que as peças representam pessoas reais, classificadas por uma linha fixa entre negro e branco."] }
+    },
+    doubts: {
+      en: { title: "“Just in case”", label: "Scene 7 shows the logic of control: when the numbers look risky, an enslaver turns back.",
+            body: ["> “Por causa das duvidas, volta um delles com um preto.”",
+                   "Scene 7 reads: just in case, one of them goes back with a Black man. It is the move that unlocks the puzzle, and the caption presents it as caution in the face of a threat.",
+                   "At heart the riddle is a numbers game. With equal numbers on each side, the enslavers have only a few ways to stay in control, and finding them is the challenge. The lesson is that a racial order survives through careful arithmetic about who stands where.",
+                   "In 1886 that arithmetic was not abstract. Pressure for abolition was mounting, the conservative Saraiva-Cotegipe Law of 1885 had just freed enslaved people over sixty only on condition of more years of work for their enslavers, and the enslaved population was falling fast. Brazilian elites also debated bringing in European workers to make the country whiter. The puzzle imagines a slave system that keeps working if enslavers are clever enough, and a Brazil in which too many Black people means danger."] },
+      es: { title: "«Por si acaso»", label: "La escena 7 muestra la lógica del control: cuando los números parecen riesgosos, un esclavizador regresa.",
+            body: ["> “Por causa das duvidas, volta um delles com um preto.”",
+                   "La escena 7 dice: por si acaso, uno de ellos regresa con un hombre negro. Es la jugada que desbloquea el acertijo, y el pie la presenta como una precaución ante una amenaza.",
+                   "En el fondo, el acertijo es un juego de números. Con la misma cantidad de cada lado, los esclavizadores tienen pocas maneras de mantener el control, y encontrarlas es el desafío. La lección es que un orden racial sobrevive gracias a una aritmética cuidadosa sobre quién está dónde.",
+                   "En 1886 esa aritmética no era abstracta. La presión abolicionista crecía, la conservadora Ley Saraiva-Cotegipe de 1885 acababa de liberar a las personas esclavizadas mayores de sesenta años solo a condición de trabajar más años para sus esclavizadores, y la población esclavizada disminuía rápidamente. Las élites brasileñas también debatían traer trabajadores europeos para «blanquear» el país. El acertijo imagina un sistema esclavista que sigue funcionando si los esclavizadores son lo bastante astutos, y un Brasil en el que demasiadas personas negras significan peligro."] },
+      pt: { title: "“Por causa das dúvidas”", label: "A cena 7 mostra a lógica do controle: quando os números parecem arriscados, um escravizador volta.",
+            body: ["> “Por causa das duvidas, volta um delles com um preto.”",
+                   "É o lance que destrava o enigma, e a legenda o apresenta como uma precaução diante de uma ameaça.",
+                   "No fundo, o enigma é um jogo de números. Com a mesma quantidade de cada lado, os escravizadores têm poucas maneiras de manter o controle, e encontrá-las é o desafio. A lição é que uma ordem racial sobrevive graças a uma aritmética cuidadosa sobre quem está onde.",
+                   "Em 1886 essa aritmética não era abstrata. A pressão abolicionista crescia, a conservadora Lei Saraiva-Cotegipe, de 1885, acabara de libertar as pessoas escravizadas com mais de sessenta anos apenas sob a condição de trabalharem mais alguns anos para seus escravizadores, e a população escravizada caía depressa. As elites brasileiras também debatiam trazer trabalhadores europeus para embranquecer o país. O enigma imagina um sistema escravista que continua funcionando se os escravizadores forem espertos o bastante, e um Brasil em que gente negra demais significa perigo."] }
+    },
+    rowers: {
+      en: { title: "Who rows the canoe", label: "In the final crossings, enslaved men row alone and keep coming back.",
+            body: ["> “A canôa é reconduzida por um preto que / traz um companheiro, voltando este / a buscar o ultimo…”",
+                   "By scene 9 all three enslavers are already across. From there the solution depends entirely on the enslaved men: one rows back alone, brings a companion over, and returns once more to fetch the last.",
+                   "The puzzle needs them to act like perfectly obedient pieces at the exact moment when nothing stops them from leaving. This is the paradox at the center of the riddle. The enslaved are imagined as violent enough to kill, and docile enough to deliver themselves back into captivity.",
+                   "Look at the banks, too. Several times in the published answer, a bank holds only enslaved men, even though the printed rule says no bank may have more Black men. The magazine's own solution reads the rule as protecting white people only: an enslaved majority counts as danger only when there are white people there to be harmed."] },
+      es: { title: "Quién rema la canoa", label: "En los últimos cruces, los esclavizados reman solos y siguen regresando.",
+            body: ["> “A canôa é reconduzida por um preto que / traz um companheiro, voltando este / a buscar o ultimo…”",
+                   "Para la escena 9, los tres esclavizadores ya están del otro lado. Desde ahí la solución depende por completo de los esclavizados: uno rema de vuelta solo, trae a un compañero y regresa una vez más a buscar al último.",
+                   "El acertijo necesita que actúen como piezas perfectamente obedientes justo cuando nada les impide irse. Esa es la paradoja central del acertijo. Se imagina a los esclavizados lo bastante violentos para matar y lo bastante dóciles para devolverse a sí mismos al cautiverio.",
+                   "Mira también las orillas. Varias veces en la respuesta publicada, una orilla queda solo con hombres esclavizados, aunque la regla impresa dice que en ninguna orilla puede haber más hombres negros. La propia solución de la revista entiende la regla como una protección solo para los blancos: una mayoría esclavizada cuenta como peligro únicamente cuando hay blancos a quienes dañar."] },
+      pt: { title: "Quem rema a canoa", label: "Nas últimas travessias, os escravizados remam sozinhos e continuam voltando.",
+            body: ["> “A canôa é reconduzida por um preto que / traz um companheiro, voltando este / a buscar o ultimo…”",
+                   "Na cena 9, os três escravizadores já estão do outro lado. A partir daí, a solução depende inteiramente dos escravizados: um volta remando sozinho, traz um companheiro e retorna mais uma vez para buscar o último.",
+                   "O enigma precisa que eles ajam como peças perfeitamente obedientes justamente quando nada os impede de ir embora. Esse é o paradoxo central do enigma. Os escravizados são imaginados como violentos o bastante para matar e dóceis o bastante para se devolverem ao cativeiro.",
+                   "Repare também nas margens. Várias vezes na resposta publicada, uma margem fica só com homens escravizados, embora a regra impressa diga que nenhuma margem pode ter mais negros. A própria solução da revista lê a regra como uma proteção apenas para os brancos: uma maioria escravizada só conta como perigo quando há brancos ali para serem atingidos."] }
+    },
+    winner: {
+      en: { title: "The winner", label: "The prize went to a woman reader, D. Maria Anselina Campello de Araujo.",
+            body: ["> “Coube o premio á Exma. Sra. D. Maria Anselina Campello de Araujo.”",
+                   "The bottom of the page names the winner. That a woman won is no accident. Games sections were largely aimed at women, and Distracção courted them more and more, adding a regular fashion section and putting an elegantly dressed woman on its masthead.",
+                   "Puzzles gave women a respectable place in the press, where they could show their intelligence and see their names in print. Women also wrote puzzles. Maria Firmina dos Reis, one of Brazil's first Black women novelists, published riddles in several magazines.",
+                   "The same space that opened the press to women also asked them to rehearse the logic of slavery. Winning this prize meant solving the enslavers' problem better than anyone else."] },
+      es: { title: "La ganadora", label: "El premio fue para una lectora, D. Maria Anselina Campello de Araujo.",
+            body: ["> “Coube o premio á Exma. Sra. D. Maria Anselina Campello de Araujo.”",
+                   "Al pie de la página aparece el nombre de la ganadora. Que ganara una mujer no es casualidad. Las secciones de juegos se dirigían sobre todo a las mujeres, y Distracção las buscaba cada vez más: añadió una sección fija de moda y puso a una mujer elegantemente vestida en su cabecera.",
+                   "Los acertijos les daban a las mujeres un lugar respetable en la prensa, donde podían mostrar su inteligencia y ver su nombre impreso. Las mujeres también creaban acertijos. Maria Firmina dos Reis, una de las primeras novelistas negras de Brasil, publicó acertijos en varias revistas.",
+                   "El mismo espacio que abría la prensa a las mujeres también les pedía ensayar la lógica de la esclavitud. Ganar este premio significaba resolver el problema de los esclavizadores mejor que nadie."] },
+      pt: { title: "A vencedora", label: "O prêmio ficou com uma leitora, D. Maria Anselina Campello de Araujo.",
+            body: ["> “Coube o premio á Exma. Sra. D. Maria Anselina Campello de Araujo.”",
+                   "O pé da página traz o nome da vencedora. Não é por acaso que uma mulher venceu. As seções de jogos se dirigiam sobretudo às mulheres, e a Distracção as buscava cada vez mais: criou uma seção fixa de moda e pôs uma mulher elegantemente vestida em seu cabeçalho.",
+                   "Os enigmas davam às mulheres um lugar respeitável na imprensa, onde podiam mostrar sua inteligência e ver seus nomes impressos. Mulheres também criavam enigmas. Maria Firmina dos Reis, uma das primeiras romancistas negras do Brasil, publicou charadas em várias revistas.",
+                   "O mesmo espaço que abria a imprensa às mulheres também lhes pedia que ensaiassem a lógica da escravidão. Ganhar este prêmio significava resolver o problema dos escravizadores melhor do que ninguém."] }
+    },
+    about: {
+      en: { title: "What was Distracção?",
+            body: ["Distracção: semanário satyrico e humorístico was a weekly humor magazine published in Rio de Janeiro from 1884 to 1887. It was one of the first Brazilian magazines to put games at its center. Its section of riddles, charades, logic problems and chess puzzles grew from one page to two, readers sent in solutions and new puzzles each week, and the magazine printed the names of everyone who got them right.",
+                   "It came from the print shop of J. Paulo Hildebrandt, which also produced the satirical magazines Revista Illustrada, O Mequetrefe and A Vespa, and the writer Arthur Azevedo was one of its editors. Unlike its sister titles, which attacked politicians, Distracção sold itself as light, family entertainment that stayed out of politics.",
+                   "That stance was hard to keep in the 1880s, when the press was consumed by the debate over how to end slavery. When readers accused the magazine of pro-slavery content, the editors answered in 1885 that they were neither for nor against slavery, only satirists. In 1887 they called themselves abolitionists “at heart, not in speech.” In practice its pages mixed mildly abolitionist pieces with games and columns that spread anti-Black caricature.",
+                   "Distracção closed in 1887 after 123 issues. Brazil abolished slavery in May 1888, the last country in the Americas to do so. The canoe riddle shows how a magazine that called itself a mere pastime still taught its readers how to think about race, one move at a time."] },
+      es: { title: "¿Qué era Distracção?",
+            body: ["Distracção: semanário satyrico e humorístico fue una revista semanal de humor publicada en Río de Janeiro entre 1884 y 1887. Fue una de las primeras revistas brasileñas en poner los juegos en el centro. Su sección de acertijos, charadas, problemas de lógica y problemas de ajedrez pasó de una página a dos, los lectores enviaban cada semana soluciones y nuevos acertijos, y la revista publicaba los nombres de quienes acertaban.",
+                   "Salía del taller de J. Paulo Hildebrandt, que también imprimía las revistas satíricas Revista Illustrada, O Mequetrefe y A Vespa, y el escritor Arthur Azevedo fue uno de sus editores. A diferencia de esas revistas, que atacaban a los políticos, Distracção se presentaba como un entretenimiento ligero y familiar, al margen de la política.",
+                   "Esa postura era difícil de sostener en la década de 1880, cuando la prensa estaba absorbida por el debate sobre cómo terminar con la esclavitud. Cuando algunos lectores acusaron a la revista de publicar contenido esclavista, los editores respondieron en 1885 que no eran ni esclavistas ni abolicionistas, sino solo satíricos. En 1887 se declararon abolicionistas «de corazón y no de lengua». En la práctica, sus páginas mezclaban textos tibiamente abolicionistas con juegos y columnas que difundían caricaturas antinegras.",
+                   "Distracção cerró en 1887 tras 123 números. Brasil abolió la esclavitud en mayo de 1888, el último país de las Américas en hacerlo. El acertijo de la canoa muestra cómo una revista que se decía un simple pasatiempo enseñaba a sus lectores a pensar la raza, jugada a jugada."] },
+      pt: { title: "O que era a Distracção?",
+            body: ["Distracção: semanário satyrico e humorístico foi uma revista semanal de humor publicada no Rio de Janeiro entre 1884 e 1887. Foi uma das primeiras revistas brasileiras a pôr os jogos no centro. Sua seção de charadas, enigmas, problemas de lógica e problemas de xadrez passou de uma página para duas, os leitores mandavam soluções e novos enigmas toda semana, e a revista publicava os nomes de quem acertava.",
+                   "Saía da oficina de J. Paulo Hildebrandt, que também imprimia as revistas satíricas Revista Illustrada, O Mequetrefe e A Vespa, e o escritor Arthur Azevedo foi um de seus editores. Ao contrário dessas revistas, que atacavam políticos, a Distracção se apresentava como entretenimento leve e familiar, longe da política.",
+                   "Essa postura era difícil de manter na década de 1880, quando a imprensa estava tomada pelo debate sobre como acabar com a escravidão. Quando leitores acusaram a revista de publicar conteúdo escravocrata, os editores responderam em 1885 que não eram nem escravocratas nem abolicionistas, apenas satíricos. Em 1887, declararam-se abolicionistas “de coração e não de língua”. Na prática, suas páginas misturavam textos levemente abolicionistas com jogos e colunas que espalhavam caricaturas antinegras.",
+                   "A Distracção fechou em 1887, depois de 123 números. O Brasil aboliu a escravidão em maio de 1888, o último país das Américas a fazê-lo. O enigma da canoa mostra como uma revista que se dizia mero passatempo ensinava seus leitores a pensar a raça, lance a lance."] }
+    }
+  };
+
+  var STRINGS = {
+    en: { eyebrow: "Let's analyze the game", hint: "Switch between the riddle and the winning answer, then click a numbered area — or one of the labels — to zoom in and read about it.",
+          playLink: "Play the game", aboutBtn: "What was Distracção?", reset: "Full view", prev: "Previous", next: "Next",
+          tabRiddle: "The riddle", tabRiddleDate: "23 Jan. 1886 · p. 123", tabSolution: "The winning answer", tabSolutionDate: "30 Jan. 1886 · p. 136",
+          readMore: "Zoom in and learn more", of: "of",
+          credit: "“Problema a premio,” Distracção, 23 Jan. 1886, p. 123, and “Solução do problema,” Distracção, 30 Jan. 1886, p. 136. Biblioteca Nacional Digital do Brasil." },
+    es: { eyebrow: "Analicemos el juego", hint: "Cambia entre el acertijo y la respuesta ganadora, y haz clic en un área numerada — o en una de las etiquetas — para acercarte y leer sobre ella.",
+          playLink: "Jugar", aboutBtn: "¿Qué era Distracção?", reset: "Vista completa", prev: "Anterior", next: "Siguiente",
+          tabRiddle: "El acertijo", tabRiddleDate: "23 ene. 1886 · p. 123", tabSolution: "La respuesta ganadora", tabSolutionDate: "30 ene. 1886 · p. 136",
+          readMore: "Acercar y saber más", of: "de",
+          credit: "«Problema a premio», Distracção, 23 de enero de 1886, p. 123, y «Solução do problema», Distracção, 30 de enero de 1886, p. 136. Biblioteca Nacional Digital do Brasil." },
+    pt: { eyebrow: "Vamos analisar o jogo", hint: "Alterne entre o enigma e a resposta vencedora e clique numa área numerada — ou num dos rótulos — para aproximar e ler sobre ela.",
+          playLink: "Jogar", aboutBtn: "O que era a Distracção?", reset: "Visão completa", prev: "Anterior", next: "Próximo",
+          tabRiddle: "O enigma", tabRiddleDate: "23 jan. 1886 · p. 123", tabSolution: "A resposta vencedora", tabSolutionDate: "30 jan. 1886 · p. 136",
+          readMore: "Aproximar e saber mais", of: "de",
+          credit: "“Problema a premio”, Distracção, 23 jan. 1886, p. 123, e “Solução do problema”, Distracção, 30 jan. 1886, p. 136. Biblioteca Nacional Digital do Brasil." }
+  };
+
+  /* =====================================================================
+     PAGES & AREAS — positions are fractions of each scan (0 = left/top, 1 = right/bottom).
+     rect   = the clickable outline
+     zoom   = what the camera frames when the area is opened
+     anchor = where the numbered badge / leader line attaches
+     side   = which side of the image its label sits on
+     ===================================================================== */
+  var PAGES = {
+    riddle:   { W: 1032, H: 1376, overview: [0.02, 0.02, 0.98, 0.992] },
+    solution: { W: 1014, H: 1342, overview: [0.02, 0.008, 0.99, 0.996] }
+  };
+  var AREAS = [
+    { id: "dedication", page: "riddle",   rect: [0.135, 0.705, 0.485, 0.765], zoom: [0.04, 0.680, 0.540, 0.800], anchor: [0.100, 0.722], side: "left"  },
+    { id: "picture",    page: "riddle",   rect: [0.095, 0.770, 0.450, 0.872], zoom: [0.03, 0.745, 0.520, 0.900], anchor: [0.450, 0.800], side: "right" },
+    { id: "rule",       page: "riddle",   rect: [0.065, 0.874, 0.510, 0.992], zoom: [0.03, 0.855, 0.540, 0.995], anchor: [0.065, 0.930], side: "left"  },
+    { id: "prize",      page: "riddle",   rect: [0.515, 0.130, 0.955, 0.225], zoom: [0.49, 0.050, 0.970, 0.240], anchor: [0.955, 0.175], side: "right" },
+    { id: "scenes",     page: "solution", rect: [0.085, 0.080, 0.430, 0.940], zoom: [0.04, 0.040, 0.470, 0.950], anchor: [0.085, 0.300], side: "left"  },
+    { id: "doubts",     page: "solution", rect: [0.495, 0.070, 0.955, 0.195], zoom: [0.48, 0.050, 0.975, 0.370], anchor: [0.955, 0.140], side: "right" },
+    { id: "rowers",     page: "solution", rect: [0.540, 0.390, 0.920, 0.815], zoom: [0.49, 0.380, 0.975, 0.825], anchor: [0.920, 0.470], side: "right" },
+    { id: "winner",     page: "solution", rect: [0.150, 0.953, 0.840, 0.995], zoom: [0.10, 0.900, 0.900, 0.998], anchor: [0.120, 0.972], side: "left"  }
+  ];
+  // Stacking order inside each page: biggest area at the back so smaller ones stay clickable
+  var STACK = ["scenes", "rule", "picture", "dedication", "prize", "doubts", "rowers", "winner"];
+
+  var STORAGE_KEY = "race-games-lang";
+  var lang = "en";
+  try { var s = localStorage.getItem(STORAGE_KEY); if (s && STRINGS[s]) lang = s; } catch(e){}
+
+  var $ = function(id){ return document.getElementById(id); };
+  var analysis = $("analysis"), frame = $("frame");
+  var colLeft = $("colLeft"), colRight = $("colRight"), leaders = $("leaders"), topics = $("topics");
+  var NS = "http://www.w3.org/2000/svg";
+  var active = null, page = "riddle";
+  var layers = { riddle: $("layer-riddle"), solution: $("layer-solution") };
+  var overlays = { riddle: $("overlay-riddle"), solution: $("overlay-solution") };
+
+  function t(key){ return (STRINGS[lang] && STRINGS[lang][key]) || STRINGS.en[key] || ""; }
+  function c(id){ return (CONTENT[id] && (CONTENT[id][lang] || CONTENT[id].en)) || { title: "", body: [] }; }
+  function svgEl(tag, attrs){ var el = document.createElementNS(NS, tag); for (var k in attrs) el.setAttribute(k, attrs[k]); return el; }
+  function px(a){ var P = PAGES[a.page], r = a.rect; return [r[0]*P.W, r[1]*P.H, (r[2]-r[0])*P.W, (r[3]-r[1])*P.H]; }
+  function fillParas(container, paras){
+    container.innerHTML = "";
+    (paras || []).forEach(function(p){
+      var el = document.createElement("p");
+      if (/^\s*>/.test(p)){ el.className = "quote"; el.lang = "pt"; el.textContent = p.replace(/^\s*>\s*/, ""); }
+      else if (/^\s*\[/.test(p)){ var sp = document.createElement("span"); sp.className = "placeholder"; sp.textContent = p; el.appendChild(sp); }
+      else el.textContent = p;
+      container.appendChild(el);
+    });
+  }
+  function areaById(id){ for (var i = 0; i < AREAS.length; i++) if (AREAS[i].id === id) return AREAS[i]; return null; }
+
+  /* ---------- Overlays ---------- */
+  var dims = {};
+  Object.keys(PAGES).forEach(function(k){
+    dims[k] = svgEl("path", { "class": "dim" });
+    overlays[k].appendChild(dims[k]);
+  });
+  var hotEls = {};
+  AREAS.forEach(function(a){
+    var p = px(a);
+    var r = svgEl("rect", { "class": "hot", x: p[0], y: p[1], width: p[2], height: p[3], rx: 4 });
+    r.addEventListener("click", function(){ open(a.id); });
+    r.addEventListener("mouseenter", function(){ hover(a.id, true); });
+    r.addEventListener("mouseleave", function(){ hover(a.id, false); });
+    hotEls[a.id] = r;
+  });
+  STACK.forEach(function(id){ var a = areaById(id); overlays[a.page].appendChild(hotEls[id]); });
+
+  /* ---------- Badges, callouts, topic buttons ---------- */
+  var badges = {}, callouts = {}, topicBtns = {};
+  AREAS.forEach(function(a, i){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "badge"; b.textContent = i + 1;
+    b.addEventListener("click", function(){ open(a.id); });
+    b.addEventListener("mouseenter", function(){ hover(a.id, true); });
+    b.addEventListener("mouseleave", function(){ hover(a.id, false); });
+    frame.appendChild(b); badges[a.id] = b;
+
+    var co = document.createElement("button");
+    co.type = "button"; co.className = "callout";
+    co.innerHTML = '<span class="num">' + (i+1) + '</span><span class="ct"></span><span class="cl"></span><span class="more"></span>';
+    co.addEventListener("click", function(){ open(a.id); });
+    co.addEventListener("mouseenter", function(){ hover(a.id, true); });
+    co.addEventListener("mouseleave", function(){ hover(a.id, false); });
+    (a.side === "left" ? colLeft : colRight).appendChild(co); callouts[a.id] = co;
+
+    var tb = document.createElement("button");
+    tb.type = "button"; tb.innerHTML = '<span class="num">' + (i+1) + '</span><span class="tt"></span>';
+    tb.addEventListener("click", function(){ open(a.id); });
+    topics.appendChild(tb); topicBtns[a.id] = tb;
+  });
+
+  function hover(id, on){ if (!active) hotEls[id].classList.toggle("hover", on); }
+
+  /* ---------- Page switching ---------- */
+  function setPage(p){
+    if (!PAGES[p]) return;
+    page = p;
+    var P = PAGES[p], ov = P.overview;
+    var ar = ((ov[2]-ov[0]) * P.W) / ((ov[3]-ov[1]) * P.H);
+    document.documentElement.style.setProperty("--ar", ar.toFixed(4));
+    Object.keys(layers).forEach(function(k){ layers[k].hidden = k !== p; });
+    AREAS.forEach(function(a){
+      var on = a.page === p;
+      badges[a.id].hidden = !on; callouts[a.id].hidden = !on; topicBtns[a.id].hidden = !on;
+    });
+    document.querySelectorAll("#pagetabs button").forEach(function(b){ b.setAttribute("aria-selected", b.getAttribute("data-page") === p ? "true" : "false"); });
+    relayout();
+  }
+  document.querySelectorAll("#pagetabs button").forEach(function(b){
+    b.addEventListener("click", function(){
+      var p = b.getAttribute("data-page");
+      if (p === page) return;
+      if (active) close(true);
+      setPage(p);
+      if (history.replaceState) history.replaceState(null, "", "#" + p);
+    });
+  });
+
+  /* ---------- Camera ---------- */
+  function camera(region){
+    var P = PAGES[page], OV = P.overview, layer = layers[page];
+    var Fw = frame.clientWidth, Fh = frame.clientHeight;
+    var Lw = Fw / (OV[2] - OV[0]);
+    var Lh = Lw * P.H / P.W;
+    layer.style.width = Lw + "px"; layer.style.height = Lh + "px";
+    var rw = (region[2]-region[0]) * Lw, rh = (region[3]-region[1]) * Lh;
+    var k = Math.min(Fw / rw, Fh / rh);
+    var cx = (region[0]+region[2])/2 * Lw, cy = (region[1]+region[3])/2 * Lh;
+    var tx = Fw/2 - k*cx, ty = Fh/2 - k*cy;
+    tx = Math.min(0, Math.max(Fw - k*Lw, tx)); ty = Math.min(0, Math.max(Fh - k*Lh, ty));
+    layer.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + k + ")";
+    return { Lw: Lw, Lh: Lh };
+  }
+  var view = null;
+  function overviewPoint(fx, fy){ var OV = PAGES[page].overview; return [(fx - OV[0]) * view.Lw, (fy - OV[1]) * view.Lh]; }
+
+  /* ---------- Open / close ---------- */
+  function setDim(a){
+    var P = PAGES[a.page], o = "M0,0 H" + P.W + " V" + P.H + " H0 Z";
+    var p = px(a), pad = 6;
+    var x = p[0]-pad, y = p[1]-pad, w = p[2]+2*pad, h = p[3]+2*pad;
+    dims[a.page].setAttribute("d", o + " M" + x + "," + y + " h" + w + " v" + h + " h" + (-w) + " Z");
+  }
+  function renderPanel(){
+    if (!active) return;
+    var i = AREAS.indexOf(areaById(active)), data = c(active);
+    $("pNum").textContent = (i+1) + " " + t("of") + " " + AREAS.length;
+    $("pTitle").textContent = data.title;
+    fillParas($("pBody"), data.body);
+  }
+  function open(id){
+    var a = areaById(id); if (!a) return;
+    if (a.page !== page){
+      var layer = layers[a.page];
+      layer.style.transition = "none";
+      setPage(a.page);
+      layer.offsetHeight; layer.style.transition = "";
+    }
+    active = id;
+    Object.keys(hotEls).forEach(function(k){ hotEls[k].classList.remove("hover"); hotEls[k].classList.toggle("active", k === id); });
+    setDim(a);
+    frame.classList.add("zoomed");
+    analysis.classList.add("is-zoomed");
+    renderPanel();
+    camera(a.zoom);
+    if (history.replaceState) history.replaceState(null, "", "#" + id);
+    if (window.innerWidth <= 960){
+      var top = frame.getBoundingClientRect().top + window.scrollY - 110;
+      if (Math.abs(window.scrollY - top) > 40) window.scrollTo({ top: top, behavior: "smooth" });
+    }
+  }
+  function close(quiet){
+    if (!active) return;
+    var was = active; active = null;
+    frame.classList.remove("zoomed");
+    analysis.classList.remove("is-zoomed");
+    Object.keys(hotEls).forEach(function(k){ hotEls[k].classList.remove("active"); });
+    camera(PAGES[page].overview);
+    if (quiet === true) return;
+    if (history.replaceState) history.replaceState(null, "", location.pathname + location.search);
+    if (callouts[was] && getComputedStyle(colLeft).display !== "none") callouts[was].focus({ preventScroll: true });
+  }
+  function step(d){
+    if (!active) return;
+    var i = AREAS.indexOf(areaById(active));
+    open(AREAS[(i + d + AREAS.length) % AREAS.length].id);
+  }
+  $("reset").addEventListener("click", function(){ close(); });
+  $("pClose").addEventListener("click", function(){ close(); });
+  $("pPrev").addEventListener("click", function(){ step(-1); });
+  $("pNext").addEventListener("click", function(){ step(1); });
+
+  /* ---------- About modal ---------- */
+  var modalBack = $("modalBack"), lastFocus = null;
+  function openModal(){
+    var d = c("about");
+    $("mTitle").textContent = d.title; fillParas($("mBody"), d.body);
+    lastFocus = document.activeElement;
+    modalBack.classList.add("open"); modalBack.setAttribute("aria-hidden", "false");
+    $("mClose").focus();
+  }
+  function closeModal(){
+    modalBack.classList.remove("open"); modalBack.setAttribute("aria-hidden", "true");
+    if (lastFocus) lastFocus.focus();
+  }
+  $("aboutBtn").addEventListener("click", openModal);
+  $("mClose").addEventListener("click", closeModal);
+  modalBack.addEventListener("click", function(e){ if (e.target === modalBack) closeModal(); });
+
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape"){ if (modalBack.classList.contains("open")) closeModal(); else close(); }
+    else if (active && !modalBack.classList.contains("open")){
+      if (e.key === "ArrowRight") step(1);
+      if (e.key === "ArrowLeft") step(-1);
+    }
+  });
+
+  /* ---------- Language ---------- */
+  function applyLang(l){
+    lang = STRINGS[l] ? l : "en";
+    document.documentElement.setAttribute("lang", lang);
+    document.querySelectorAll("[data-i18n]").forEach(function(el){ var v = t(el.getAttribute("data-i18n")); if (v) el.textContent = v; });
+    document.querySelectorAll(".langtoggle button").forEach(function(btn){ btn.setAttribute("aria-pressed", btn.getAttribute("data-lang") === lang ? "true" : "false"); });
+    AREAS.forEach(function(a){
+      var d = c(a.id);
+      callouts[a.id].querySelector(".ct").textContent = d.title;
+      callouts[a.id].querySelector(".cl").textContent = d.label || "";
+      callouts[a.id].querySelector(".more").textContent = t("readMore") + " →";
+      topicBtns[a.id].querySelector(".tt").textContent = d.title;
+      badges[a.id].setAttribute("aria-label", d.title);
+      hotEls[a.id].setAttribute("aria-label", d.title);
+    });
+    renderPanel();
+    if (modalBack.classList.contains("open")){ var d = c("about"); $("mTitle").textContent = d.title; fillParas($("mBody"), d.body); }
+    relayout();
+  }
+  document.querySelectorAll(".langtoggle button").forEach(function(btn){
+    btn.addEventListener("click", function(){ var l = btn.getAttribute("data-lang"); applyLang(l); try { localStorage.setItem(STORAGE_KEY, l); } catch(e){} });
+  });
+
+  /* ---------- Layout ---------- */
+  function relayout(){
+    var layer = layers[page], save = layer.style.transition;
+    layer.style.transition = "none";
+    view = camera(PAGES[page].overview);
+    AREAS.forEach(function(a){
+      if (a.page !== page) return;
+      var p = overviewPoint(a.anchor[0], a.anchor[1]);
+      badges[a.id].style.left = p[0] + "px"; badges[a.id].style.top = p[1] + "px";
+    });
+    if (active) camera(areaById(active).zoom);
+    layer.offsetHeight;
+    layer.style.transition = save;
+    var panel = $("panel"), small = getComputedStyle(colLeft).display === "none";
+    if (small && panel.parentNode !== topics.parentNode) topics.parentNode.insertBefore(panel, topics);
+    if (!small && panel.parentNode !== colRight) colRight.appendChild(panel);
+    leaders.innerHTML = "";
+    if (small) return;
+    var aRect = analysis.getBoundingClientRect(), fRect = frame.getBoundingClientRect();
+    var here = AREAS.filter(function(a){ return a.page === page; });
+    ["left", "right"].forEach(function(side){
+      var items = here.filter(function(a){ return a.side === side; })
+        .map(function(a){ return { a: a, y: overviewPoint(a.anchor[0], a.anchor[1])[1] + (fRect.top - aRect.top), h: callouts[a.id].offsetHeight }; })
+        .sort(function(p, q){ return p.y - q.y; });
+      // place top-down, then pull up if the last one runs past the bottom of the image
+      var cursor = 0, limit = fRect.bottom - aRect.top;
+      items.forEach(function(it){ it.top = Math.max(cursor, it.y - 24); cursor = it.top + it.h + 18; });
+      for (var i = items.length - 1; i >= 0; i--){
+        var maxTop = (i === items.length - 1 ? limit : items[i+1].top - 18) - items[i].h;
+        if (items[i].top > maxTop) items[i].top = Math.max(0, maxTop);
+      }
+      items.forEach(function(it){ callouts[it.a.id].style.top = it.top + "px"; });
+    });
+    here.forEach(function(a){
+      var co = callouts[a.id].getBoundingClientRect();
+      var p = overviewPoint(a.anchor[0], a.anchor[1]);
+      var bx = fRect.left - aRect.left + frame.clientLeft + p[0], by = fRect.top - aRect.top + frame.clientTop + p[1];
+      var sx = (a.side === "left" ? co.right : co.left) - aRect.left;
+      var sy = Math.min(Math.max(by, co.top - aRect.top + 18), co.bottom - aRect.top - 18);
+      var dx = bx - sx, dy = by - sy, len = Math.sqrt(dx*dx + dy*dy) || 1;
+      bx -= dx/len*15; by -= dy/len*15;
+      leaders.appendChild(svgEl("line", { x1: sx, y1: sy, x2: bx, y2: by }));
+      leaders.appendChild(svgEl("circle", { cx: sx, cy: sy, r: 3 }));
+    });
+  }
+
+  window.addEventListener("resize", relayout);
+  $("img-riddle").addEventListener("load", function(){ if (page === "riddle") relayout(); });
+  $("img-solution").addEventListener("load", function(){ if (page === "solution") relayout(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
+
+  var h = (location.hash || "").replace("#", "");
+  setPage(PAGES[h] ? h : (areaById(h) ? areaById(h).page : "riddle"));
+  applyLang(lang);
+  if (h === "about") openModal();
+  else if (areaById(h)){ layers[page].style.transition = "none"; open(h); layers[page].offsetHeight; layers[page].style.transition = ""; }
+})();
+</script>
+</body>
+</html>
