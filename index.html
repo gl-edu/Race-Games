@@ -282,6 +282,22 @@
   .card.indigo .card-stripe{ background: var(--indigo); }
   .card.indigo .card-eyebrow{ color: var(--indigo); }
   .card.indigo .play-btn{ background: var(--indigo); }
+  .card.indigo .analyze-btn{ color: var(--indigo); border-color: var(--indigo); }
+  .card.indigo .analyze-btn:hover{ background: var(--indigo); color: var(--paper); }
+
+  /* Secondary "Let's analyze the game" link */
+  .analyze-btn{
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    margin-top: 10px; text-decoration: none;
+    font-family: 'Libre Franklin', system-ui, sans-serif; font-weight: 700; font-size: 13px;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--ink); background: transparent; border: 1.5px solid var(--ink);
+    padding: 11.5px 20px; border-radius: 2px;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+  }
+  .analyze-btn:hover{ transform: translateX(2px); }
+  .analyze-btn .arrow{ transition: transform 0.2s ease; }
+  .analyze-btn:hover .arrow{ transform: translateX(4px); }
 
   .card.gold .card-stripe{ background: var(--gold); }
   .card.gold .card-eyebrow{ color: var(--gold); }
@@ -356,6 +372,7 @@
           <span class="chip" data-i18n="g1.chip3">CAPTURE GAME</span>
         </div>
         <a class="play-btn" href="games/la-guerra-de-los-kikapoos.html"><span data-i18n="playBtn">Play the game</span> <span class="arrow">→</span></a>
+          <a class="analyze-btn" href="games/la-guerra-de-los-kikapoos-analysis.html"><span data-i18n="analyzeBtn">Let's analyze the game</span> <span class="arrow">→</span></a>
       </div>
     </div>
 
@@ -437,6 +454,7 @@
       collection: "The Collection",
       tally: "MEXICO · 19TH CENTURY",
       playBtn: "Play the game",
+      analyzeBtn: "Let's analyze the game",
       footMark: "Digital Archive",
       "chip.64spaces": "64 SPACES",
       "chip.2players": "2 PLAYERS",
@@ -467,6 +485,7 @@
       collection: "La Colección",
       tally: "MÉXICO · SIGLO XIX",
       playBtn: "Jugar",
+      analyzeBtn: "Analicemos el juego",
       footMark: "Archivo Digital",
       "chip.64spaces": "64 CASILLAS",
       "chip.2players": "2 JUGADORES",
@@ -497,6 +516,7 @@
       collection: "A Coleção",
       tally: "MÉXICO · SÉCULO XIX",
       playBtn: "Jogar",
+      analyzeBtn: "Vamos analisar o jogo",
       footMark: "Arquivo Digital",
       "chip.64spaces": "64 CASAS",
       "chip.2players": "2 JOGADORES",
