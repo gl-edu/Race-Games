@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Analyze: Los Charros Contrabandistas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700;800;900&family=Libre+Franklin:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #FAFAF7;
+    --paper-dim: #F0EFEA;
+    --ink: #14161A;
+    --ink-soft: #55585F;
+    --line: #DCDBD4;
+    --red: #E8402C;
+    --indigo: #8C3B22; /* accent (rust) */
+    --indigo-soft: #E6E9EF;
+  }
+  *{ box-sizing: border-box; }
+  html, body{ margin: 0; background: var(--paper); color: var(--ink); }
+  body{
+    font-family: 'Libre Franklin', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  button{ font-family: inherit; }
+
+  /* ---------- Back pill ---------- */
+  .back-pill{
+    position: fixed; top: 14px; left: 14px; z-index: 9999;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; background: var(--ink); color: var(--paper);
+    text-decoration: none; font-size: 12px; font-weight: 600; letter-spacing: 0.03em;
+    border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,0.25); opacity: 0.85;
+  }
+  .back-pill:hover{ opacity: 1; }
+
+  .wrap{ max-width: 1280px; margin: 0 auto; padding: 0 28px; }
+
+  /* ---------- Language toggle ---------- */
+  .langbar{ display: flex; justify-content: flex-end; padding: 18px 0 0; }
+  .langtoggle{ display: inline-flex; align-items: center; gap: 2px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em; }
+  .langtoggle button{
+    font: inherit; letter-spacing: inherit; background: none; border: none; cursor: pointer;
+    color: var(--ink-soft); padding: 6px 8px; border-radius: 6px;
+    transition: color .15s ease, background .15s ease;
+  }
+  .langtoggle button:hover{ color: var(--ink); }
+  .langtoggle button[aria-pressed="true"]{ color: var(--ink); background: var(--paper-dim); }
+  .langtoggle .sep{ color: var(--line); }
+
+  /* ---------- Header ---------- */
+  header.intro{ padding: 22px 0 26px; border-bottom: 2px solid var(--ink); margin-bottom: 30px; }
+  .eyebrow{
+    font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--indigo); margin: 0 0 10px;
+  }
+  h1{
+    font-family: 'Bitter', serif; font-weight: 900; text-transform: uppercase;
+    font-size: clamp(30px, 5vw, 54px); line-height: 1.02; letter-spacing: -0.01em; margin: 0 0 12px;
+  }
+  .intro-row{ display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: flex-end; justify-content: space-between; }
+  .hint{ margin: 0; color: var(--ink-soft); font-size: 15px; max-width: 620px; }
+  .play-link{
+    display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+    font-weight: 700; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--paper); background: var(--indigo); padding: 12px 18px; border-radius: 2px;
+  }
+  .play-link:hover{ transform: translateX(2px); }
+
+  /* ---------- Analysis layout ---------- */
+  .analysis{
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(200px, 1fr) auto minmax(200px, 1fr);
+    gap: 0 36px;
+    align-items: start;
+    padding: 44px 0 70px;
+  }
+  .col{ position: relative; align-self: stretch; }
+  .leaders{ position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; z-index: 3; transition: opacity .3s ease; }
+  .leaders line{ stroke: var(--ink); stroke-width: 1.25; }
+  .leaders circle{ fill: var(--ink); }
+
+  /* Callout labels around the image */
+  .callout{
+    position: absolute; left: 0; right: 0;
+    display: block; width: 100%; text-align: left;
+    background: #fff; border: 1.5px solid var(--ink); border-radius: 2px;
+    padding: 10px 12px 10px; cursor: pointer; z-index: 2;
+    box-shadow: 3px 3px 0 var(--ink);
+    transition: transform .15s ease, box-shadow .15s ease, opacity .3s ease;
+    color: var(--ink);
+  }
+  .callout:hover, .callout:focus-visible{ transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--indigo); outline: none; }
+  .callout .num{
+    display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--red); color: #fff; font-size: 11px; font-weight: 800; margin-right: 8px; vertical-align: 1px;
+  }
+  .callout .ct{ font-family: 'Bitter', serif; font-weight: 800; font-size: 15.5px; text-transform: uppercase; letter-spacing: 0.01em; }
+  .callout .cl{ display: block; margin-top: 4px; font-size: 12.5px; line-height: 1.45; color: var(--ink-soft); }
+  .callout .more{ display: block; margin-top: 7px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--indigo); }
+
+  /* The image frame */
+  .stage-col{ position: relative; z-index: 2; }
+  .frame{
+    position: relative;
+    width: min(calc((100vw - 56px) * 0.52), calc(78vh * 1.363), 780px);
+    aspect-ratio: 1.363;
+    overflow: hidden;
+    background: #d9d3c2;
+    border: 2px solid var(--ink);
+    box-shadow: 6px 6px 0 var(--indigo);
+    touch-action: manipulation;
+  }
+  .layer{
+    position: absolute; left: 0; top: 0;
+    transform-origin: 0 0;
+    transition: transform .75s cubic-bezier(.65,.05,.25,1);
+    will-change: transform;
+  }
+  .layer img{ display: block; width: 100%; height: 100%; user-select: none; -webkit-user-drag: none; }
+  .layer svg{ position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+
+  .hot{ fill: rgba(255,255,255,0); stroke: rgba(232,64,44,0); stroke-width: 2; vector-effect: non-scaling-stroke; cursor: pointer; transition: fill .2s ease, stroke .2s ease; }
+  .hot:hover, .hot.hover{ fill: rgba(232,64,44,0.10); stroke: rgba(232,64,44,0.9); stroke-dasharray: 5 4; }
+  .zoomed .hot{ pointer-events: none; }
+  .zoomed .hot.active{ stroke: var(--red); stroke-width: 3; stroke-dasharray: none; fill: none; }
+
+  .dim{ fill: rgba(20,22,26,0.55); fill-rule: evenodd; opacity: 0; transition: opacity .5s ease .25s; pointer-events: none; }
+  .zoomed .dim{ opacity: 1; }
+
+
+  /* Numbered badges on the image */
+  .badge{
+    position: absolute; z-index: 3; width: 28px; height: 28px; margin: -14px 0 0 -14px;
+    border-radius: 50%; border: 2px solid #fff; background: var(--red); color: #fff;
+    font-weight: 800; font-size: 13px; cursor: pointer; display: grid; place-items: center; padding: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,.35);
+    transition: opacity .25s ease, transform .2s ease;
+  }
+  .badge::after{
+    content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid var(--red);
+    animation: pulse 2.4s ease-out infinite; opacity: 0;
+  }
+  @keyframes pulse{ 0%{ transform: scale(.7); opacity: .8; } 80%,100%{ transform: scale(1.5); opacity: 0; } }
+  .badge:hover{ transform: scale(1.12); }
+  .zoomed .badge{ opacity: 0; pointer-events: none; }
+
+  /* Back-to-full-view button over the frame */
+  .reset{
+    position: absolute; z-index: 4; top: 12px; left: 12px;
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--paper); color: var(--ink); border: 1.5px solid var(--ink); border-radius: 999px;
+    padding: 7px 13px; font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; cursor: pointer;
+    opacity: 0; pointer-events: none; transform: translateY(-6px); transition: opacity .25s ease, transform .25s ease;
+  }
+  .zoomed .reset{ opacity: 1; pointer-events: auto; transform: none; transition-delay: .4s; }
+
+  /* "What am I playing?" tab on the border */
+  .kika-tab{
+    position: absolute; z-index: 5; left: 50%; top: -40px; transform: translateX(-50%);
+    display: inline-flex; align-items: center; gap: 10px; white-space: nowrap;
+    background: var(--indigo); color: var(--paper); border: 2px solid var(--ink); border-bottom: none;
+    border-radius: 6px 6px 0 0; padding: 10px 18px 9px;
+    font-family: 'Bitter', serif; font-weight: 800; font-size: 15px; letter-spacing: .02em; text-transform: uppercase;
+    cursor: pointer; box-shadow: 4px -2px 0 var(--ink);
+    transition: background .2s ease, top .2s ease;
+  }
+  .kika-tab:hover{ background: #6e2d19; top: -44px; }
+  .kika-tab .plus{ display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--paper); color: var(--indigo); font-family: 'Libre Franklin', sans-serif; font-size: 15px; line-height: 1; }
+
+  /* Explanation panel (shown while zoomed) */
+  .panel{
+    position: absolute; z-index: 6; top: 0; left: 0; right: 0;
+    background: #fff; border: 2px solid var(--ink); box-shadow: 6px 6px 0 var(--ink);
+    padding: 22px 22px 18px;
+    opacity: 0; transform: translateX(14px); pointer-events: none;
+    transition: opacity .3s ease, transform .35s ease;
+    max-height: 100%; overflow: auto;
+  }
+  .is-zoomed .panel{ opacity: 1; transform: none; pointer-events: auto; transition-delay: .35s; }
+  .panel .p-top{ display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .panel .p-num{ font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--red); }
+  .panel .p-close{ background: none; border: none; font-size: 22px; line-height: 1; cursor: pointer; color: var(--ink-soft); padding: 2px 4px; }
+  .panel .p-close:hover{ color: var(--ink); }
+  .panel h2{ font-family: 'Bitter', serif; font-weight: 800; font-size: 24px; line-height: 1.1; text-transform: uppercase; margin: 0 0 14px; }
+  .panel .p-body p{ margin: 0 0 12px; font-size: 15px; line-height: 1.62; }
+  .placeholder{ color: #8a8c91; font-style: italic; }
+  .panel .p-nav{ display: flex; justify-content: space-between; gap: 8px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .panel .p-nav button{
+    background: none; border: 1.5px solid var(--ink); border-radius: 2px; padding: 8px 12px; cursor: pointer;
+    font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink);
+  }
+  .panel .p-nav button:hover{ background: var(--ink); color: var(--paper); }
+
+  .is-zoomed .callout, .is-zoomed .leaders{ opacity: 0; pointer-events: none; }
+
+  .credit{ margin: 0; font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; max-width: 640px; }
+
+  /* Topic list (small screens) */
+  .topics{ display: none; }
+
+  /* ---------- Modal ---------- */
+  .modal-back{
+    position: fixed; inset: 0; z-index: 10000; background: rgba(20,22,26,.6);
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+    opacity: 0; pointer-events: none; transition: opacity .25s ease;
+  }
+  .modal-back.open{ opacity: 1; pointer-events: auto; }
+  .modal{
+    position: relative; width: min(820px, 100%); max-height: calc(100vh - 48px); overflow: auto;
+    background: var(--paper); border: 2px solid var(--ink); box-shadow: 8px 8px 0 var(--indigo);
+    padding: 42px clamp(22px, 5vw, 56px) 40px;
+    transform: translateY(14px) scale(.98); transition: transform .3s ease;
+  }
+  .modal-back.open .modal{ transform: none; }
+  .modal .m-close{ position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 28px; line-height: 1; cursor: pointer; color: var(--ink-soft); }
+  .modal .m-close:hover{ color: var(--ink); }
+  .modal h2{ font-family: 'Bitter', serif; font-weight: 900; text-transform: uppercase; font-size: clamp(28px, 4vw, 42px); line-height: 1.05; margin: 0 0 22px; padding-bottom: 18px; border-bottom: 2px solid var(--ink); }
+  .modal .m-body p{ font-size: 17px; line-height: 1.7; margin: 0 0 16px; }
+
+  /* ---------- Small screens ---------- */
+  @media (max-width: 960px){
+    .analysis{ grid-template-columns: 1fr; padding: 0 0 40px; }
+    .col.side, .leaders{ display: none; }
+    .stage-col{ display: flex; flex-direction: column; align-items: center; }
+    .frame{ width: 100%; }
+    .panel{ position: relative; display: none; margin-top: 18px; width: 100%; transform: none; max-height: none; }
+    .is-zoomed .panel{ display: block; }
+    .kika-tab{ position: relative; left: auto; top: auto; transform: none; margin-bottom: -2px; }
+    .kika-tab:hover{ top: auto; }
+    .topics{ display: grid; gap: 10px; width: 100%; margin-top: 24px; }
+    .is-zoomed .topics{ display: none; }
+    .topics button{
+      display: flex; align-items: center; gap: 10px; text-align: left; width: 100%;
+      background: #fff; border: 1.5px solid var(--ink); border-radius: 2px; padding: 12px 14px; cursor: pointer;
+      font-family: 'Bitter', serif; font-weight: 800; font-size: 15px; text-transform: uppercase; color: var(--ink);
+    }
+    .topics .num{ display: inline-grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--red); color: #fff; font-family: 'Libre Franklin', sans-serif; font-size: 11px; font-weight: 800; }
+    .credit{ margin-top: 26px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .layer, .panel, .callout, .badge::after{ transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<a class="back-pill" href="../index.html">&larr;&nbsp;RACE GAMES</a>
+
+<div class="wrap">
+  <div class="langbar">
+    <div class="langtoggle" role="group" aria-label="Language">
+      <button type="button" data-lang="en" aria-pressed="true">EN</button>
+      <span class="sep">/</span>
+      <button type="button" data-lang="es" aria-pressed="false">ES</button>
+      <span class="sep">/</span>
+      <button type="button" data-lang="pt" aria-pressed="false">PT</button>
+    </div>
+  </div>
+
+  <header class="intro">
+    <p class="eyebrow" data-i18n="eyebrow">Let's analyze the game</p>
+    <h1>Los Charros Contrabandistas</h1>
+    <div class="intro-row">
+      <p class="hint" data-i18n="hint">Click a numbered area — or one of the labels — to zoom in and read about it.</p>
+      <a class="play-link" href="los-charros-contrabandistas.html"><span data-i18n="playLink">Play the game</span> <span>→</span></a>
+    </div>
+  </header>
+
+  <section class="analysis" id="analysis">
+    <svg class="leaders" id="leaders" aria-hidden="true"></svg>
+
+    <div class="col side" id="colLeft"></div>
+
+    <div class="stage-col">
+      <button type="button" class="kika-tab" id="kikaTab"><span data-i18n="kikaTab">What am I playing?</span> <span class="plus">+</span></button>
+      <div class="frame" id="frame">
+        <div class="layer" id="layer">
+          <img src="../images/los-charros-board.jpg" alt="Board for Los Charros Contrabandistas, illustrated by José Guadalupe Posada, Mexico City" id="boardImg">
+          <svg id="overlay" viewBox="0 0 1400 1050" preserveAspectRatio="none"></svg>
+        </div>
+        <button type="button" class="reset" id="reset">← <span data-i18n="reset">Full view</span></button>
+      </div>
+
+      <div class="topics" id="topics"></div>
+    </div>
+
+    <div class="col side" id="colRight">
+      <aside class="panel" id="panel" aria-live="polite">
+        <div class="p-top">
+          <span class="p-num" id="pNum"></span>
+          <button type="button" class="p-close" id="pClose" aria-label="Close">×</button>
+        </div>
+        <h2 id="pTitle"></h2>
+        <div class="p-body" id="pBody"></div>
+        <div class="p-nav">
+          <button type="button" id="pPrev">← <span data-i18n="prev">Previous</span></button>
+          <button type="button" id="pNext"><span data-i18n="next">Next</span> →</button>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <p class="credit" data-i18n="credit">Los Charros Contrabandistas, illustrated by José Guadalupe Posada and printed by Antonio Vanegas Arroyo, Mexico City. Original board located at the Latin American Library, Tulane University.</p>
+</div>
+
+<div class="modal-back" id="modalBack" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <button type="button" class="m-close" id="mClose" aria-label="Close">×</button>
+    <p class="eyebrow" data-i18n="eyebrow">Let's analyze the game</p>
+    <h2 id="mTitle"></h2>
+    <div class="m-body" id="mBody"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  /* =====================================================================
+     ✏️  EDIT YOUR TEXT HERE
+     ---------------------------------------------------------------------
+     Each area has a short "label" (shown in the box beside the image)
+     and a "body" (shown when the area is clicked). "body" is a list of
+     paragraphs — add as many as you like, each in "quotes", separated
+     by commas. Any paragraph that starts with "[" is styled as a grey
+     placeholder, so you can see at a glance what still needs writing.
+     ===================================================================== */
+  var CONTENT = {
+    kids: {
+      en: { title: "Who was meant to play", label: "A scene of children playing this very kind of game hints at the audience Posada had in mind.",
+            body: ["In the lower left corner, beside a doorway, children kneel on the floor around a game board covered in pieces while a woman stands over them. The sheet shows people playing the same kind of game that is printed on it.",
+                   "Unlike strategy games such as La guerra de los kikapoos, Los charros asks nothing of its players except a roll of the dice. Anyone old enough to count spaces could join in, so children and adults could compete on equal terms.",
+                   "The scene suggests that Posada and his printer pictured families as their buyers, with kids doing the playing and mothers keeping watch. That matters for how the board was used. The adults sitting nearby may also have been the ones explaining who the unlabeled figures along the path were supposed to be."] },
+      es: { title: "Para quién era el juego", label: "Una escena de niños jugando a este mismo tipo de juego sugiere el público que Posada tenía en mente.",
+            body: ["En la esquina inferior izquierda, junto a una puerta, unos niños están arrodillados en el suelo alrededor de un tablero lleno de fichas mientras una mujer los observa de pie. La hoja muestra a gente jugando el mismo tipo de juego que lleva impreso.",
+                   "A diferencia de juegos de estrategia como La guerra de los kikapoos, Los charros no les pide nada a los jugadores salvo tirar los dados. Cualquiera que supiera contar casillas podía participar, así que niños y adultos competían en igualdad de condiciones.",
+                   "La escena sugiere que Posada y su impresor imaginaban a las familias como compradoras, con los niños jugando y las madres vigilando. Eso importa para entender cómo se usaba el tablero. Los adultos que estaban cerca quizá eran también quienes explicaban quiénes debían ser las figuras sin nombre del camino."] },
+      pt: { title: "Para quem era o jogo", label: "Uma cena de crianças jogando este mesmo tipo de jogo indica o público que Posada tinha em mente.",
+            body: ["No canto inferior esquerdo, ao lado de uma porta, crianças estão ajoelhadas no chão em volta de um tabuleiro cheio de peças, enquanto uma mulher as observa de pé. A folha mostra pessoas jogando o mesmo tipo de jogo que está impresso nela.",
+                   "Ao contrário de jogos de estratégia como La guerra de los kikapoos, Los charros não exige nada dos jogadores além de lançar os dados. Qualquer pessoa que soubesse contar as casas podia participar, então crianças e adultos competiam em pé de igualdade.",
+                   "A cena sugere que Posada e seu impressor imaginavam as famílias como compradoras, com as crianças jogando e as mães vigiando. Isso importa para entender como o tabuleiro era usado. Os adultos por perto talvez fossem também quem explicava quem deveriam ser as figuras sem nome do percurso."] }
+    },
+    bandits: {
+      en: { title: "A bandit circle", label: "Here the path works against you. Land on a robbery and you pay.",
+            body: ["Circle 28 shows a robbery in progress, with one man raising his hands as the others close in on him.",
+                   "The rules printed on the board spell out what happens here. Land on one of the bandits' circles and you pay into the pot again, as though you had just been robbed.",
+                   "That is a reversal of the game Los charros is based on. In the traditional Game of the Goose, the special squares are the geese. Geese were thought to bring luck, and landing on one let you double your roll and leap ahead. Posada fills his path with thieves instead, so the figures you meet along the way are more likely to cost you than to help you.",
+                   "Even the title puts outlaws at the center. Playing Los charros means moving through a society where violence and theft are part of the road itself rather than rare accidents along it."] },
+      es: { title: "Una casilla de bandidos", label: "Aquí el camino juega en tu contra. Si caes en un asalto, pagas.",
+            body: ["La casilla 28 muestra un asalto en plena acción, con un hombre que levanta las manos mientras los demás lo rodean.",
+                   "Las reglas impresas en el tablero explican lo que pasa aquí. Si caes en una de las casillas de los ladrones, vuelves a pagar la apuesta, como si te acabaran de robar.",
+                   "Es una inversión del juego en el que se basa Los charros. En el tradicional Juego de la oca, las casillas especiales son las ocas. Se creía que las ocas traían suerte, y caer en una te permitía duplicar la tirada y saltar hacia adelante. Posada llena su camino de ladrones, así que los personajes que encuentras en el trayecto suelen costarte más de lo que te ayudan.",
+                   "Hasta el título pone a los forajidos en el centro. Jugar Los charros significa recorrer una sociedad donde la violencia y el robo forman parte del camino mismo, y no son accidentes raros en él."] },
+      pt: { title: "Uma casa de bandidos", label: "Aqui o percurso joga contra você. Caiu num assalto, paga.",
+            body: ["A casa 28 mostra um assalto em andamento, com um homem levantando as mãos enquanto os outros o cercam.",
+                   "As regras impressas no tabuleiro explicam o que acontece aqui. Se você cair numa das casas dos ladrões, paga a aposta de novo, como se tivesse acabado de ser roubado.",
+                   "É uma inversão do jogo em que Los charros se baseia. No tradicional Jogo do Ganso, as casas especiais são os gansos. Acreditava-se que os gansos traziam sorte, e cair num deles permitia dobrar o lance e avançar. Posada enche o percurso de ladrões, então as figuras que você encontra pelo caminho tendem a custar mais do que ajudar.",
+                   "Até o título coloca os fora da lei no centro. Jogar Los charros é atravessar uma sociedade em que a violência e o roubo fazem parte do próprio caminho, e não são acidentes raros nele."] }
+    },
+    boxer: {
+      en: { title: "The Black boxer", label: "The only Black figure on the board, and the only one whose skin is shaded in.",
+            body: ["Circle 24 shows a boxing match. A Black fighter lunges forward with his arms out, about to land a punch on a white opponent.",
+                   "Boxing was gaining popularity in Mexico in the 1890s, and race shaped how the press talked about it. The scene probably refers to an 1895 fight involving the Black American boxer Billy Clark, which Mexican newspapers followed closely. Posada drew Clark for the penny press too, in a cartoon full of racist caricature.",
+                   "On the board the image works differently. There is no caption and no joke, so a player who had not followed the news could read this boxer as a foreigner or simply as one more Mexican on the way to the finish. At a time when Black Mexicans were often left out of stories about the nation, that openness could make room for recognition.",
+                   "Still, he is the only Black character in the game, and he is shown in the middle of a punch, which ties Blackness to violence. He is also the only figure whose skin is filled in solid, which leaves him without a visible face. The small circles and inexpensive zinc-plate printing made fine detail hard, and the result is that skin color became the marker of race used for him alone."] },
+      es: { title: "El boxeador negro", label: "La única figura negra del tablero, y la única cuya piel está sombreada.",
+            body: ["La casilla 24 muestra un combate de boxeo. Un púgil negro se lanza hacia adelante con los brazos extendidos, a punto de golpear a un rival blanco.",
+                   "El boxeo ganaba popularidad en México en la década de 1890, y la raza marcaba la forma en que la prensa hablaba de él. La escena probablemente alude a una pelea de 1895 en la que participó el boxeador afroestadounidense Billy Clark, que los periódicos mexicanos siguieron de cerca. Posada también dibujó a Clark para la prensa de a centavo, en una caricatura llena de estereotipos racistas.",
+                   "En el tablero la imagen funciona de otra manera. No hay pie de imagen ni chiste, así que quien no hubiera seguido las noticias podía ver a este boxeador como extranjero o simplemente como un mexicano más en el camino a la meta. En una época en que los afromexicanos solían quedar fuera de los relatos sobre la nación, esa apertura podía dar lugar al reconocimiento.",
+                   "Aun así, es el único personaje negro del juego, y aparece lanzando un golpe, lo que asocia la negritud con la violencia. También es la única figura con la piel completamente rellena, lo que lo deja sin rostro visible. Las casillas pequeñas y la impresión barata con plancha de zinc dificultaban los detalles finos, y el resultado es que el color de la piel se convirtió en la marca de raza usada solo para él."] },
+      pt: { title: "O boxeador negro", label: "A única figura negra do tabuleiro, e a única com a pele sombreada.",
+            body: ["A casa 24 mostra uma luta de boxe. Um lutador negro avança com os braços estendidos, prestes a acertar um soco num adversário branco.",
+                   "O boxe ganhava popularidade no México na década de 1890, e a questão racial moldava a forma como a imprensa falava dele. A cena provavelmente se refere a uma luta de 1895 com o boxeador afro-americano Billy Clark, que os jornais mexicanos acompanharam de perto. Posada também desenhou Clark para a imprensa popular, numa charge cheia de caricaturas racistas.",
+                   "No tabuleiro, a imagem funciona de outro jeito. Não há legenda nem piada, então quem não tivesse acompanhado as notícias podia ver esse boxeador como estrangeiro ou simplesmente como mais um mexicano a caminho da chegada. Numa época em que os afro-mexicanos costumavam ficar de fora das histórias sobre a nação, essa abertura podia criar espaço para o reconhecimento.",
+                   "Ainda assim, ele é o único personagem negro do jogo, e aparece no meio de um soco, o que associa a negritude à violência. Também é a única figura com a pele totalmente preenchida, o que o deixa sem rosto visível. As casas pequenas e a impressão barata em chapa de zinco dificultavam os detalhes, e o resultado é que a cor da pele virou a marca de raça usada só para ele."] }
+    },
+    chinese: {
+      en: { title: "The Chinese laborer", label: "Bent under a load in the countryside, a figure drawn from anti-Chinese stereotypes.",
+            body: ["Circle 43 shows a man in a pointed straw hat with a long moustache, carrying two baskets that hang from a pole across his shoulders. His knees are bent, his back is hunched, and he stands among shrubs out in the countryside.",
+                   "Chinese migration to Mexico grew quickly in these years, from around 1,000 people in 1895 to more than 13,000 by 1910. The U.S. Chinese Exclusion Act of 1882 led many to enter through Mexico's northern border, and the Díaz government saw Chinese workers as farm labor that could replace or work alongside Indigenous people pushed off their land. A violent wave of anti-Chinese hostility grew alongside that migration.",
+                   "The long moustache was already a familiar stereotype, used both to mock Chinese men and to present them as a threat. An almost identical figure appears in a Brazilian sketch of a street vendor in Rio de Janeiro, which shows how widely these images traveled. Posada himself went on to draw many more anti-Chinese cartoons for the penny press.",
+                   "Compare him with the geisha in circle 57. She stands upright on a city street, while he toils in the fields. She represents an identity Mexican elites admired, and he represents cheap labor."] },
+      es: { title: "El trabajador chino", label: "Encorvado bajo su carga en el campo, una figura sacada de los estereotipos antichinos.",
+            body: ["La casilla 43 muestra a un hombre con sombrero de paja puntiagudo y bigote largo que carga dos canastas colgadas de una vara sobre los hombros. Tiene las rodillas dobladas, la espalda encorvada y está entre matorrales, en pleno campo.",
+                   "La migración china a México creció rápidamente en esos años, de unas 1,000 personas en 1895 a más de 13,000 en 1910. La Ley de Exclusión China de Estados Unidos, de 1882, llevó a muchos a entrar por la frontera norte de México, y el gobierno de Díaz veía a los trabajadores chinos como mano de obra agrícola capaz de reemplazar o acompañar a los indígenas despojados de sus tierras. Junto con esa migración creció una violenta hostilidad antichina.",
+                   "El bigote largo ya era un estereotipo conocido, usado tanto para burlarse de los hombres chinos como para presentarlos como una amenaza. Una figura casi idéntica aparece en un dibujo brasileño de un vendedor ambulante de Río de Janeiro, lo que muestra cuánto circulaban estas imágenes. El propio Posada dibujaría después muchas otras caricaturas antichinas para la prensa de a centavo.",
+                   "Compáralo con la geisha de la casilla 57. Ella está erguida en una calle de la ciudad, mientras él trabaja en el campo. Ella representa una identidad que las élites mexicanas admiraban, y él representa la mano de obra barata."] },
+      pt: { title: "O trabalhador chinês", label: "Curvado sob a carga no campo, uma figura tirada dos estereótipos antichineses.",
+            body: ["A casa 43 mostra um homem de chapéu de palha pontudo e bigode comprido carregando dois cestos pendurados numa vara sobre os ombros. Ele tem os joelhos dobrados, as costas curvadas e está entre arbustos, no campo.",
+                   "A migração chinesa para o México cresceu rapidamente nesses anos, de cerca de 1.000 pessoas em 1895 para mais de 13.000 em 1910. A Lei de Exclusão Chinesa dos Estados Unidos, de 1882, levou muitos a entrar pela fronteira norte do México, e o governo de Díaz via os trabalhadores chineses como mão de obra agrícola capaz de substituir ou trabalhar ao lado dos indígenas expulsos de suas terras. Junto com essa migração cresceu uma violenta hostilidade antichinesa.",
+                   "O bigode comprido já era um estereótipo conhecido, usado tanto para ridicularizar os homens chineses quanto para apresentá-los como ameaça. Uma figura quase idêntica aparece num desenho brasileiro de um vendedor ambulante do Rio de Janeiro, o que mostra o quanto essas imagens circulavam. O próprio Posada desenharia depois muitas outras charges antichinesas para a imprensa popular.",
+                   "Compare-o com a gueixa da casa 57. Ela está de pé, ereta, numa rua da cidade, enquanto ele trabalha no campo. Ela representa uma identidade que as elites mexicanas admiravam, e ele representa a mão de obra barata."] }
+    },
+    geisha: {
+      en: { title: "The geisha", label: "A Japanese woman in a kimono, paired with a Mexican bullfighter.",
+            body: ["Circle 57 shows a woman in a kimono in the foreground of a city street, with a bullfighter posing behind her, chest puffed out. She is one of two Japanese women on the board, both dressed in kimonos.",
+                   "From the 1880s on, Mexico City's writers and artists were caught up in a fascination with the geisha, part of a craze that also swept through Europe and the rest of the Americas. Mexican elites admired Japan's rapid modernization after 1868 and its rise as a military power, and saw in it a model Mexico might follow. The Díaz government even tried to establish a colony of Japanese farmers in Chiapas.",
+                   "Placing the geisha beside a torero suggests a bond between the two countries rooted in tradition. The more telling pairing may be between the geisha and the bull. She stands for the disciplined, dutiful obedience idealized in Meiji Japan, while the bull stands for an unruly Mexico that the Porfirian state hoped to tame from above.",
+                   "The image also hints at who counted as a welcome migrant. Japanese people were imagined as a good fit for the Díaz government's vision of modernity, in sharp contrast to the way the Chinese laborer in circle 43 is drawn."] },
+      es: { title: "La geisha", label: "Una mujer japonesa en kimono, acompañada de un torero mexicano.",
+            body: ["La casilla 57 muestra a una mujer en kimono en primer plano, en una calle de la ciudad, con un torero que posa detrás de ella sacando el pecho. Es una de las dos mujeres japonesas del tablero, ambas vestidas con kimono.",
+                   "A partir de la década de 1880, escritores y artistas de la Ciudad de México se dejaron llevar por una fascinación por la geisha, parte de una moda que también recorrió Europa y el resto de América. Las élites mexicanas admiraban la rápida modernización de Japón después de 1868 y su ascenso como potencia militar, y veían en ello un modelo que México podía seguir. El gobierno de Díaz incluso intentó fundar una colonia de agricultores japoneses en Chiapas.",
+                   "Colocar a la geisha junto a un torero sugiere un vínculo entre ambos países basado en la tradición. Pero la pareja más reveladora quizá sea la de la geisha y el toro. Ella encarna la obediencia disciplinada y abnegada que se idealizaba en el Japón Meiji, mientras que el toro representa a un México rebelde que el Estado porfiriano esperaba domar desde arriba.",
+                   "La imagen también insinúa quién contaba como migrante bienvenido. Se imaginaba que los japoneses encajaban bien en la visión de modernidad del gobierno de Díaz, en marcado contraste con la forma en que se dibuja al trabajador chino de la casilla 43."] },
+      pt: { title: "A gueixa", label: "Uma mulher japonesa de quimono, ao lado de um toureiro mexicano.",
+            body: ["A casa 57 mostra uma mulher de quimono em primeiro plano, numa rua da cidade, com um toureiro posando atrás dela de peito estufado. Ela é uma das duas mulheres japonesas do tabuleiro, ambas vestidas de quimono.",
+                   "A partir da década de 1880, escritores e artistas da Cidade do México foram tomados por um fascínio pela gueixa, parte de uma moda que também se espalhou pela Europa e pelo resto das Américas. As elites mexicanas admiravam a rápida modernização do Japão depois de 1868 e sua ascensão como potência militar, e viam nisso um modelo que o México poderia seguir. O governo de Díaz chegou a tentar criar uma colônia de agricultores japoneses em Chiapas.",
+                   "Colocar a gueixa ao lado de um toureiro sugere um laço entre os dois países fundado na tradição. Mas o par mais revelador talvez seja o da gueixa com o touro. Ela encarna a obediência disciplinada e devotada idealizada no Japão Meiji, enquanto o touro representa um México rebelde que o Estado porfiriano esperava domar de cima para baixo.",
+                   "A imagem também sugere quem contava como migrante bem-vindo. Imaginava-se que os japoneses se encaixavam bem na visão de modernidade do governo de Díaz, em forte contraste com a forma como o trabalhador chinês da casa 43 é desenhado."] }
+    },
+    skull: {
+      en: { title: "The skull", label: "One step from the finish, a skull can end your game.",
+            body: ["Circle 64 sits just before the end of the path and holds a skull and crossbones. According to the rules, landing here means you lose outright. If you want to keep playing, you have to pay again and move back to circle 6.",
+                   "In the Game of the Goose, the death square sends you back to the start. Los charros is harsher, and its luck swings hard in the other direction too. Roll three ones on your first throw and you win at once, and landing on circle 5 also wins the game.",
+                   "With bandits along the way and a skull guarding the finish, the game pictures a world of sudden reversals, where following the rules mostly means trying to avoid disaster. It can be read as a quiet critique of Porfirian society, played from the point of view of the people at the bottom of it."] },
+      es: { title: "La calavera", label: "A un paso de la meta, una calavera puede acabar con tu partida.",
+            body: ["La casilla 64 está justo antes del final del camino y muestra una calavera con dos huesos cruzados. Según las reglas, caer aquí significa perder sin remedio. Si quieres seguir jugando, tienes que volver a pagar y regresar a la casilla 6.",
+                   "En el Juego de la oca, la casilla de la muerte te manda de vuelta al principio. Los charros es más duro, y su suerte también da giros bruscos en sentido contrario. Si sacas tres unos en tu primera tirada ganas de inmediato, y caer en la casilla 5 también te da la victoria.",
+                   "Con bandidos a lo largo del camino y una calavera custodiando la meta, el juego retrata un mundo de reveses repentinos, donde seguir las reglas consiste sobre todo en intentar evitar el desastre. Puede leerse como una crítica discreta a la sociedad porfiriana, jugada desde el punto de vista de quienes estaban abajo."] },
+      pt: { title: "A caveira", label: "A um passo da chegada, uma caveira pode acabar com a sua partida.",
+            body: ["A casa 64 fica logo antes do fim do percurso e mostra uma caveira com dois ossos cruzados. Pelas regras, cair aqui significa perder de vez. Se quiser continuar jogando, você tem de pagar de novo e voltar para a casa 6.",
+                   "No Jogo do Ganso, a casa da morte manda você de volta ao início. Los charros é mais duro, e sua sorte também dá guinadas bruscas no sentido contrário. Quem tira três uns no primeiro lance vence na hora, e cair na casa 5 também dá a vitória.",
+                   "Com bandidos pelo caminho e uma caveira guardando a chegada, o jogo retrata um mundo de reviravoltas súbitas, em que seguir as regras é sobretudo tentar evitar o desastre. Ele pode ser lido como uma crítica discreta à sociedade porfiriana, jogada do ponto de vista de quem estava embaixo."] }
+    },
+    playing: {
+      en: { title: "What am I playing?",
+            body: ["Los charros contrabandistas, roughly “the smuggler cowboys,” is a dice game drawn by José Guadalupe Posada, one of the most popular illustrators in late nineteenth-century Mexico City, and printed by the shop of Antonio Vanegas Arroyo. Posada is best known today for his calaveras, but he also drew political cartoons for the penny press and designed several board games in the 1880s and 1890s.",
+                   "Two charros on horseback gallop across opposite corners of the black sheet, and their twirling lassos form a path of 64 numbered circles. Players roll three dice and race along it toward the end. There is no strategy involved. Luck decides everything, which made the game easy to play at almost any age.",
+                   "The game is a version of the Game of the Goose, first recorded in fifteenth-century Italy and played across Europe and the Americas by the 1800s, including in Spanish as the Juego de la oca. In the classic game, landing on a goose doubles your roll, and the skull sends you back to the start. Mexican printers made many versions, some of them openly political. The Oca del General Porfirio Díaz, for example, rewarded players who landed on Díaz or Benito Juárez and jailed those who landed on his rivals.",
+                   "Posada turns that formula around. Instead of geese pushing you forward, bandits rob you along the way. Land on a thieves' circle and you pay the pot again, and a skull waits one step from the finish. A few circles still help you. The deer pays you from the pot and the swift horse doubles your roll. Even so, the game does not show a society that rewards you for trusting the system. It shows one where ordinary people stumble from one setback to the next, and it puts you on their side.",
+                   "Look closely and you will notice that the circles have numbers but no names. Workers, animals, trains, dancers, bullfighters and people of many backgrounds fill the path, but nothing tells you who they are. Players, along with the adults watching over younger ones, had to name the figures themselves, and different groups could name the same figure in different ways. That makes Los charros a race game in two senses, a race to the finish and a conversation about race along the way.",
+                   "As you explore the board here, try doing the same. Before you open a circle, ask yourself who you think it shows, and why."] },
+      es: { title: "¿A qué estoy jugando?",
+            body: ["Los charros contrabandistas es un juego de dados dibujado por José Guadalupe Posada, uno de los ilustradores más populares de la Ciudad de México a finales del siglo XIX, e impreso en el taller de Antonio Vanegas Arroyo. Hoy Posada es conocido sobre todo por sus calaveras, pero también dibujó caricaturas políticas para la prensa de a centavo y diseñó varios juegos de mesa en las décadas de 1880 y 1890.",
+                   "Dos charros a caballo galopan en esquinas opuestas de la hoja negra, y sus lazos en movimiento forman un camino de 64 casillas numeradas. Los jugadores tiran tres dados y avanzan a toda prisa hacia el final. No hay estrategia. La suerte lo decide todo, y eso hacía que el juego fuera fácil para casi cualquier edad.",
+                   "El juego es una versión del Juego de la oca, registrado por primera vez en Italia en el siglo XV y jugado en Europa y América en el siglo XIX. En el juego clásico, caer en una oca duplica tu tirada, y la calavera te devuelve al inicio. Los impresores mexicanos hicieron muchas versiones, algunas abiertamente políticas. La Oca del General Porfirio Díaz, por ejemplo, premiaba a quien caía en Díaz o en Benito Juárez y encarcelaba a quien caía en sus rivales.",
+                   "Posada le da la vuelta a esa fórmula. En lugar de ocas que te impulsan, hay bandidos que te roban en el camino. Si caes en una casilla de ladrones vuelves a pagar la apuesta, y una calavera espera a un paso de la meta. Algunas casillas todavía te ayudan. El venado te paga del fondo y el ligero caballo duplica tu tirada. Aun así, el juego no muestra una sociedad que te premia por confiar en el sistema. Muestra una en la que la gente común tropieza de un revés a otro, y te coloca de su lado.",
+                   "Si miras con atención, verás que las casillas tienen números pero no nombres. Trabajadores, animales, trenes, bailarinas, toreros y personas de muy distintos orígenes llenan el camino, pero nada te dice quiénes son. Los jugadores, junto con los adultos que cuidaban a los más pequeños, tenían que nombrar a las figuras por su cuenta, y distintos grupos podían nombrar a la misma figura de maneras diferentes. Por eso Los charros es un juego de carreras en dos sentidos, una carrera hacia la meta y una conversación sobre la raza a lo largo del camino.",
+                   "Mientras exploras el tablero aquí, intenta hacer lo mismo. Antes de abrir una casilla, pregúntate a quién crees que muestra, y por qué."] },
+      pt: { title: "O que estou jogando?",
+            body: ["Los charros contrabandistas, algo como “os vaqueiros contrabandistas”, é um jogo de dados desenhado por José Guadalupe Posada, um dos ilustradores mais populares da Cidade do México no fim do século XIX, e impresso na oficina de Antonio Vanegas Arroyo. Hoje Posada é conhecido sobretudo por suas calaveras, mas ele também desenhou charges políticas para a imprensa popular e criou vários jogos de tabuleiro nas décadas de 1880 e 1890.",
+                   "Dois charros a cavalo galopam em cantos opostos da folha preta, e seus laços girando formam um percurso de 64 casas numeradas. Os jogadores lançam três dados e correm por ele até o fim. Não há estratégia. A sorte decide tudo, o que tornava o jogo fácil para quase qualquer idade.",
+                   "O jogo é uma versão do Jogo do Ganso, registrado pela primeira vez na Itália no século XV e jogado na Europa e nas Américas no século XIX, inclusive em espanhol como Juego de la oca. No jogo clássico, cair num ganso dobra o seu lance, e a caveira manda você de volta ao início. Os impressores mexicanos fizeram muitas versões, algumas abertamente políticas. A Oca del General Porfirio Díaz, por exemplo, premiava quem caía em Díaz ou em Benito Juárez e prendia quem caía nos rivais dele.",
+                   "Posada vira essa fórmula do avesso. Em vez de gansos que empurram você para a frente, há bandidos que o roubam pelo caminho. Se cair numa casa de ladrões, você paga a aposta de novo, e uma caveira espera a um passo da chegada. Algumas casas ainda ajudam. O veado paga você com o dinheiro do fundo e o cavalo veloz dobra o seu lance. Mesmo assim, o jogo não mostra uma sociedade que recompensa quem confia no sistema. Mostra uma em que as pessoas comuns tropeçam de um revés a outro, e coloca você do lado delas.",
+                   "Olhando com atenção, você vai notar que as casas têm números, mas não nomes. Trabalhadores, animais, trens, bailarinas, toureiros e pessoas de muitas origens enchem o percurso, mas nada diz quem são. Os jogadores, junto com os adultos que cuidavam dos menores, tinham de dar nome às figuras por conta própria, e grupos diferentes podiam nomear a mesma figura de formas diferentes. Por isso Los charros é um jogo de corrida em dois sentidos, uma corrida até a chegada e uma conversa sobre raça ao longo do caminho.",
+                   "Enquanto explora o tabuleiro aqui, tente fazer o mesmo. Antes de abrir uma casa, pergunte a si mesmo quem você acha que ela mostra, e por quê."] }
+    }
+  };
+
+  var STRINGS = {
+    en: { eyebrow: "Let's analyze the game", hint: "Click a numbered area — or one of the labels — to zoom in and read about it.",
+          playLink: "Play the game", reset: "Full view", prev: "Previous", next: "Next", kikaTab: "What am I playing?",
+          readMore: "Zoom in and learn more", of: "of", boardCenter: "Center of the board", sceneCenter: "Center of the scene", spaceAbove: "Space above", spaceBelow: "Space below",
+          credit: "Los Charros Contrabandistas, illustrated by José Guadalupe Posada and printed by Antonio Vanegas Arroyo, Mexico City. Original board located at the Latin American Library, Tulane University." },
+    es: { eyebrow: "Analicemos el juego", hint: "Haz clic en un área numerada — o en una de las etiquetas — para acercarte y leer sobre ella.",
+          playLink: "Jugar", reset: "Vista completa", prev: "Anterior", next: "Siguiente", kikaTab: "¿A qué estoy jugando?",
+          readMore: "Acercar y saber más", of: "de", boardCenter: "Centro del tablero", sceneCenter: "Centro de la escena", spaceAbove: "Espacio arriba", spaceBelow: "Espacio abajo",
+          credit: "Los charros contrabandistas, ilustrado por José Guadalupe Posada e impreso por Antonio Vanegas Arroyo, Ciudad de México. Tablero original ubicado en la Latin American Library de la Universidad de Tulane." },
+    pt: { eyebrow: "Vamos analisar o jogo", hint: "Clique numa área numerada — ou num dos rótulos — para aproximar e ler sobre ela.",
+          playLink: "Jogar", reset: "Visão completa", prev: "Anterior", next: "Próximo", kikaTab: "O que estou jogando?",
+          readMore: "Aproximar e saber mais", of: "de", boardCenter: "Centro do tabuleiro", sceneCenter: "Centro da cena", spaceAbove: "Espaço acima", spaceBelow: "Espaço abaixo",
+          credit: "Los charros contrabandistas, ilustrado por José Guadalupe Posada e impresso por Antonio Vanegas Arroyo, Cidade do México. Tabuleiro original localizado na Latin American Library da Universidade Tulane." }
+  };
+
+  /* =====================================================================
+     AREAS — positions are fractions of the photo (0 = left/top, 1 = right/bottom).
+     rect   = the clickable outline
+     zoom   = what the camera frames when the area is opened
+     anchor = where the numbered badge / leader line attaches
+     side   = which side of the image its label sits on
+     ===================================================================== */
+  var IMG_W = 1400, IMG_H = 1050;
+  var OVERVIEW = [0.045, 0.030, 0.965, 0.930];
+  var AREAS = [
+    { id: "kids",    rect: [0.137, 0.665, 0.325, 0.800], zoom: [0.110, 0.620, 0.350, 0.840], anchor: [0.137, 0.690], side: "left"  },
+    { id: "bandits", rect: [0.571, 0.485, 0.640, 0.576], zoom: [0.535, 0.440, 0.675, 0.620], anchor: [0.635, 0.505], side: "right", round: true },
+    { id: "boxer",   rect: [0.839, 0.473, 0.907, 0.565], zoom: [0.800, 0.430, 0.945, 0.610], anchor: [0.907, 0.535], side: "right", round: true },
+    { id: "chinese", rect: [0.500, 0.578, 0.569, 0.670], zoom: [0.465, 0.535, 0.605, 0.715], anchor: [0.500, 0.610], side: "left",  round: true },
+    { id: "geisha",  rect: [0.260, 0.816, 0.329, 0.908], zoom: [0.225, 0.775, 0.365, 0.950], anchor: [0.260, 0.850], side: "left",  round: true },
+    { id: "skull",   rect: [0.686, 0.619, 0.754, 0.695], zoom: [0.650, 0.570, 0.790, 0.745], anchor: [0.754, 0.645], side: "right", round: true }
+  ];
+
+  var STORAGE_KEY = "race-games-lang";
+  var lang = "en";
+  try { var s = localStorage.getItem(STORAGE_KEY); if (s && STRINGS[s]) lang = s; } catch(e){}
+
+  var $ = function(id){ return document.getElementById(id); };
+  var analysis = $("analysis"), frame = $("frame"), layer = $("layer"), overlay = $("overlay");
+  var colLeft = $("colLeft"), colRight = $("colRight"), leaders = $("leaders"), topics = $("topics");
+  var NS = "http://www.w3.org/2000/svg";
+  var active = null;
+
+  function t(key){ return (STRINGS[lang] && STRINGS[lang][key]) || STRINGS.en[key] || ""; }
+  function c(id){ return (CONTENT[id] && (CONTENT[id][lang] || CONTENT[id].en)) || { title: "", body: [] }; }
+  function svgEl(tag, attrs){ var el = document.createElementNS(NS, tag); for (var k in attrs) el.setAttribute(k, attrs[k]); return el; }
+  function px(r){ return [r[0]*IMG_W, r[1]*IMG_H, (r[2]-r[0])*IMG_W, (r[3]-r[1])*IMG_H]; }
+  function fillParas(container, paras){
+    container.innerHTML = "";
+    (paras || []).forEach(function(p){
+      var el = document.createElement("p");
+      if (/^\s*\[/.test(p)){ var sp = document.createElement("span"); sp.className = "placeholder"; sp.textContent = p; el.appendChild(sp); }
+      else el.textContent = p;
+      container.appendChild(el);
+    });
+  }
+
+  /* ---------- Build overlay (dim mask, guides, hotspots) ---------- */
+  var dim = svgEl("path", { "class": "dim" });
+  overlay.appendChild(dim);
+
+
+  var hotEls = {};
+  AREAS.forEach(function(a){
+    var p = px(a.rect);
+    var r = svgEl("rect", { "class": "hot", x: p[0], y: p[1], width: p[2], height: p[3], rx: a.round ? Math.min(p[2], p[3]) / 2 : 8, tabindex: "-1" });
+    r.addEventListener("click", function(){ open(a.id); });
+    r.addEventListener("mouseenter", function(){ hover(a.id, true); });
+    r.addEventListener("mouseleave", function(){ hover(a.id, false); });
+    overlay.appendChild(r);   // added in AREAS order: soldier first → we re-append small ones last below
+    hotEls[a.id] = r;
+  });
+  // Stacking: biggest area at the back so smaller ones stay clickable
+  AREAS.slice().sort(function(p, q){ return (q.rect[2]-q.rect[0])*(q.rect[3]-q.rect[1]) - (p.rect[2]-p.rect[0])*(p.rect[3]-p.rect[1]); })
+    .forEach(function(a){ overlay.appendChild(hotEls[a.id]); });
+
+  /* ---------- Badges, callouts, topic buttons ---------- */
+  var badges = {}, callouts = {}, topicBtns = {};
+  AREAS.forEach(function(a, i){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "badge"; b.textContent = i + 1;
+    b.addEventListener("click", function(){ open(a.id); });
+    b.addEventListener("mouseenter", function(){ hover(a.id, true); });
+    b.addEventListener("mouseleave", function(){ hover(a.id, false); });
+    frame.appendChild(b); badges[a.id] = b;
+
+    var co = document.createElement("button");
+    co.type = "button"; co.className = "callout";
+    co.innerHTML = '<span class="num">' + (i+1) + '</span><span class="ct"></span><span class="cl"></span><span class="more"></span>';
+    co.addEventListener("click", function(){ open(a.id); });
+    co.addEventListener("mouseenter", function(){ hover(a.id, true); });
+    co.addEventListener("mouseleave", function(){ hover(a.id, false); });
+    (a.side === "left" ? colLeft : colRight).appendChild(co); callouts[a.id] = co;
+
+    var tb = document.createElement("button");
+    tb.type = "button"; tb.innerHTML = '<span class="num">' + (i+1) + '</span><span class="tt"></span>';
+    tb.addEventListener("click", function(){ open(a.id); });
+    topics.appendChild(tb); topicBtns[a.id] = tb;
+  });
+
+  function hover(id, on){ if (!active) hotEls[id].classList.toggle("hover", on); }
+
+  /* ---------- Camera ---------- */
+  var lastK = 1;
+  function camera(region){
+    var Fw = frame.clientWidth, Fh = frame.clientHeight;
+    var Lw = Fw / (OVERVIEW[2] - OVERVIEW[0]);
+    var Lh = Lw * IMG_H / IMG_W;
+    layer.style.width = Lw + "px"; layer.style.height = Lh + "px";
+    var rw = (region[2]-region[0]) * Lw, rh = (region[3]-region[1]) * Lh;
+    var k = Math.min(Fw / rw, Fh / rh);
+    var cx = (region[0]+region[2])/2 * Lw, cy = (region[1]+region[3])/2 * Lh;
+    var tx = Fw/2 - k*cx, ty = Fh/2 - k*cy;
+    // keep the photo covering the frame where possible
+    tx = Math.min(0, Math.max(Fw - k*Lw, tx)); ty = Math.min(0, Math.max(Fh - k*Lh, ty));
+    layer.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + k + ")";
+    lastK = k;
+    return { Lw: Lw, Lh: Lh, k: k, tx: tx, ty: ty };
+  }
+  var view = null;
+  function overviewPoint(fx, fy){ // photo fraction → frame px in overview
+    return [(fx - OVERVIEW[0]) * view.Lw, (fy - OVERVIEW[1]) * view.Lh];
+  }
+
+  function areaById(id){ for (var i = 0; i < AREAS.length; i++) if (AREAS[i].id === id) return AREAS[i]; return null; }
+
+  /* ---------- Open / close ---------- */
+  function setDim(a){
+    var o = "M0,0 H" + IMG_W + " V" + IMG_H + " H0 Z";
+    var p = px(a.rect), pad = 6;
+    if (a.round){
+      var cx = p[0] + p[2]/2, cy = p[1] + p[3]/2, r = Math.min(p[2], p[3])/2 + pad;
+      dim.setAttribute("d", o + " M" + (cx - r) + "," + cy + " a" + r + "," + r + " 0 1,0 " + (2*r) + ",0 a" + r + "," + r + " 0 1,0 " + (-2*r) + ",0 Z");
+      return;
+    }
+    var x = p[0]-pad, y = p[1]-pad, w = p[2]+2*pad, h = p[3]+2*pad;
+    dim.setAttribute("d", o + " M" + x + "," + y + " h" + w + " v" + h + " h" + (-w) + " Z");
+  }
+  function renderPanel(){
+    if (!active) return;
+    var i = AREAS.indexOf(areaById(active)), data = c(active);
+    $("pNum").textContent = (i+1) + " " + t("of") + " " + AREAS.length;
+    $("pTitle").textContent = data.title;
+    fillParas($("pBody"), data.body);
+  }
+  function open(id){
+    var a = areaById(id); if (!a) return;
+    active = id;
+    Object.keys(hotEls).forEach(function(k){ hotEls[k].classList.remove("hover"); hotEls[k].classList.toggle("active", k === id); });
+    setDim(a);
+    frame.classList.add("zoomed"); frame.setAttribute("data-active", id);
+    analysis.classList.add("is-zoomed");
+    renderPanel();
+    camera(a.zoom);
+    if (history.replaceState) history.replaceState(null, "", "#" + id);
+    if (window.innerWidth <= 960){
+      var top = frame.getBoundingClientRect().top + window.scrollY - 60;
+      if (Math.abs(window.scrollY - top) > 40) window.scrollTo({ top: top, behavior: "smooth" });
+    }
+  }
+  function close(){
+    if (!active) return;
+    var was = active; active = null;
+    frame.classList.remove("zoomed"); frame.removeAttribute("data-active");
+    analysis.classList.remove("is-zoomed");
+    Object.keys(hotEls).forEach(function(k){ hotEls[k].classList.remove("active"); });
+    camera(OVERVIEW);
+    if (history.replaceState) history.replaceState(null, "", location.pathname + location.search);
+    if (callouts[was] && getComputedStyle(colLeft).display !== "none") callouts[was].focus({ preventScroll: true });
+  }
+  function step(d){
+    if (!active) return;
+    var i = AREAS.indexOf(areaById(active));
+    open(AREAS[(i + d + AREAS.length) % AREAS.length].id);
+  }
+  $("reset").addEventListener("click", close);
+  $("pClose").addEventListener("click", close);
+  $("pPrev").addEventListener("click", function(){ step(-1); });
+  $("pNext").addEventListener("click", function(){ step(1); });
+
+  /* ---------- "What am I playing?" modal ---------- */
+  var modalBack = $("modalBack"), lastFocus = null;
+  function openModal(){
+    var d = c("playing");
+    $("mTitle").textContent = d.title; fillParas($("mBody"), d.body);
+    lastFocus = document.activeElement;
+    modalBack.classList.add("open"); modalBack.setAttribute("aria-hidden", "false");
+    $("mClose").focus();
+  }
+  function closeModal(){
+    modalBack.classList.remove("open"); modalBack.setAttribute("aria-hidden", "true");
+    if (lastFocus) lastFocus.focus();
+  }
+  $("kikaTab").addEventListener("click", openModal);
+  $("mClose").addEventListener("click", closeModal);
+  modalBack.addEventListener("click", function(e){ if (e.target === modalBack) closeModal(); });
+
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape"){ if (modalBack.classList.contains("open")) closeModal(); else close(); }
+    else if (active && !modalBack.classList.contains("open")){
+      if (e.key === "ArrowRight") step(1);
+      if (e.key === "ArrowLeft") step(-1);
+    }
+  });
+
+  /* ---------- Language ---------- */
+  function applyLang(l){
+    lang = STRINGS[l] ? l : "en";
+    document.documentElement.setAttribute("lang", lang);
+    document.querySelectorAll("[data-i18n]").forEach(function(el){
+      var v = t(el.getAttribute("data-i18n")); if (v) el.textContent = v;
+    });
+    document.querySelectorAll(".langtoggle button").forEach(function(btn){
+      btn.setAttribute("aria-pressed", btn.getAttribute("data-lang") === lang ? "true" : "false");
+    });
+    AREAS.forEach(function(a){
+      var d = c(a.id);
+      callouts[a.id].querySelector(".ct").textContent = d.title;
+      var cl = callouts[a.id].querySelector(".cl");
+      cl.textContent = d.label || ""; cl.classList.toggle("placeholder", /^\s*\[/.test(d.label || ""));
+      callouts[a.id].querySelector(".more").textContent = t("readMore") + " →";
+      topicBtns[a.id].querySelector(".tt").textContent = d.title;
+      badges[a.id].setAttribute("aria-label", d.title);
+      hotEls[a.id].setAttribute("aria-label", d.title);
+    });
+    renderPanel();
+    if (modalBack.classList.contains("open")){ var d = c("playing"); $("mTitle").textContent = d.title; fillParas($("mBody"), d.body); }
+    relayout();
+  }
+  document.querySelectorAll(".langtoggle button").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var l = btn.getAttribute("data-lang"); applyLang(l);
+      try { localStorage.setItem(STORAGE_KEY, l); } catch(e){}
+    });
+  });
+
+  /* ---------- Init ---------- */
+  function relayout(){
+    // compute overview geometry for badges/labels without disturbing the current zoom
+    var saveTransition = layer.style.transition;
+    layer.style.transition = "none";
+    view = camera(OVERVIEW);
+    AREAS.forEach(function(a){
+      var p = overviewPoint(a.anchor[0], a.anchor[1]);
+      badges[a.id].style.left = p[0] + "px"; badges[a.id].style.top = p[1] + "px";
+    });
+    if (active) camera(areaById(active).zoom);
+    layer.offsetHeight; // flush
+    layer.style.transition = saveTransition;
+    var panel = $("panel"), small = getComputedStyle(colLeft).display === "none";
+    if (small && panel.parentNode !== topics.parentNode) topics.parentNode.insertBefore(panel, topics);
+    if (!small && panel.parentNode !== colRight) colRight.appendChild(panel);
+    if (small){ leaders.innerHTML = ""; return; }
+    var aRect = analysis.getBoundingClientRect(), fRect = frame.getBoundingClientRect();
+    ["left", "right"].forEach(function(side){
+      var items = AREAS.filter(function(a){ return a.side === side; })
+        .map(function(a){ return { a: a, y: overviewPoint(a.anchor[0], a.anchor[1])[1] + (fRect.top - aRect.top), h: callouts[a.id].offsetHeight }; })
+        .sort(function(p, q){ return p.y - q.y; });
+      // first pass: place each label near its anchor, pushing down to avoid overlaps
+      var cursor = 0;
+      items.forEach(function(it){ it.top = Math.max(cursor, it.y - 24); cursor = it.top + it.h + 18; });
+      // second pass: pull the stack back up so it doesn't run past the bottom of the image
+      var limit = fRect.bottom - aRect.top;
+      for (var i = items.length - 1; i >= 0; i--){ items[i].top = Math.max(0, Math.min(items[i].top, limit - items[i].h)); limit = items[i].top - 18; }
+      cursor = 0;
+      items.forEach(function(it){ it.top = Math.max(cursor, it.top); callouts[it.a.id].style.top = it.top + "px"; cursor = it.top + it.h + 18; });
+      (side === "left" ? colLeft : colRight).style.minHeight = cursor + "px";
+    });
+    leaders.innerHTML = "";
+    AREAS.forEach(function(a){
+      var co = callouts[a.id].getBoundingClientRect();
+      var p = overviewPoint(a.anchor[0], a.anchor[1]);
+      var bx = fRect.left - aRect.left + frame.clientLeft + p[0], by = fRect.top - aRect.top + frame.clientTop + p[1];
+      var sx = (a.side === "left" ? co.right : co.left) - aRect.left;
+      var sy = co.top - aRect.top + 24;
+      var dx = bx - sx, dy = by - sy, len = Math.sqrt(dx*dx + dy*dy) || 1;
+      bx -= dx/len*15; by -= dy/len*15;
+      leaders.appendChild(svgEl("line", { x1: sx, y1: sy, x2: bx, y2: by }));
+      leaders.appendChild(svgEl("circle", { cx: sx, cy: sy, r: 3 }));
+    });
+  }
+
+  window.addEventListener("resize", relayout);
+  $("boardImg").addEventListener("load", relayout);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
+
+  applyLang(lang);
+  var h = (location.hash || "").replace("#", "");
+  if (h === "playing") openModal();
+  else if (areaById(h)){ layer.style.transition = "none"; open(h); layer.offsetHeight; layer.style.transition = ""; }
+})();
+</script>
+</body>
+</html>
