@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Analyze: Juego del Castillo de los Aztecas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700;800;900&family=Libre+Franklin:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #FAFAF7;
+    --paper-dim: #F0EFEA;
+    --ink: #14161A;
+    --ink-soft: #55585F;
+    --line: #DCDBD4;
+    --red: #E8402C;
+    --indigo: #16382C; /* accent (jade) */
+    --indigo-soft: #E6E9EF;
+  }
+  *{ box-sizing: border-box; }
+  html, body{ margin: 0; background: var(--paper); color: var(--ink); }
+  body{
+    font-family: 'Libre Franklin', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  button{ font-family: inherit; }
+
+  /* ---------- Back pill ---------- */
+  .back-pill{
+    position: fixed; top: 14px; left: 14px; z-index: 9999;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; background: var(--ink); color: var(--paper);
+    text-decoration: none; font-size: 12px; font-weight: 600; letter-spacing: 0.03em;
+    border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,0.25); opacity: 0.85;
+  }
+  .back-pill:hover{ opacity: 1; }
+
+  .wrap{ max-width: 1280px; margin: 0 auto; padding: 0 28px; }
+
+  /* ---------- Language toggle ---------- */
+  .langbar{ display: flex; justify-content: flex-end; padding: 18px 0 0; }
+  .langtoggle{ display: inline-flex; align-items: center; gap: 2px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em; }
+  .langtoggle button{
+    font: inherit; letter-spacing: inherit; background: none; border: none; cursor: pointer;
+    color: var(--ink-soft); padding: 6px 8px; border-radius: 6px;
+    transition: color .15s ease, background .15s ease;
+  }
+  .langtoggle button:hover{ color: var(--ink); }
+  .langtoggle button[aria-pressed="true"]{ color: var(--ink); background: var(--paper-dim); }
+  .langtoggle .sep{ color: var(--line); }
+
+  /* ---------- Header ---------- */
+  header.intro{ padding: 22px 0 26px; border-bottom: 2px solid var(--ink); margin-bottom: 30px; }
+  .eyebrow{
+    font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--indigo); margin: 0 0 10px;
+  }
+  h1{
+    font-family: 'Bitter', serif; font-weight: 900; text-transform: uppercase;
+    font-size: clamp(30px, 5vw, 54px); line-height: 1.02; letter-spacing: -0.01em; margin: 0 0 12px;
+  }
+  .intro-row{ display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: flex-end; justify-content: space-between; }
+  .hint{ margin: 0; color: var(--ink-soft); font-size: 15px; max-width: 620px; }
+  .play-link{
+    display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+    font-weight: 700; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--paper); background: var(--indigo); padding: 12px 18px; border-radius: 2px;
+  }
+  .play-link:hover{ transform: translateX(2px); }
+
+  /* ---------- Analysis layout ---------- */
+  .analysis{
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(200px, 1fr) auto minmax(200px, 1fr);
+    gap: 0 36px;
+    align-items: start;
+    padding: 44px 0 70px;
+  }
+  .col{ position: relative; align-self: stretch; }
+  .leaders{ position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; z-index: 3; transition: opacity .3s ease; }
+  .leaders line{ stroke: var(--ink); stroke-width: 1.25; }
+  .leaders circle{ fill: var(--ink); }
+
+  /* Callout labels around the image */
+  .callout{
+    position: absolute; left: 0; right: 0;
+    display: block; width: 100%; text-align: left;
+    background: #fff; border: 1.5px solid var(--ink); border-radius: 2px;
+    padding: 10px 12px 10px; cursor: pointer; z-index: 2;
+    box-shadow: 3px 3px 0 var(--ink);
+    transition: transform .15s ease, box-shadow .15s ease, opacity .3s ease;
+    color: var(--ink);
+  }
+  .callout:hover, .callout:focus-visible{ transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--indigo); outline: none; }
+  .callout .num{
+    display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--red); color: #fff; font-size: 11px; font-weight: 800; margin-right: 8px; vertical-align: 1px;
+  }
+  .callout .ct{ font-family: 'Bitter', serif; font-weight: 800; font-size: 15.5px; text-transform: uppercase; letter-spacing: 0.01em; }
+  .callout .cl{ display: block; margin-top: 4px; font-size: 12.5px; line-height: 1.45; color: var(--ink-soft); }
+  .callout .more{ display: block; margin-top: 7px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--indigo); }
+
+  /* The image frame */
+  .stage-col{ position: relative; z-index: 2; }
+  .frame{
+    position: relative;
+    width: min(calc((100vw - 56px) * 0.52), calc(70vh * 1.73), 820px);
+    aspect-ratio: 1.73;
+    overflow: hidden;
+    background: #d9d3c2;
+    border: 2px solid var(--ink);
+    box-shadow: 6px 6px 0 var(--indigo);
+    touch-action: manipulation;
+  }
+  .layer{
+    position: absolute; left: 0; top: 0;
+    transform-origin: 0 0;
+    transition: transform .75s cubic-bezier(.65,.05,.25,1);
+    will-change: transform;
+  }
+  .layer img{ display: block; width: 100%; height: 100%; user-select: none; -webkit-user-drag: none; }
+  .layer svg{ position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+
+  .hot{ fill: rgba(255,255,255,0); stroke: rgba(232,64,44,0); stroke-width: 2; vector-effect: non-scaling-stroke; cursor: pointer; transition: fill .2s ease, stroke .2s ease; }
+  .hotg:hover .hot, .hotg.hover .hot{ fill: rgba(232,64,44,0.10); stroke: rgba(232,64,44,0.9); stroke-dasharray: 5 4; }
+  .zoomed .hot{ pointer-events: none; }
+  .zoomed .hotg.active .hot{ stroke: var(--red); stroke-width: 3; stroke-dasharray: none; fill: none; }
+
+  .dim{ fill: rgba(20,22,26,0.55); fill-rule: evenodd; opacity: 0; transition: opacity .5s ease .25s; pointer-events: none; }
+  .zoomed .dim{ opacity: 1; }
+
+
+  /* Numbered badges on the image */
+  .badge{
+    position: absolute; z-index: 3; width: 28px; height: 28px; margin: -14px 0 0 -14px;
+    border-radius: 50%; border: 2px solid #fff; background: var(--red); color: #fff;
+    font-weight: 800; font-size: 13px; cursor: pointer; display: grid; place-items: center; padding: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,.35);
+    transition: opacity .25s ease, transform .2s ease;
+  }
+  .badge::after{
+    content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid var(--red);
+    animation: pulse 2.4s ease-out infinite; opacity: 0;
+  }
+  @keyframes pulse{ 0%{ transform: scale(.7); opacity: .8; } 80%,100%{ transform: scale(1.5); opacity: 0; } }
+  .badge:hover{ transform: scale(1.12); }
+  .zoomed .badge{ opacity: 0; pointer-events: none; }
+
+  /* Back-to-full-view button over the frame */
+  .reset{
+    position: absolute; z-index: 4; top: 12px; left: 12px;
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--paper); color: var(--ink); border: 1.5px solid var(--ink); border-radius: 999px;
+    padding: 7px 13px; font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; cursor: pointer;
+    opacity: 0; pointer-events: none; transform: translateY(-6px); transition: opacity .25s ease, transform .25s ease;
+  }
+  .zoomed .reset{ opacity: 1; pointer-events: auto; transform: none; transition-delay: .4s; }
+
+  /* "What am I playing?" tab on the border */
+  .kika-tab{
+    position: absolute; z-index: 5; left: 50%; top: -40px; transform: translateX(-50%);
+    display: inline-flex; align-items: center; gap: 10px; white-space: nowrap;
+    background: var(--indigo); color: var(--paper); border: 2px solid var(--ink); border-bottom: none;
+    border-radius: 6px 6px 0 0; padding: 10px 18px 9px;
+    font-family: 'Bitter', serif; font-weight: 800; font-size: 15px; letter-spacing: .02em; text-transform: uppercase;
+    cursor: pointer; box-shadow: 4px -2px 0 var(--ink);
+    transition: background .2s ease, top .2s ease;
+  }
+  .kika-tab:hover{ background: #0d241c; top: -44px; }
+  .kika-tab .plus{ display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--paper); color: var(--indigo); font-family: 'Libre Franklin', sans-serif; font-size: 15px; line-height: 1; }
+
+  /* Explanation panel (shown while zoomed) */
+  .panel{
+    position: absolute; z-index: 6; top: 0; left: 0; right: 0;
+    background: #fff; border: 2px solid var(--ink); box-shadow: 6px 6px 0 var(--ink);
+    padding: 22px 22px 18px;
+    opacity: 0; transform: translateX(14px); pointer-events: none;
+    transition: opacity .3s ease, transform .35s ease;
+    max-height: 100%; overflow: auto;
+  }
+  .is-zoomed .panel{ opacity: 1; transform: none; pointer-events: auto; transition-delay: .35s; }
+  .panel .p-top{ display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .panel .p-num{ font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--red); }
+  .panel .p-close{ background: none; border: none; font-size: 22px; line-height: 1; cursor: pointer; color: var(--ink-soft); padding: 2px 4px; }
+  .panel .p-close:hover{ color: var(--ink); }
+  .panel h2{ font-family: 'Bitter', serif; font-weight: 800; font-size: 24px; line-height: 1.1; text-transform: uppercase; margin: 0 0 14px; }
+  .panel .p-body p{ margin: 0 0 12px; font-size: 15px; line-height: 1.62; }
+  .placeholder{ color: #8a8c91; font-style: italic; }
+  .panel .p-nav{ display: flex; justify-content: space-between; gap: 8px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .panel .p-nav button{
+    background: none; border: 1.5px solid var(--ink); border-radius: 2px; padding: 8px 12px; cursor: pointer;
+    font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink);
+  }
+  .panel .p-nav button:hover{ background: var(--ink); color: var(--paper); }
+
+  .is-zoomed .callout, .is-zoomed .leaders{ opacity: 0; pointer-events: none; }
+
+  .credit{ margin: 0; font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; max-width: 640px; }
+
+  /* Topic list (small screens) */
+  .topics{ display: none; }
+
+  /* ---------- Modal ---------- */
+  .modal-back{
+    position: fixed; inset: 0; z-index: 10000; background: rgba(20,22,26,.6);
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+    opacity: 0; pointer-events: none; transition: opacity .25s ease;
+  }
+  .modal-back.open{ opacity: 1; pointer-events: auto; }
+  .modal{
+    position: relative; width: min(820px, 100%); max-height: calc(100vh - 48px); overflow: auto;
+    background: var(--paper); border: 2px solid var(--ink); box-shadow: 8px 8px 0 var(--indigo);
+    padding: 42px clamp(22px, 5vw, 56px) 40px;
+    transform: translateY(14px) scale(.98); transition: transform .3s ease;
+  }
+  .modal-back.open .modal{ transform: none; }
+  .modal .m-close{ position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 28px; line-height: 1; cursor: pointer; color: var(--ink-soft); }
+  .modal .m-close:hover{ color: var(--ink); }
+  .modal h2{ font-family: 'Bitter', serif; font-weight: 900; text-transform: uppercase; font-size: clamp(28px, 4vw, 42px); line-height: 1.05; margin: 0 0 22px; padding-bottom: 18px; border-bottom: 2px solid var(--ink); }
+  .modal .m-body p{ font-size: 17px; line-height: 1.7; margin: 0 0 16px; }
+
+  /* ---------- Small screens ---------- */
+  @media (max-width: 960px){
+    .analysis{ grid-template-columns: 1fr; padding: 0 0 40px; }
+    .col.side, .leaders{ display: none; }
+    .stage-col{ display: flex; flex-direction: column; align-items: center; }
+    .frame{ width: 100%; }
+    .panel{ position: relative; display: none; margin-top: 18px; width: 100%; transform: none; max-height: none; }
+    .is-zoomed .panel{ display: block; }
+    .kika-tab{ position: relative; left: auto; top: auto; transform: none; margin-bottom: -2px; }
+    .kika-tab:hover{ top: auto; }
+    .topics{ display: grid; gap: 10px; width: 100%; margin-top: 24px; }
+    .is-zoomed .topics{ display: none; }
+    .topics button{
+      display: flex; align-items: center; gap: 10px; text-align: left; width: 100%;
+      background: #fff; border: 1.5px solid var(--ink); border-radius: 2px; padding: 12px 14px; cursor: pointer;
+      font-family: 'Bitter', serif; font-weight: 800; font-size: 15px; text-transform: uppercase; color: var(--ink);
+    }
+    .topics .num{ display: inline-grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--red); color: #fff; font-family: 'Libre Franklin', sans-serif; font-size: 11px; font-weight: 800; }
+    .credit{ margin-top: 26px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .layer, .panel, .callout, .badge::after{ transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<a class="back-pill" href="../index.html">&larr;&nbsp;RACE GAMES</a>
+
+<div class="wrap">
+  <div class="langbar">
+    <div class="langtoggle" role="group" aria-label="Language">
+      <button type="button" data-lang="en" aria-pressed="true">EN</button>
+      <span class="sep">/</span>
+      <button type="button" data-lang="es" aria-pressed="false">ES</button>
+      <span class="sep">/</span>
+      <button type="button" data-lang="pt" aria-pressed="false">PT</button>
+    </div>
+  </div>
+
+  <header class="intro">
+    <p class="eyebrow" data-i18n="eyebrow">Let's analyze the game</p>
+    <h1>Juego del Castillo de los Aztecas</h1>
+    <div class="intro-row">
+      <p class="hint" data-i18n="hint">Click a numbered area — or one of the labels — to zoom in and read about it.</p>
+      <a class="play-link" href="juego-del-castillo-de-los-aztecas.html"><span data-i18n="playLink">Play the game</span> <span>→</span></a>
+    </div>
+  </header>
+
+  <section class="analysis" id="analysis">
+    <svg class="leaders" id="leaders" aria-hidden="true"></svg>
+
+    <div class="col side" id="colLeft"></div>
+
+    <div class="stage-col">
+      <button type="button" class="kika-tab" id="kikaTab"><span data-i18n="kikaTab">What am I playing?</span> <span class="plus">+</span></button>
+      <div class="frame" id="frame">
+        <div class="layer" id="layer">
+          <img src="../images/juego-del-castillo-de-los-aztecas-board.jpg" alt="Board for Juego del Castillo de los Aztecas, a step-pyramid siege game, Mexico, 19th century" id="boardImg">
+          <svg id="overlay" viewBox="0 0 3000 2039" preserveAspectRatio="none"></svg>
+        </div>
+        <button type="button" class="reset" id="reset">← <span data-i18n="reset">Full view</span></button>
+      </div>
+
+      <div class="topics" id="topics"></div>
+    </div>
+
+    <div class="col side" id="colRight">
+      <aside class="panel" id="panel" aria-live="polite">
+        <div class="p-top">
+          <span class="p-num" id="pNum"></span>
+          <button type="button" class="p-close" id="pClose" aria-label="Close">×</button>
+        </div>
+        <h2 id="pTitle"></h2>
+        <div class="p-body" id="pBody"></div>
+        <div class="p-nav">
+          <button type="button" id="pPrev">← <span data-i18n="prev">Previous</span></button>
+          <button type="button" id="pNext"><span data-i18n="next">Next</span> →</button>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <p class="credit" data-i18n="credit">Juego del Castillo de los Aztecas, Mexico City, sold at La Perla. [Photo credit to be added.]</p>
+</div>
+
+<div class="modal-back" id="modalBack" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <button type="button" class="m-close" id="mClose" aria-label="Close">×</button>
+    <p class="eyebrow" data-i18n="eyebrow">Let's analyze the game</p>
+    <h2 id="mTitle"></h2>
+    <div class="m-body" id="mBody"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  /* =====================================================================
+     ✏️  EDIT YOUR TEXT HERE
+     ---------------------------------------------------------------------
+     Each area has a short "label" (shown in the box beside the image)
+     and a "body" (shown when the area is clicked). "body" is a list of
+     paragraphs — add as many as you like, each in "quotes", separated
+     by commas. Any paragraph that starts with "[" is styled as a grey
+     placeholder, so you can see at a glance what still needs writing.
+     ===================================================================== */
+  var CONTENT = {
+    eagle: {
+      en: { title: "The eagle", label: "Mexico's national emblem stands guard over the castle.",
+            body: ["At the very top of the board, above the castle, an eagle perches on a cactus with a snake in its beak. It is the emblem on Mexico's coat of arms, which draws on the Mexica story of where to found their city, Tenochtitlan.",
+                   "The printed rules make the eagle part of the game. They describe the castle as the upper part of the board “guarded by the Aztecs and the Eagle,” so the national symbol keeps watch over the very squares the defending player has to protect.",
+                   "Placing the eagle above an Aztec stronghold links the ancient Mexica directly to the modern Mexican nation. Holding the castle becomes a way of defending Mexico itself, and whoever takes the Aztec side plays as a guardian of the nation."] },
+      es: { title: "El águila", label: "El emblema nacional de México vigila el castillo.",
+            body: ["En lo más alto del tablero, por encima del castillo, un águila posada sobre un nopal sostiene una serpiente en el pico. Es el emblema del escudo de México, que retoma el relato mexica sobre dónde fundar su ciudad, Tenochtitlan.",
+                   "Las reglas impresas hacen del águila una parte del juego. Describen el castillo como la parte superior del tablero «resguardada por los Aztecas y el Águila», así que el símbolo nacional vigila justamente las casillas que el jugador defensor tiene que proteger.",
+                   "Colocar el águila sobre una fortaleza azteca vincula directamente a los antiguos mexicas con la nación mexicana moderna. Defender el castillo se convierte en una forma de defender a México, y quien toma el lado azteca juega como guardián de la nación."] },
+      pt: { title: "A águia", label: "O emblema nacional do México vigia o castelo.",
+            body: ["No ponto mais alto do tabuleiro, acima do castelo, uma águia pousada num cacto segura uma serpente no bico. É o emblema do brasão do México, que retoma o relato mexica sobre onde fundar sua cidade, Tenochtitlan.",
+                   "As regras impressas fazem da águia uma parte do jogo. Elas descrevem o castelo como a parte superior do tabuleiro “resguardada pelos Astecas e pela Águia”, de modo que o símbolo nacional vigia justamente as casas que o jogador defensor precisa proteger.",
+                   "Colocar a águia sobre uma fortaleza asteca liga diretamente os antigos mexicas à nação mexicana moderna. Defender o castelo vira uma forma de defender o próprio México, e quem fica do lado asteca joga como guardião da nação."] }
+    },
+    castle: {
+      en: { title: "The castle", label: "Eight squares at the top of the pyramid decide the whole game.",
+            body: ["The framed box at the top of the step pyramid is the castle. It holds eight squares, three across the top, two in the middle and three in the row between the two Aztec figures. The defending player sets out three pieces here, and this is the ground the other player is trying to take.",
+                   "Everything in the game turns on this box. The twenty-one attackers start in the bottom three rows and can only move upward along the black squares. They win if they push out the three defenders and fill all eight squares of the castle. The defenders win if they leave the attackers with no move to make.",
+                   "The odds are uneven by design. The attackers can never capture, while the three defenders can move in any direction and jump over attackers to remove them. The attackers have one trick. They can force a defender to capture, which can pull it out of position and open a gap in the castle.",
+                   "The name matters too. Calling the box a castle (castillo) rather than using a Nahuatl word like teocalli recalls Chapultepec Castle, home of Mexico's heads of state, and makes the Aztec stronghold look like a seat of modern state power."] },
+      es: { title: "El castillo", label: "Ocho casillas en lo alto de la pirámide deciden todo el juego.",
+            body: ["El recuadro enmarcado en lo alto de la pirámide escalonada es el castillo. Tiene ocho casillas, tres arriba, dos en medio y tres en la fila que queda entre las dos figuras aztecas. Aquí el jugador defensor coloca sus tres piezas, y este es el terreno que el otro jugador intenta conquistar.",
+                   "Todo el juego gira en torno a este recuadro. Los veintiún atacantes empiezan en las tres filas de abajo y solo pueden avanzar hacia arriba por las casillas negras. Ganan si desalojan a los tres defensores y ocupan las ocho casillas del castillo. Los defensores ganan si dejan a los atacantes sin jugada posible.",
+                   "Las fuerzas son desiguales a propósito. Los atacantes nunca pueden comer, mientras que los tres defensores pueden moverse en cualquier dirección y saltar sobre los atacantes para eliminarlos. Los atacantes tienen un recurso. Pueden obligar a un defensor a comer, lo que puede sacarlo de su posición y abrir un hueco en el castillo.",
+                   "El nombre también importa. Llamar al recuadro castillo en lugar de usar un término náhuatl como teocalli evoca el Castillo de Chapultepec, residencia de los jefes de Estado de México, y hace que la fortaleza azteca parezca una sede del poder estatal moderno."] },
+      pt: { title: "O castelo", label: "Oito casas no alto da pirâmide decidem o jogo inteiro.",
+            body: ["O quadro emoldurado no alto da pirâmide em degraus é o castelo. Ele tem oito casas, três em cima, duas no meio e três na fileira entre as duas figuras astecas. É aqui que o jogador defensor posiciona suas três peças, e é este o território que o outro jogador tenta tomar.",
+                   "Tudo no jogo gira em torno desse quadro. Os vinte e um atacantes começam nas três fileiras de baixo e só podem subir pelas casas pretas. Eles vencem se expulsarem os três defensores e ocuparem as oito casas do castelo. Os defensores vencem se deixarem os atacantes sem nenhuma jogada possível.",
+                   "As forças são desiguais de propósito. Os atacantes nunca podem capturar, enquanto os três defensores podem se mover em qualquer direção e saltar sobre os atacantes para eliminá-los. Os atacantes têm um recurso. Podem obrigar um defensor a capturar, o que pode tirá-lo de posição e abrir uma brecha no castelo.",
+                   "O nome também importa. Chamar o quadro de castelo (castillo), em vez de usar um termo náuatle como teocalli, evoca o Castelo de Chapultepec, residência dos chefes de Estado do México, e faz a fortaleza asteca parecer uma sede do poder estatal moderno."] }
+    },
+    aztecs: {
+      en: { title: "The Aztec defenders", label: "Two identical warriors flank the castle the Aztec player must hold.",
+            body: ["On either side of the castle stands the same small figure, a shirtless, dark-skinned man in a feathered headdress, holding a round shield. The rules call these figures the Aztecs, and the defending pieces start in the row right between them.",
+                   "The game asks the player to fight alongside them. Here the Indigenous side is the hero, protecting the pyramid from invaders who are never named and who might have been read as Spanish. Leaving the attackers anonymous keeps the spotlight on the Aztecs.",
+                   "Yet, like the Kickapoo in La guerra de los kikapoos, these figures are reduced to warriors. They honor a powerful Indigenous past while saying nothing about the Indigenous people living in Mexico at the time, many of whom the Porfirian modernizing project looked down on. And because their stronghold carries the Spanish name castillo, the game quietly turns these Aztecs into Spanish speakers."] },
+      es: { title: "Los defensores aztecas", label: "Dos guerreros idénticos flanquean el castillo que el jugador azteca debe resistir.",
+            body: ["A cada lado del castillo aparece la misma figura pequeña, un hombre de piel oscura, sin camisa, con tocado de plumas y un escudo redondo. Las reglas llaman a estas figuras los Aztecas, y las piezas defensoras empiezan justo en la fila que queda entre ellas.",
+                   "El juego le pide al jugador que luche a su lado. Aquí el bando indígena es el héroe, que protege la pirámide de invasores que nunca se nombran y que podían leerse como españoles. Dejar a los atacantes en el anonimato mantiene la atención en los aztecas.",
+                   "Sin embargo, como los kikapú en La guerra de los kikapoos, estas figuras quedan reducidas a guerreros. Rinden homenaje a un pasado indígena poderoso sin decir nada de los pueblos indígenas que vivían en México en esa época, muchos de los cuales eran menospreciados por el proyecto modernizador porfiriano. Y como su fortaleza lleva el nombre español de castillo, el juego convierte discretamente a estos aztecas en hispanohablantes."] },
+      pt: { title: "Os defensores astecas", label: "Dois guerreiros idênticos ladeiam o castelo que o jogador asteca precisa defender.",
+            body: ["De cada lado do castelo aparece a mesma figura pequena, um homem de pele escura, sem camisa, com cocar de penas e um escudo redondo. As regras chamam essas figuras de Astecas, e as peças defensoras começam justamente na fileira entre elas.",
+                   "O jogo pede ao jogador que lute ao lado delas. Aqui o lado indígena é o herói, protegendo a pirâmide de invasores que nunca são nomeados e que podiam ser lidos como espanhóis. Deixar os atacantes no anonimato mantém o foco nos astecas.",
+                   "Ainda assim, como os Kickapoo em La guerra de los kikapoos, essas figuras ficam reduzidas a guerreiros. Elas homenageiam um passado indígena poderoso sem dizer nada sobre os povos indígenas que viviam no México na época, muitos dos quais eram desprezados pelo projeto modernizador porfiriano. E como a fortaleza deles leva o nome espanhol castillo, o jogo transforma discretamente esses astecas em falantes de espanhol."] }
+    },
+    columns: {
+      en: { title: "The European columns", label: "Classical ornaments frame an Aztec pyramid.",
+            body: ["At the left and right edges of the board sit two matching ornaments shaped like the tops of columns, and column-like designs run around the whole border. Mesoamerican pyramids were not built with columns. These are borrowed from European architecture.",
+                   "The mix ties the Aztecs to Greece and Rome, the ancient civilizations Porfirian intellectuals admired most. The suggestion is that the “civilized” side of the Aztec past carried forward into a modern, European-looking Mexico.",
+                   "Mexico's pavilion at the 1889 World's Fair in Paris, the Aztec Palace, worked in a similar way. It was a steel building shaped like a pyramid, honoring the Indigenous past while presenting a nation that had supposedly moved beyond it. The board game carried a similar message to a much wider audience in Mexico City, including the families and children who could buy it at a shop called La Perla."] },
+      es: { title: "Las columnas europeas", label: "Ornamentos clásicos enmarcan una pirámide azteca.",
+            body: ["En los bordes izquierdo y derecho del tablero hay dos ornamentos idénticos con forma de remate de columna, y diseños de columnas recorren todo el marco. Las pirámides mesoamericanas no se construían con columnas. Estas provienen de la arquitectura europea.",
+                   "La mezcla vincula a los aztecas con Grecia y Roma, las civilizaciones antiguas que los intelectuales porfirianos más admiraban. La idea es que el lado “civilizado” del pasado azteca se prolongó en un México moderno de aspecto europeo.",
+                   "El pabellón de México en la Exposición Universal de París de 1889, el Palacio Azteca, funcionaba de manera parecida. Era un edificio de acero con forma de pirámide, que honraba el pasado indígena mientras presentaba una nación que supuestamente ya lo había dejado atrás. El juego de mesa llevaba un mensaje semejante a un público mucho más amplio en la Ciudad de México, incluidas las familias y los niños que podían comprarlo en una tienda llamada La Perla."] },
+      pt: { title: "As colunas europeias", label: "Ornamentos clássicos emolduram uma pirâmide asteca.",
+            body: ["Nas bordas esquerda e direita do tabuleiro há dois ornamentos idênticos em forma de topo de coluna, e desenhos de colunas percorrem toda a moldura. As pirâmides mesoamericanas não eram construídas com colunas. Estas vêm da arquitetura europeia.",
+                   "A mistura liga os astecas à Grécia e a Roma, as civilizações antigas que os intelectuais porfirianos mais admiravam. A ideia é que o lado “civilizado” do passado asteca teria continuado num México moderno de aparência europeia.",
+                   "O pavilhão do México na Exposição Universal de Paris de 1889, o Palácio Asteca, funcionava de modo parecido. Era um edifício de aço em forma de pirâmide, que homenageava o passado indígena enquanto apresentava uma nação que supostamente já o havia deixado para trás. O jogo de tabuleiro levava uma mensagem semelhante a um público muito mais amplo na Cidade do México, incluindo as famílias e as crianças que podiam comprá-lo numa loja chamada La Perla."] }
+    },
+    playing: {
+      en: { title: "What am I playing?",
+            body: ["Juego del castillo de los aztecas, the Game of the Aztec Castle, is a two-player siege game printed in Mexico in the late nineteenth century and sold at a shop called La Perla. One player defends a castle at the top of a step pyramid. The other tries to storm it.",
+                   "It is a version of Fox and Geese, a medieval strategy game. In Fox and Geese, one strong piece, the fox, faces many weak ones, the geese. The fox can jump over geese and capture them, while the geese can only try to hem it in until it cannot move. Unlike La guerra de los kikapoos, where both sides start with the same pieces, this kind of game is lopsided on purpose.",
+                   "Here the fox becomes the Aztecs. The defending player has just three pieces, placed inside the eight-square castle at the top. The attacking player, the unnamed asaltantes, has twenty-one pieces lined up in the bottom three rows of black squares. The attackers can only advance upward along the black squares and can never capture. The defenders can move in every direction, one piece per turn, and capture an attacker by jumping over it into an empty square behind.",
+                   "The two sides win in different ways. The attackers win by driving out all three defenders and occupying every square of the castle. The defenders win by leaving the attackers with no move to make. The attackers have one weapon of their own. They can force a defender to capture, and a well-placed sacrifice can lure a defender out of the castle and open a gap.",
+                   "That structure is the heart of the game's message. Defense here is strong, active and violent, since the Aztecs protect the pyramid by eliminating attackers, while the invaders can only win through sheer numbers. Many Mexican war games of the period used the same attack-and-defense setup to stage anti-imperialist stories, such as La Batalla 5 de Mayo, illustrated by José Guadalupe Posada, in which Mexican generals defend Puebla from French troops. Games elsewhere sometimes flipped the roles. The 1844 U.S. game The Game of Pope and Pagan made white missionaries the heroic attackers, storming a fort held by dark-skinned “pagans.”",
+                   "In Juego del castillo the Indigenous side gets the heroic role, but only as an army. The Aztecs are honored as defenders of Mexico against foreign invasion, framed by the national eagle and European columns and given a Spanish name for their stronghold. The game celebrates a glorious Indigenous past in order to tell a story about the modern nation, while leaving out the Indigenous people actually living in Mexico at the time.",
+                   "As you play, notice what it feels like to hold the castle with only three pieces, and ask yourself what kind of nation the game wants you to be defending."] },
+      es: { title: "¿A qué estoy jugando?",
+            body: ["El Juego del castillo de los aztecas es un juego de asedio para dos jugadores, impreso en México a finales del siglo XIX y vendido en una tienda llamada La Perla. Un jugador defiende un castillo en lo alto de una pirámide escalonada. El otro intenta tomarlo por asalto.",
+                   "Es una versión del Zorro y los gansos, un juego de estrategia medieval. En ese juego, una pieza fuerte, el zorro, se enfrenta a muchas piezas débiles, los gansos. El zorro puede saltar sobre los gansos y comérselos, mientras que los gansos solo pueden intentar acorralarlo hasta que no pueda moverse. A diferencia de La guerra de los kikapoos, donde ambos bandos empiezan con las mismas piezas, este tipo de juego es desigual a propósito.",
+                   "Aquí el zorro son los aztecas. El jugador defensor tiene solo tres piezas, colocadas dentro del castillo de ocho casillas en lo alto. El jugador atacante, los asaltantes sin nombre, tiene veintiún piezas alineadas en las tres filas inferiores de casillas negras. Los atacantes solo pueden avanzar hacia arriba por las casillas negras y nunca pueden comer. Los defensores pueden moverse en todas direcciones, una pieza por turno, y comer a un atacante saltando sobre él hacia una casilla vacía detrás.",
+                   "Los dos bandos ganan de maneras distintas. Los atacantes ganan si expulsan a los tres defensores y ocupan todas las casillas del castillo. Los defensores ganan si dejan a los atacantes sin jugada posible. Los atacantes tienen un arma propia. Pueden obligar a un defensor a comer, y un sacrificio bien colocado puede atraer a un defensor fuera del castillo y abrir un hueco.",
+                   "Esa estructura es el centro del mensaje del juego. Aquí la defensa es fuerte, activa y violenta, pues los aztecas protegen la pirámide eliminando atacantes, mientras que los invasores solo pueden ganar por su número. Muchos juegos de guerra mexicanos de la época usaban el mismo esquema de ataque y defensa para representar relatos antiimperialistas, como La Batalla 5 de Mayo, ilustrado por José Guadalupe Posada, en el que generales mexicanos defienden Puebla de las tropas francesas. En otros lugares, algunos juegos invertían los papeles. El juego estadounidense The Game of Pope and Pagan, de 1844, convertía a misioneros blancos en los atacantes heroicos, que asaltaban un fuerte defendido por “paganos” de piel oscura.",
+                   "En el Juego del castillo el bando indígena recibe el papel heroico, pero solo como ejército. Los aztecas son honrados como defensores de México frente a la invasión extranjera, enmarcados por el águila nacional y por columnas europeas, y con un nombre español para su fortaleza. El juego celebra un pasado indígena glorioso para contar una historia sobre la nación moderna, mientras deja fuera a los pueblos indígenas que realmente vivían en México en esa época.",
+                   "Mientras juegas, fíjate en lo que se siente defender el castillo con solo tres piezas, y pregúntate qué tipo de nación quiere el juego que defiendas."] },
+      pt: { title: "O que estou jogando?",
+            body: ["O Juego del castillo de los aztecas, o Jogo do Castelo Asteca, é um jogo de cerco para dois jogadores, impresso no México no fim do século XIX e vendido numa loja chamada La Perla. Um jogador defende um castelo no alto de uma pirâmide em degraus. O outro tenta tomá-lo de assalto.",
+                   "É uma versão da Raposa e os Gansos, um jogo de estratégia medieval. Nesse jogo, uma peça forte, a raposa, enfrenta muitas peças fracas, os gansos. A raposa pode saltar sobre os gansos e capturá-los, enquanto os gansos só podem tentar cercá-la até que ela não consiga se mover. Ao contrário de La guerra de los kikapoos, em que os dois lados começam com as mesmas peças, esse tipo de jogo é desigual de propósito.",
+                   "Aqui a raposa são os astecas. O jogador defensor tem só três peças, colocadas dentro do castelo de oito casas no alto. O jogador atacante, os asaltantes sem nome, tem vinte e uma peças alinhadas nas três fileiras de baixo de casas pretas. Os atacantes só podem subir pelas casas pretas e nunca podem capturar. Os defensores podem se mover em todas as direções, uma peça por vez, e capturar um atacante saltando sobre ele para uma casa vazia logo atrás.",
+                   "Os dois lados vencem de formas diferentes. Os atacantes vencem se expulsarem os três defensores e ocuparem todas as casas do castelo. Os defensores vencem se deixarem os atacantes sem nenhuma jogada possível. Os atacantes têm uma arma própria. Podem obrigar um defensor a capturar, e um sacrifício bem posicionado pode atrair um defensor para fora do castelo e abrir uma brecha.",
+                   "Essa estrutura é o centro da mensagem do jogo. Aqui a defesa é forte, ativa e violenta, pois os astecas protegem a pirâmide eliminando atacantes, enquanto os invasores só podem vencer pelo número. Muitos jogos de guerra mexicanos da época usavam o mesmo esquema de ataque e defesa para encenar histórias anti-imperialistas, como La Batalla 5 de Mayo, ilustrado por José Guadalupe Posada, em que generais mexicanos defendem Puebla das tropas francesas. Em outros lugares, alguns jogos invertiam os papéis. O jogo norte-americano The Game of Pope and Pagan, de 1844, transformava missionários brancos nos atacantes heroicos, que tomavam de assalto um forte defendido por “pagãos” de pele escura.",
+                   "No Juego del castillo o lado indígena recebe o papel heroico, mas só como exército. Os astecas são homenageados como defensores do México contra a invasão estrangeira, emoldurados pela águia nacional e por colunas europeias, e com um nome espanhol para a sua fortaleza. O jogo celebra um passado indígena glorioso para contar uma história sobre a nação moderna, enquanto deixa de fora os povos indígenas que realmente viviam no México na época.",
+                   "Enquanto joga, repare em como é defender o castelo com apenas três peças, e pergunte a si mesmo que tipo de nação o jogo quer que você defenda."] }
+    }
+  };
+
+  var STRINGS = {
+    en: { eyebrow: "Let's analyze the game", hint: "Click a numbered area — or one of the labels — to zoom in and read about it.",
+          playLink: "Play the game", reset: "Full view", prev: "Previous", next: "Next", kikaTab: "What am I playing?",
+          readMore: "Zoom in and learn more", of: "of", boardCenter: "Center of the board", sceneCenter: "Center of the scene", spaceAbove: "Space above", spaceBelow: "Space below",
+          credit: "Juego del Castillo de los Aztecas, Mexico City, sold at La Perla. [Photo credit to be added.]" },
+    es: { eyebrow: "Analicemos el juego", hint: "Haz clic en un área numerada — o en una de las etiquetas — para acercarte y leer sobre ella.",
+          playLink: "Jugar", reset: "Vista completa", prev: "Anterior", next: "Siguiente", kikaTab: "¿A qué estoy jugando?",
+          readMore: "Acercar y saber más", of: "de", boardCenter: "Centro del tablero", sceneCenter: "Centro de la escena", spaceAbove: "Espacio arriba", spaceBelow: "Espacio abajo",
+          credit: "Juego del Castillo de los Aztecas, Ciudad de México, vendido en La Perla. [Crédito de la fotografía pendiente.]" },
+    pt: { eyebrow: "Vamos analisar o jogo", hint: "Clique numa área numerada — ou num dos rótulos — para aproximar e ler sobre ela.",
+          playLink: "Jogar", reset: "Visão completa", prev: "Anterior", next: "Próximo", kikaTab: "O que estou jogando?",
+          readMore: "Aproximar e saber mais", of: "de", boardCenter: "Centro do tabuleiro", sceneCenter: "Centro da cena", spaceAbove: "Espaço acima", spaceBelow: "Espaço abaixo",
+          credit: "Juego del Castillo de los Aztecas, Cidade do México, vendido na La Perla. [Crédito da fotografia a acrescentar.]" }
+  };
+
+  /* =====================================================================
+     AREAS — positions are fractions of the photo (0 = left/top, 1 = right/bottom).
+     rect   = the clickable outline
+     zoom   = what the camera frames when the area is opened
+     anchor = where the numbered badge / leader line attaches
+     side   = which side of the image its label sits on
+     ===================================================================== */
+  var IMG_W = 3000, IMG_H = 2039;
+  var OVERVIEW = [0.020, 0.060, 0.985, 0.880];
+  // "rects" (optional) lists every outline for an area; "rect" is the one the camera and badge use
+  var AREAS = [
+    { id: "eagle",   rect: [0.462, 0.104, 0.548, 0.200], zoom: [0.420, 0.080, 0.590, 0.225], anchor: [0.462, 0.150], side: "left" },
+    { id: "castle",  rect: [0.372, 0.193, 0.638, 0.425], zoom: [0.300, 0.170, 0.710, 0.445], anchor: [0.638, 0.250], side: "right" },
+    { id: "aztecs",  rect: [0.322, 0.334, 0.368, 0.428], rects: [[0.322, 0.334, 0.368, 0.428], [0.638, 0.343, 0.683, 0.430]],
+                     zoom: [0.285, 0.315, 0.405, 0.445], anchor: [0.322, 0.380], side: "left" },
+    { id: "columns", rect: [0.749, 0.492, 0.895, 0.602], rects: [[0.103, 0.475, 0.228, 0.592], [0.749, 0.492, 0.895, 0.602]],
+                     zoom: [0.720, 0.460, 0.925, 0.630], anchor: [0.895, 0.540], side: "right" }
+  ];
+
+  var STORAGE_KEY = "race-games-lang";
+  var lang = "en";
+  try { var s = localStorage.getItem(STORAGE_KEY); if (s && STRINGS[s]) lang = s; } catch(e){}
+
+  var $ = function(id){ return document.getElementById(id); };
+  var analysis = $("analysis"), frame = $("frame"), layer = $("layer"), overlay = $("overlay");
+  var colLeft = $("colLeft"), colRight = $("colRight"), leaders = $("leaders"), topics = $("topics");
+  var NS = "http://www.w3.org/2000/svg";
+  var active = null;
+
+  function t(key){ return (STRINGS[lang] && STRINGS[lang][key]) || STRINGS.en[key] || ""; }
+  function c(id){ return (CONTENT[id] && (CONTENT[id][lang] || CONTENT[id].en)) || { title: "", body: [] }; }
+  function svgEl(tag, attrs){ var el = document.createElementNS(NS, tag); for (var k in attrs) el.setAttribute(k, attrs[k]); return el; }
+  function px(r){ return [r[0]*IMG_W, r[1]*IMG_H, (r[2]-r[0])*IMG_W, (r[3]-r[1])*IMG_H]; }
+  function fillParas(container, paras){
+    container.innerHTML = "";
+    (paras || []).forEach(function(p){
+      var el = document.createElement("p");
+      if (/^\s*\[/.test(p)){ var sp = document.createElement("span"); sp.className = "placeholder"; sp.textContent = p; el.appendChild(sp); }
+      else el.textContent = p;
+      container.appendChild(el);
+    });
+  }
+
+  /* ---------- Build overlay (dim mask, guides, hotspots) ---------- */
+  var dim = svgEl("path", { "class": "dim" });
+  overlay.appendChild(dim);
+
+
+  var hotEls = {};
+  AREAS.forEach(function(a){
+    var g = svgEl("g", { "class": "hotg" });
+    (a.rects || [a.rect]).forEach(function(rc){
+      var p = px(rc);
+      g.appendChild(svgEl("rect", { "class": "hot", x: p[0], y: p[1], width: p[2], height: p[3], rx: a.round ? Math.min(p[2], p[3]) / 2 : 8 }));
+    });
+    g.addEventListener("click", function(){ open(a.id); });
+    g.addEventListener("mouseenter", function(){ hover(a.id, true); });
+    g.addEventListener("mouseleave", function(){ hover(a.id, false); });
+    overlay.appendChild(g);
+    hotEls[a.id] = g;
+  });
+  // Stacking: biggest area at the back so smaller ones stay clickable
+  AREAS.slice().sort(function(p, q){ return (q.rect[2]-q.rect[0])*(q.rect[3]-q.rect[1]) - (p.rect[2]-p.rect[0])*(p.rect[3]-p.rect[1]); })
+    .forEach(function(a){ overlay.appendChild(hotEls[a.id]); });
+
+  /* ---------- Badges, callouts, topic buttons ---------- */
+  var badges = {}, callouts = {}, topicBtns = {};
+  AREAS.forEach(function(a, i){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "badge"; b.textContent = i + 1;
+    b.addEventListener("click", function(){ open(a.id); });
+    b.addEventListener("mouseenter", function(){ hover(a.id, true); });
+    b.addEventListener("mouseleave", function(){ hover(a.id, false); });
+    frame.appendChild(b); badges[a.id] = b;
+
+    var co = document.createElement("button");
+    co.type = "button"; co.className = "callout";
+    co.innerHTML = '<span class="num">' + (i+1) + '</span><span class="ct"></span><span class="cl"></span><span class="more"></span>';
+    co.addEventListener("click", function(){ open(a.id); });
+    co.addEventListener("mouseenter", function(){ hover(a.id, true); });
+    co.addEventListener("mouseleave", function(){ hover(a.id, false); });
+    (a.side === "left" ? colLeft : colRight).appendChild(co); callouts[a.id] = co;
+
+    var tb = document.createElement("button");
+    tb.type = "button"; tb.innerHTML = '<span class="num">' + (i+1) + '</span><span class="tt"></span>';
+    tb.addEventListener("click", function(){ open(a.id); });
+    topics.appendChild(tb); topicBtns[a.id] = tb;
+  });
+
+  function hover(id, on){ if (!active) hotEls[id].classList.toggle("hover", on); }
+
+  /* ---------- Camera ---------- */
+  var lastK = 1;
+  function camera(region){
+    var Fw = frame.clientWidth, Fh = frame.clientHeight;
+    var Lw = Fw / (OVERVIEW[2] - OVERVIEW[0]);
+    var Lh = Lw * IMG_H / IMG_W;
+    layer.style.width = Lw + "px"; layer.style.height = Lh + "px";
+    var rw = (region[2]-region[0]) * Lw, rh = (region[3]-region[1]) * Lh;
+    var k = Math.min(Fw / rw, Fh / rh);
+    var cx = (region[0]+region[2])/2 * Lw, cy = (region[1]+region[3])/2 * Lh;
+    var tx = Fw/2 - k*cx, ty = Fh/2 - k*cy;
+    // keep the photo covering the frame where possible
+    tx = Math.min(0, Math.max(Fw - k*Lw, tx)); ty = Math.min(0, Math.max(Fh - k*Lh, ty));
+    layer.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + k + ")";
+    lastK = k;
+    return { Lw: Lw, Lh: Lh, k: k, tx: tx, ty: ty };
+  }
+  var view = null;
+  function overviewPoint(fx, fy){ // photo fraction → frame px in overview
+    return [(fx - OVERVIEW[0]) * view.Lw, (fy - OVERVIEW[1]) * view.Lh];
+  }
+
+  function areaById(id){ for (var i = 0; i < AREAS.length; i++) if (AREAS[i].id === id) return AREAS[i]; return null; }
+
+  /* ---------- Open / close ---------- */
+  function setDim(a){
+    var o = "M0,0 H" + IMG_W + " V" + IMG_H + " H0 Z";
+    var pad = 6;
+    if (!a.round){
+      var d = o;
+      (a.rects || [a.rect]).forEach(function(rc){
+        var q = px(rc), x = q[0]-pad, y = q[1]-pad, w = q[2]+2*pad, h = q[3]+2*pad;
+        d += " M" + x + "," + y + " h" + w + " v" + h + " h" + (-w) + " Z";
+      });
+      dim.setAttribute("d", d);
+      return;
+    }
+    var p = px(a.rect);
+    if (a.round){
+      var cx = p[0] + p[2]/2, cy = p[1] + p[3]/2, r = Math.min(p[2], p[3])/2 + pad;
+      dim.setAttribute("d", o + " M" + (cx - r) + "," + cy + " a" + r + "," + r + " 0 1,0 " + (2*r) + ",0 a" + r + "," + r + " 0 1,0 " + (-2*r) + ",0 Z");
+      return;
+    }
+    var x = p[0]-pad, y = p[1]-pad, w = p[2]+2*pad, h = p[3]+2*pad;
+    dim.setAttribute("d", o + " M" + x + "," + y + " h" + w + " v" + h + " h" + (-w) + " Z");
+  }
+  function renderPanel(){
+    if (!active) return;
+    var i = AREAS.indexOf(areaById(active)), data = c(active);
+    $("pNum").textContent = (i+1) + " " + t("of") + " " + AREAS.length;
+    $("pTitle").textContent = data.title;
+    fillParas($("pBody"), data.body);
+  }
+  function open(id){
+    var a = areaById(id); if (!a) return;
+    active = id;
+    Object.keys(hotEls).forEach(function(k){ hotEls[k].classList.remove("hover"); hotEls[k].classList.toggle("active", k === id); });
+    setDim(a);
+    frame.classList.add("zoomed"); frame.setAttribute("data-active", id);
+    analysis.classList.add("is-zoomed");
+    renderPanel();
+    camera(a.zoom);
+    if (history.replaceState) history.replaceState(null, "", "#" + id);
+    if (window.innerWidth <= 960){
+      var top = frame.getBoundingClientRect().top + window.scrollY - 60;
+      if (Math.abs(window.scrollY - top) > 40) window.scrollTo({ top: top, behavior: "smooth" });
+    }
+  }
+  function close(){
+    if (!active) return;
+    var was = active; active = null;
+    frame.classList.remove("zoomed"); frame.removeAttribute("data-active");
+    analysis.classList.remove("is-zoomed");
+    Object.keys(hotEls).forEach(function(k){ hotEls[k].classList.remove("active"); });
+    camera(OVERVIEW);
+    if (history.replaceState) history.replaceState(null, "", location.pathname + location.search);
+    if (callouts[was] && getComputedStyle(colLeft).display !== "none") callouts[was].focus({ preventScroll: true });
+  }
+  function step(d){
+    if (!active) return;
+    var i = AREAS.indexOf(areaById(active));
+    open(AREAS[(i + d + AREAS.length) % AREAS.length].id);
+  }
+  $("reset").addEventListener("click", close);
+  $("pClose").addEventListener("click", close);
+  $("pPrev").addEventListener("click", function(){ step(-1); });
+  $("pNext").addEventListener("click", function(){ step(1); });
+
+  /* ---------- "What am I playing?" modal ---------- */
+  var modalBack = $("modalBack"), lastFocus = null;
+  function openModal(){
+    var d = c("playing");
+    $("mTitle").textContent = d.title; fillParas($("mBody"), d.body);
+    lastFocus = document.activeElement;
+    modalBack.classList.add("open"); modalBack.setAttribute("aria-hidden", "false");
+    $("mClose").focus();
+  }
+  function closeModal(){
+    modalBack.classList.remove("open"); modalBack.setAttribute("aria-hidden", "true");
+    if (lastFocus) lastFocus.focus();
+  }
+  $("kikaTab").addEventListener("click", openModal);
+  $("mClose").addEventListener("click", closeModal);
+  modalBack.addEventListener("click", function(e){ if (e.target === modalBack) closeModal(); });
+
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape"){ if (modalBack.classList.contains("open")) closeModal(); else close(); }
+    else if (active && !modalBack.classList.contains("open")){
+      if (e.key === "ArrowRight") step(1);
+      if (e.key === "ArrowLeft") step(-1);
+    }
+  });
+
+  /* ---------- Language ---------- */
+  function applyLang(l){
+    lang = STRINGS[l] ? l : "en";
+    document.documentElement.setAttribute("lang", lang);
+    document.querySelectorAll("[data-i18n]").forEach(function(el){
+      var v = t(el.getAttribute("data-i18n")); if (v) el.textContent = v;
+    });
+    document.querySelectorAll(".langtoggle button").forEach(function(btn){
+      btn.setAttribute("aria-pressed", btn.getAttribute("data-lang") === lang ? "true" : "false");
+    });
+    AREAS.forEach(function(a){
+      var d = c(a.id);
+      callouts[a.id].querySelector(".ct").textContent = d.title;
+      var cl = callouts[a.id].querySelector(".cl");
+      cl.textContent = d.label || ""; cl.classList.toggle("placeholder", /^\s*\[/.test(d.label || ""));
+      callouts[a.id].querySelector(".more").textContent = t("readMore") + " →";
+      topicBtns[a.id].querySelector(".tt").textContent = d.title;
+      badges[a.id].setAttribute("aria-label", d.title);
+      hotEls[a.id].setAttribute("aria-label", d.title);
+    });
+    renderPanel();
+    if (modalBack.classList.contains("open")){ var d = c("playing"); $("mTitle").textContent = d.title; fillParas($("mBody"), d.body); }
+    relayout();
+  }
+  document.querySelectorAll(".langtoggle button").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var l = btn.getAttribute("data-lang"); applyLang(l);
+      try { localStorage.setItem(STORAGE_KEY, l); } catch(e){}
+    });
+  });
+
+  /* ---------- Init ---------- */
+  function relayout(){
+    // compute overview geometry for badges/labels without disturbing the current zoom
+    var saveTransition = layer.style.transition;
+    layer.style.transition = "none";
+    view = camera(OVERVIEW);
+    AREAS.forEach(function(a){
+      var p = overviewPoint(a.anchor[0], a.anchor[1]);
+      badges[a.id].style.left = p[0] + "px"; badges[a.id].style.top = p[1] + "px";
+    });
+    if (active) camera(areaById(active).zoom);
+    layer.offsetHeight; // flush
+    layer.style.transition = saveTransition;
+    var panel = $("panel"), small = getComputedStyle(colLeft).display === "none";
+    if (small && panel.parentNode !== topics.parentNode) topics.parentNode.insertBefore(panel, topics);
+    if (!small && panel.parentNode !== colRight) colRight.appendChild(panel);
+    if (small){ leaders.innerHTML = ""; return; }
+    var aRect = analysis.getBoundingClientRect(), fRect = frame.getBoundingClientRect();
+    ["left", "right"].forEach(function(side){
+      var items = AREAS.filter(function(a){ return a.side === side; })
+        .map(function(a){ return { a: a, y: overviewPoint(a.anchor[0], a.anchor[1])[1] + (fRect.top - aRect.top), h: callouts[a.id].offsetHeight }; })
+        .sort(function(p, q){ return p.y - q.y; });
+      // first pass: place each label near its anchor, pushing down to avoid overlaps
+      var cursor = 0;
+      items.forEach(function(it){ it.top = Math.max(cursor, it.y - 24); cursor = it.top + it.h + 18; });
+      // second pass: pull the stack back up so it doesn't run past the bottom of the image
+      var limit = fRect.bottom - aRect.top;
+      for (var i = items.length - 1; i >= 0; i--){ items[i].top = Math.max(0, Math.min(items[i].top, limit - items[i].h)); limit = items[i].top - 18; }
+      cursor = 0;
+      items.forEach(function(it){ it.top = Math.max(cursor, it.top); callouts[it.a.id].style.top = it.top + "px"; cursor = it.top + it.h + 18; });
+      (side === "left" ? colLeft : colRight).style.minHeight = cursor + "px";
+    });
+    leaders.innerHTML = "";
+    AREAS.forEach(function(a){
+      var co = callouts[a.id].getBoundingClientRect();
+      var p = overviewPoint(a.anchor[0], a.anchor[1]);
+      var bx = fRect.left - aRect.left + frame.clientLeft + p[0], by = fRect.top - aRect.top + frame.clientTop + p[1];
+      var sx = (a.side === "left" ? co.right : co.left) - aRect.left;
+      var sy = co.top - aRect.top + 24;
+      var dx = bx - sx, dy = by - sy, len = Math.sqrt(dx*dx + dy*dy) || 1;
+      bx -= dx/len*15; by -= dy/len*15;
+      leaders.appendChild(svgEl("line", { x1: sx, y1: sy, x2: bx, y2: by }));
+      leaders.appendChild(svgEl("circle", { cx: sx, cy: sy, r: 3 }));
+    });
+  }
+
+  window.addEventListener("resize", relayout);
+  $("boardImg").addEventListener("load", relayout);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
+
+  applyLang(lang);
+  var h = (location.hash || "").replace("#", "");
+  if (h === "playing") openModal();
+  else if (areaById(h)){ layer.style.transition = "none"; open(h); layer.offsetHeight; layer.style.transition = ""; }
+})();
+</script>
+</body>
+</html>
