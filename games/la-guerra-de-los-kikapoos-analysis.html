@@ -78,7 +78,7 @@
     grid-template-columns: minmax(200px, 1fr) auto minmax(200px, 1fr);
     gap: 0 36px;
     align-items: start;
-    padding-bottom: 70px;
+    padding: 44px 0 70px;
   }
   .col{ position: relative; align-self: stretch; }
   .leaders{ position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; z-index: 3; transition: opacity .3s ease; }
@@ -174,15 +174,15 @@
 
   /* "Who were the Kikapoo?" tab on the border */
   .kika-tab{
-    position: absolute; z-index: 5; left: 50%; bottom: -40px; transform: translateX(-50%);
+    position: absolute; z-index: 5; left: 50%; top: -40px; transform: translateX(-50%);
     display: inline-flex; align-items: center; gap: 10px; white-space: nowrap;
-    background: var(--indigo); color: var(--paper); border: 2px solid var(--ink); border-top: none;
-    border-radius: 0 0 6px 6px; padding: 9px 18px 10px;
+    background: var(--indigo); color: var(--paper); border: 2px solid var(--ink); border-bottom: none;
+    border-radius: 6px 6px 0 0; padding: 10px 18px 9px;
     font-family: 'Bitter', serif; font-weight: 800; font-size: 15px; letter-spacing: .02em; text-transform: uppercase;
-    cursor: pointer; box-shadow: 4px 4px 0 var(--ink);
-    transition: background .2s ease, padding .2s ease;
+    cursor: pointer; box-shadow: 4px -2px 0 var(--ink);
+    transition: background .2s ease, top .2s ease;
   }
-  .kika-tab:hover{ background: #1f2d45; padding-bottom: 13px; }
+  .kika-tab:hover{ background: #1f2d45; top: -44px; }
   .kika-tab .plus{ display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--paper); color: var(--indigo); font-family: 'Libre Franklin', sans-serif; font-size: 15px; line-height: 1; }
 
   /* Explanation panel (shown while zoomed) */
@@ -211,7 +211,7 @@
 
   .is-zoomed .callout, .is-zoomed .leaders{ opacity: 0; pointer-events: none; }
 
-  .credit{ margin: 58px 0 0; font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; max-width: 640px; }
+  .credit{ margin: 0; font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; max-width: 640px; }
 
   /* Topic list (small screens) */
   .topics{ display: none; }
@@ -237,13 +237,14 @@
 
   /* ---------- Small screens ---------- */
   @media (max-width: 960px){
-    .analysis{ grid-template-columns: 1fr; padding-bottom: 50px; }
+    .analysis{ grid-template-columns: 1fr; padding: 0 0 40px; }
     .col.side, .leaders{ display: none; }
     .stage-col{ display: flex; flex-direction: column; align-items: center; }
     .frame{ width: min(100%, calc(78vh * 0.736)); }
     .panel{ position: relative; display: none; margin-top: 18px; width: 100%; transform: none; max-height: none; }
     .is-zoomed .panel{ display: block; }
-    .kika-tab{ position: relative; left: auto; bottom: auto; transform: none; margin-top: -2px; }
+    .kika-tab{ position: relative; left: auto; top: auto; transform: none; margin-bottom: -2px; }
+    .kika-tab:hover{ top: auto; }
     .topics{ display: grid; gap: 10px; width: 100%; margin-top: 24px; }
     .is-zoomed .topics{ display: none; }
     .topics button{
@@ -289,6 +290,7 @@
     <div class="col side" id="colLeft"></div>
 
     <div class="stage-col">
+      <button type="button" class="kika-tab" id="kikaTab"><span data-i18n="kikaTab">Who were the Kikapoo?</span> <span class="plus">+</span></button>
       <div class="frame" id="frame">
         <div class="layer" id="layer">
           <img src="../images/la-guerra-de-los-kikapoos-board.jpg" alt="Lithograph board for La Guerra de los Kikapoos, Mexico, 19th century" id="boardImg">
@@ -296,7 +298,6 @@
         </div>
         <button type="button" class="reset" id="reset">← <span data-i18n="reset">Full view</span></button>
       </div>
-      <button type="button" class="kika-tab" id="kikaTab"><span data-i18n="kikaTab">Who were the Kikapoo?</span> <span class="plus">+</span></button>
 
       <div class="topics" id="topics"></div>
     </div>
@@ -425,15 +426,15 @@
   var STRINGS = {
     en: { eyebrow: "Let's analyze the game", hint: "Click a numbered area — or one of the labels — to zoom in and read about it.",
           playLink: "Play the game", reset: "Full view", prev: "Previous", next: "Next", kikaTab: "Who were the Kikapoo?",
-          readMore: "Zoom in", of: "of", boardCenter: "Center of the board", sceneCenter: "Center of the scene", spaceAbove: "Space above", spaceBelow: "Space below",
+          readMore: "Zoom in and learn more", of: "of", boardCenter: "Center of the board", sceneCenter: "Center of the scene", spaceAbove: "Space above", spaceBelow: "Space below",
           credit: "Board photograph: Tulane University's Latin American Library. A book-bound version is held at the Museum of Archaeology and Anthropology, University of Cambridge." },
     es: { eyebrow: "Analicemos el juego", hint: "Haz clic en un área numerada — o en una de las etiquetas — para acercarte y leer sobre ella.",
           playLink: "Jugar", reset: "Vista completa", prev: "Anterior", next: "Siguiente", kikaTab: "¿Quiénes eran los kikapú?",
-          readMore: "Acercar", of: "de", boardCenter: "Centro del tablero", sceneCenter: "Centro de la escena", spaceAbove: "Espacio arriba", spaceBelow: "Espacio abajo",
+          readMore: "Acercar y saber más", of: "de", boardCenter: "Centro del tablero", sceneCenter: "Centro de la escena", spaceAbove: "Espacio arriba", spaceBelow: "Espacio abajo",
           credit: "Fotografía del tablero: Latin American Library de la Universidad de Tulane. Una versión encuadernada se conserva en el Museum of Archaeology and Anthropology de la Universidad de Cambridge." },
     pt: { eyebrow: "Vamos analisar o jogo", hint: "Clique numa área numerada — ou num dos rótulos — para aproximar e ler sobre ela.",
           playLink: "Jogar", reset: "Visão completa", prev: "Anterior", next: "Próximo", kikaTab: "Quem eram os Kickapoo?",
-          readMore: "Aproximar", of: "de", boardCenter: "Centro do tabuleiro", sceneCenter: "Centro da cena", spaceAbove: "Espaço acima", spaceBelow: "Espaço abaixo",
+          readMore: "Aproximar e saber mais", of: "de", boardCenter: "Centro do tabuleiro", sceneCenter: "Centro da cena", spaceAbove: "Espaço acima", spaceBelow: "Espaço abaixo",
           credit: "Fotografia do tabuleiro: Latin American Library da Universidade Tulane. Uma versão encadernada está no Museum of Archaeology and Anthropology da Universidade de Cambridge." }
   };
 
