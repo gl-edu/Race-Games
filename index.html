@@ -20,6 +20,7 @@
     --gold: #C9A227;
     --indigo: #2C3E5C;
     --river: #2F5D6B;
+    --mato: #4E6B3A;
   }
 
   *{ box-sizing: border-box; }
@@ -318,6 +319,14 @@
   .card.river .card-thumb{ background: #E9E7E0; }
   .card.river .card-thumb img{ object-fit: contain; mix-blend-mode: multiply; }
 
+  .card.mato .card-stripe{ background: var(--mato); }
+  .card.mato .card-eyebrow{ color: var(--mato); }
+  .card.mato .play-btn{ background: var(--mato); }
+  .card.mato .analyze-btn{ color: var(--mato); border-color: var(--mato); }
+  .card.mato .analyze-btn:hover{ background: var(--mato); color: var(--paper); }
+  .card.mato .card-thumb{ background: #E9E7E0; }
+  .card.mato .card-thumb img{ object-fit: contain; mix-blend-mode: multiply; }
+
   /* ---------- Footer ---------- */
   footer{
     padding: 40px 0 56px;
@@ -480,6 +489,26 @@
       </div>
     </div>
 
+    <div class="card mato">
+      <div class="card-stripe"></div>
+      <div class="card-thumb">
+        <img src="images/charada-pitoresca-recorte.jpg" alt="The Charada pitoresca from Illustração Brazileira, 1854: an Indigenous man, a fenced field and a woman in a crinoline" loading="lazy">
+      </div>
+      <div class="card-body">
+        <div class="card-eyebrow" data-i18n="b2.eyebrow">Word &amp; Image</div>
+        <h3>Charada Pitoresca</h3>
+        <p class="card-translation" data-i18n="b2.translation">“A Picture Charade”</p>
+        <p class="card-blurb" data-i18n="b2.blurb">An 1854 picture puzzle from one of Brazil's first illustrated magazines: turn three images into syllables and spell out a word. To solve it, you have to read an Indigenous man as “Brazil” and a white woman in a crinoline as the answer. Who gets to be Brazilian in this equation?</p>
+        <div class="chips">
+          <span class="chip" data-i18n="chip.wordpuzzle">WORD PUZZLE</span>
+          <span class="chip" data-i18n="chip.1player">1 PLAYER</span>
+          <span class="chip" data-i18n="b2.chip3">3 PICTURES</span>
+        </div>
+        <a class="play-btn" href="games/charada-pitoresca.html"><span data-i18n="playBtn">Play the game</span> <span class="arrow">→</span></a>
+        <a class="analyze-btn" href="games/charada-pitoresca-analysis.html"><span data-i18n="analyzeBtn">Analyze the game</span> <span class="arrow">→</span></a>
+      </div>
+    </div>
+
   </div>
 
 </div>
@@ -508,6 +537,11 @@
       "b1.translation": "“A Problem with a Prize” · The canoe riddle",
       "b1.blurb": "A prize riddle from a Rio de Janeiro humor magazine, printed two years before abolition: get three enslavers and three enslaved men across a river in a two-seat canoe. The rule you must obey assumes the enslaved will kill if they ever outnumber their enslavers. What do you have to believe in order to win?",
       "b1.chip3": "11 CROSSINGS",
+      "chip.wordpuzzle": "WORD PUZZLE",
+      "b2.eyebrow": "Word & Image",
+      "b2.translation": "“A Picture Charade”",
+      "b2.blurb": "An 1854 picture puzzle from one of Brazil's first illustrated magazines: turn three images into syllables and spell out a word. To solve it, you have to read an Indigenous man as “Brazil” and a white woman in a crinoline as the answer. Who gets to be Brazilian in this equation?",
+      "b2.chip3": "3 PICTURES",
       playBtn: "Play the game",
       analyzeBtn: "Analyze the game",
       footMark: "Digital Archive",
@@ -547,6 +581,11 @@
       "b1.translation": "«Un problema con premio» · El acertijo de la canoa",
       "b1.blurb": "Un acertijo con premio de una revista humorística de Río de Janeiro, publicado dos años antes de la abolición: lleva a tres esclavizadores y tres hombres esclavizados al otro lado de un río en una canoa de dos plazas. La regla que debes obedecer supone que los esclavizados matarán si alguna vez superan en número a sus esclavizadores. ¿Qué tienes que creer para ganar?",
       "b1.chip3": "11 CRUCES",
+      "chip.wordpuzzle": "JUEGO DE PALABRAS",
+      "b2.eyebrow": "Palabra e Imagen",
+      "b2.translation": "«Una charada ilustrada»",
+      "b2.blurb": "Un acertijo ilustrado de 1854, de una de las primeras revistas ilustradas de Brasil: convierte tres imágenes en sílabas y forma una palabra. Para resolverlo, tienes que leer a un hombre indígena como «Brasil» y a una mujer blanca con crinolina como la respuesta. ¿Quién puede ser brasileño en esta ecuación?",
+      "b2.chip3": "3 IMÁGENES",
       playBtn: "Jugar",
       analyzeBtn: "Analizar el juego",
       footMark: "Archivo Digital",
@@ -586,6 +625,11 @@
       "b1.translation": "“Um problema com prêmio” · O enigma da canoa",
       "b1.blurb": "Um enigma com prêmio de uma revista humorística do Rio de Janeiro, publicado dois anos antes da abolição: leve três escravizadores e três homens escravizados para o outro lado de um rio numa canoa de dois lugares. A regra que você precisa obedecer supõe que os escravizados matarão se algum dia superarem em número seus escravizadores. No que você precisa acreditar para vencer?",
       "b1.chip3": "11 TRAVESSIAS",
+      "chip.wordpuzzle": "JOGO DE PALAVRAS",
+      "b2.eyebrow": "Palavra e Imagem",
+      "b2.translation": "“Uma charada ilustrada”",
+      "b2.blurb": "Uma charada ilustrada de 1854, de uma das primeiras revistas ilustradas do Brasil: transforme três imagens em sílabas e forme uma palavra. Para resolvê-la, é preciso ler um homem indígena como “Brasil” e uma mulher branca de crinolina como a resposta. Quem pode ser brasileiro nesta equação?",
+      "b2.chip3": "3 IMAGENS",
       playBtn: "Jogar",
       analyzeBtn: "Analisar o jogo",
       footMark: "Arquivo Digital",
