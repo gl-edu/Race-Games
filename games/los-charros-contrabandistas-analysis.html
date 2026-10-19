@@ -282,7 +282,7 @@
       <div class="frame" id="frame">
         <div class="layer" id="layer">
           <img src="../images/los-charros-board.jpg" alt="Board for Los Charros Contrabandistas, illustrated by José Guadalupe Posada, Mexico City" id="boardImg">
-          <svg id="overlay" viewBox="0 0 1400 1050" preserveAspectRatio="none"></svg>
+          <svg id="overlay" viewBox="0 0 3000 2250" preserveAspectRatio="none"></svg>
         </div>
         <button type="button" class="reset" id="reset">← <span data-i18n="reset">Full view</span></button>
       </div>
@@ -473,15 +473,15 @@
      anchor = where the numbered badge / leader line attaches
      side   = which side of the image its label sits on
      ===================================================================== */
-  var IMG_W = 1400, IMG_H = 1050;
-  var OVERVIEW = [0.045, 0.030, 0.965, 0.930];
+  var IMG_W = 3000, IMG_H = 2250;
+  var OVERVIEW = [0.040, 0.035, 0.960, 0.935];
   var AREAS = [
-    { id: "kids",    rect: [0.137, 0.665, 0.325, 0.800], zoom: [0.110, 0.620, 0.350, 0.840], anchor: [0.137, 0.690], side: "left"  },
-    { id: "bandits", rect: [0.571, 0.485, 0.640, 0.576], zoom: [0.535, 0.440, 0.675, 0.620], anchor: [0.635, 0.505], side: "right", round: true },
-    { id: "boxer",   rect: [0.839, 0.473, 0.907, 0.565], zoom: [0.800, 0.430, 0.945, 0.610], anchor: [0.907, 0.535], side: "right", round: true },
-    { id: "chinese", rect: [0.500, 0.578, 0.569, 0.670], zoom: [0.465, 0.535, 0.605, 0.715], anchor: [0.500, 0.610], side: "left",  round: true },
-    { id: "geisha",  rect: [0.260, 0.816, 0.329, 0.908], zoom: [0.225, 0.775, 0.365, 0.950], anchor: [0.260, 0.850], side: "left",  round: true },
-    { id: "skull",   rect: [0.686, 0.619, 0.754, 0.695], zoom: [0.650, 0.570, 0.790, 0.745], anchor: [0.754, 0.645], side: "right", round: true }
+    { id: "kids",    rect: [0.135, 0.680, 0.328, 0.800], zoom: [0.110, 0.640, 0.355, 0.840], anchor: [0.135, 0.700], side: "left"  },
+    { id: "bandits", rect: [0.570, 0.485, 0.643, 0.582], zoom: [0.535, 0.440, 0.680, 0.630], anchor: [0.638, 0.505], side: "right", round: true },
+    { id: "boxer",   rect: [0.836, 0.485, 0.908, 0.582], zoom: [0.800, 0.440, 0.945, 0.630], anchor: [0.908, 0.540], side: "right", round: true },
+    { id: "chinese", rect: [0.498, 0.578, 0.571, 0.675], zoom: [0.460, 0.530, 0.610, 0.720], anchor: [0.498, 0.610], side: "left",  round: true },
+    { id: "geisha",  rect: [0.256, 0.8125, 0.331, 0.9125], zoom: [0.215, 0.765, 0.370, 0.955], anchor: [0.256, 0.850], side: "left", round: true },
+    { id: "skull",   rect: [0.683, 0.606, 0.755, 0.703], zoom: [0.645, 0.560, 0.795, 0.750], anchor: [0.755, 0.630], side: "right", round: true }
   ];
 
   var STORAGE_KEY = "race-games-lang";
