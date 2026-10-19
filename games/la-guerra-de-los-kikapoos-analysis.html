@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Analyze: La Guerra de los Kikapoos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700;800;900&family=Libre+Franklin:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #FAFAF7;
+    --paper-dim: #F0EFEA;
+    --ink: #14161A;
+    --ink-soft: #55585F;
+    --line: #DCDBD4;
+    --red: #E8402C;
+    --indigo: #2C3E5C;
+    --indigo-soft: #E6E9EF;
+  }
+  *{ box-sizing: border-box; }
+  html, body{ margin: 0; background: var(--paper); color: var(--ink); }
+  body{
+    font-family: 'Libre Franklin', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  button{ font-family: inherit; }
+
+  /* ---------- Back pill ---------- */
+  .back-pill{
+    position: fixed; top: 14px; left: 14px; z-index: 9999;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; background: var(--ink); color: var(--paper);
+    text-decoration: none; font-size: 12px; font-weight: 600; letter-spacing: 0.03em;
+    border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,0.25); opacity: 0.85;
+  }
+  .back-pill:hover{ opacity: 1; }
+
+  .wrap{ max-width: 1280px; margin: 0 auto; padding: 0 28px; }
+
+  /* ---------- Language toggle ---------- */
+  .langbar{ display: flex; justify-content: flex-end; padding: 18px 0 0; }
+  .langtoggle{ display: inline-flex; align-items: center; gap: 2px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em; }
+  .langtoggle button{
+    font: inherit; letter-spacing: inherit; background: none; border: none; cursor: pointer;
+    color: var(--ink-soft); padding: 6px 8px; border-radius: 6px;
+    transition: color .15s ease, background .15s ease;
+  }
+  .langtoggle button:hover{ color: var(--ink); }
+  .langtoggle button[aria-pressed="true"]{ color: var(--ink); background: var(--paper-dim); }
+  .langtoggle .sep{ color: var(--line); }
+
+  /* ---------- Header ---------- */
+  header.intro{ padding: 22px 0 26px; border-bottom: 2px solid var(--ink); margin-bottom: 30px; }
+  .eyebrow{
+    font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--indigo); margin: 0 0 10px;
+  }
+  h1{
+    font-family: 'Bitter', serif; font-weight: 900; text-transform: uppercase;
+    font-size: clamp(30px, 5vw, 54px); line-height: 1.02; letter-spacing: -0.01em; margin: 0 0 12px;
+  }
+  .intro-row{ display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: flex-end; justify-content: space-between; }
+  .hint{ margin: 0; color: var(--ink-soft); font-size: 15px; max-width: 620px; }
+  .play-link{
+    display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+    font-weight: 700; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--paper); background: var(--indigo); padding: 12px 18px; border-radius: 2px;
+  }
+  .play-link:hover{ transform: translateX(2px); }
+
+  /* ---------- Analysis layout ---------- */
+  .analysis{
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(200px, 1fr) auto minmax(200px, 1fr);
+    gap: 0 36px;
+    align-items: start;
+    padding-bottom: 70px;
+  }
+  .col{ position: relative; align-self: stretch; }
+  .leaders{ position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; z-index: 3; transition: opacity .3s ease; }
+  .leaders line{ stroke: var(--ink); stroke-width: 1.25; }
+  .leaders circle{ fill: var(--ink); }
+
+  /* Callout labels around the image */
+  .callout{
+    position: absolute; left: 0; right: 0;
+    display: block; width: 100%; text-align: left;
+    background: #fff; border: 1.5px solid var(--ink); border-radius: 2px;
+    padding: 11px 13px 12px; cursor: pointer; z-index: 2;
+    box-shadow: 3px 3px 0 var(--ink);
+    transition: transform .15s ease, box-shadow .15s ease, opacity .3s ease;
+    color: var(--ink);
+  }
+  .callout:hover, .callout:focus-visible{ transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--indigo); outline: none; }
+  .callout .num{
+    display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--red); color: #fff; font-size: 11px; font-weight: 800; margin-right: 8px; vertical-align: 1px;
+  }
+  .callout .ct{ font-family: 'Bitter', serif; font-weight: 800; font-size: 15.5px; text-transform: uppercase; letter-spacing: 0.01em; }
+  .callout .cl{ display: block; margin-top: 5px; font-size: 13px; line-height: 1.45; color: var(--ink-soft); }
+  .callout .more{ display: block; margin-top: 7px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--indigo); }
+
+  /* The image frame */
+  .stage-col{ position: relative; z-index: 2; }
+  .frame{
+    position: relative;
+    width: min(calc((100vw - 56px) * 0.5), calc(80vh * 0.736), 640px);
+    aspect-ratio: 0.736;
+    overflow: hidden;
+    background: #d9d3c2;
+    border: 2px solid var(--ink);
+    box-shadow: 6px 6px 0 var(--indigo);
+    touch-action: manipulation;
+  }
+  .layer{
+    position: absolute; left: 0; top: 0;
+    transform-origin: 0 0;
+    transition: transform .75s cubic-bezier(.65,.05,.25,1);
+    will-change: transform;
+  }
+  .layer img{ display: block; width: 100%; height: 100%; user-select: none; -webkit-user-drag: none; }
+  .layer svg{ position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+
+  .hot{ fill: rgba(255,255,255,0); stroke: rgba(232,64,44,0); stroke-width: 2; vector-effect: non-scaling-stroke; cursor: pointer; transition: fill .2s ease, stroke .2s ease; }
+  .hot:hover, .hot.hover{ fill: rgba(232,64,44,0.10); stroke: rgba(232,64,44,0.9); stroke-dasharray: 5 4; }
+  .zoomed .hot{ pointer-events: none; }
+  .zoomed .hot.active{ stroke: var(--red); stroke-width: 3; stroke-dasharray: none; fill: none; }
+  .zoomed[data-active="scene"] .hot.active{ stroke: none; }
+
+  .dim{ fill: rgba(20,22,26,0.55); fill-rule: evenodd; opacity: 0; transition: opacity .5s ease .25s; pointer-events: none; }
+  .zoomed .dim{ opacity: 1; }
+  .zoomed[data-active="scene"] .dim{ opacity: 0; }
+
+  .guides{ opacity: 0; transition: opacity .4s ease; pointer-events: none; }
+  .zoomed[data-active="scene"] .guides{ opacity: 1; transition-delay: .6s; }
+  .guides .g-board{ stroke: var(--ink); stroke-width: 2; stroke-dasharray: 9 7; vector-effect: non-scaling-stroke; }
+  .guides .g-edge{ stroke: var(--ink); stroke-width: 1.5; vector-effect: non-scaling-stroke; opacity: .55; }
+  .guides .g-scene{ stroke: var(--red); stroke-width: 3; vector-effect: non-scaling-stroke; }
+  .guides .g-band{ fill: rgba(232,64,44,0.10); stroke: var(--red); stroke-width: 2; stroke-dasharray: 3 4; vector-effect: non-scaling-stroke; }
+  .guides .g-arrow{ stroke: var(--red); stroke-width: 3; vector-effect: non-scaling-stroke; fill: none; }
+  .guides text{ font-family: 'Libre Franklin', sans-serif; font-weight: 800; font-size: 25px; letter-spacing: .05em; text-transform: uppercase; paint-order: stroke; stroke: #fff; stroke-width: 6px; stroke-linejoin: round; }
+  .guides .t-board{ fill: var(--ink); }
+  .guides .t-scene{ fill: var(--red); }
+
+  /* Numbered badges on the image */
+  .badge{
+    position: absolute; z-index: 3; width: 28px; height: 28px; margin: -14px 0 0 -14px;
+    border-radius: 50%; border: 2px solid #fff; background: var(--red); color: #fff;
+    font-weight: 800; font-size: 13px; cursor: pointer; display: grid; place-items: center; padding: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,.35);
+    transition: opacity .25s ease, transform .2s ease;
+  }
+  .badge::after{
+    content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid var(--red);
+    animation: pulse 2.4s ease-out infinite; opacity: 0;
+  }
+  @keyframes pulse{ 0%{ transform: scale(.7); opacity: .8; } 80%,100%{ transform: scale(1.5); opacity: 0; } }
+  .badge:hover{ transform: scale(1.12); }
+  .zoomed .badge{ opacity: 0; pointer-events: none; }
+
+  /* Back-to-full-view button over the frame */
+  .reset{
+    position: absolute; z-index: 4; top: 12px; left: 12px;
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--paper); color: var(--ink); border: 1.5px solid var(--ink); border-radius: 999px;
+    padding: 7px 13px; font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; cursor: pointer;
+    opacity: 0; pointer-events: none; transform: translateY(-6px); transition: opacity .25s ease, transform .25s ease;
+  }
+  .zoomed .reset{ opacity: 1; pointer-events: auto; transform: none; transition-delay: .4s; }
+
+  /* "Who were the Kikapoo?" tab on the border */
+  .kika-tab{
+    position: absolute; z-index: 5; left: 50%; bottom: -40px; transform: translateX(-50%);
+    display: inline-flex; align-items: center; gap: 10px; white-space: nowrap;
+    background: var(--indigo); color: var(--paper); border: 2px solid var(--ink); border-top: none;
+    border-radius: 0 0 6px 6px; padding: 9px 18px 10px;
+    font-family: 'Bitter', serif; font-weight: 800; font-size: 15px; letter-spacing: .02em; text-transform: uppercase;
+    cursor: pointer; box-shadow: 4px 4px 0 var(--ink);
+    transition: background .2s ease, padding .2s ease;
+  }
+  .kika-tab:hover{ background: #1f2d45; padding-bottom: 13px; }
+  .kika-tab .plus{ display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--paper); color: var(--indigo); font-family: 'Libre Franklin', sans-serif; font-size: 15px; line-height: 1; }
+
+  /* Explanation panel (shown while zoomed) */
+  .panel{
+    position: absolute; z-index: 6; top: 0; left: 0; right: 0;
+    background: #fff; border: 2px solid var(--ink); box-shadow: 6px 6px 0 var(--ink);
+    padding: 22px 22px 18px;
+    opacity: 0; transform: translateX(14px); pointer-events: none;
+    transition: opacity .3s ease, transform .35s ease;
+    max-height: 100%; overflow: auto;
+  }
+  .is-zoomed .panel{ opacity: 1; transform: none; pointer-events: auto; transition-delay: .35s; }
+  .panel .p-top{ display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .panel .p-num{ font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--red); }
+  .panel .p-close{ background: none; border: none; font-size: 22px; line-height: 1; cursor: pointer; color: var(--ink-soft); padding: 2px 4px; }
+  .panel .p-close:hover{ color: var(--ink); }
+  .panel h2{ font-family: 'Bitter', serif; font-weight: 800; font-size: 24px; line-height: 1.1; text-transform: uppercase; margin: 0 0 14px; }
+  .panel .p-body p{ margin: 0 0 12px; font-size: 15px; line-height: 1.62; }
+  .placeholder{ color: #8a8c91; font-style: italic; }
+  .panel .p-nav{ display: flex; justify-content: space-between; gap: 8px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .panel .p-nav button{
+    background: none; border: 1.5px solid var(--ink); border-radius: 2px; padding: 8px 12px; cursor: pointer;
+    font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink);
+  }
+  .panel .p-nav button:hover{ background: var(--ink); color: var(--paper); }
+
+  .is-zoomed .callout, .is-zoomed .leaders{ opacity: 0; pointer-events: none; }
+
+  .credit{ margin: 58px 0 0; font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; max-width: 640px; }
+
+  /* Topic list (small screens) */
+  .topics{ display: none; }
+
+  /* ---------- Modal ---------- */
+  .modal-back{
+    position: fixed; inset: 0; z-index: 10000; background: rgba(20,22,26,.6);
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+    opacity: 0; pointer-events: none; transition: opacity .25s ease;
+  }
+  .modal-back.open{ opacity: 1; pointer-events: auto; }
+  .modal{
+    position: relative; width: min(820px, 100%); max-height: calc(100vh - 48px); overflow: auto;
+    background: var(--paper); border: 2px solid var(--ink); box-shadow: 8px 8px 0 var(--indigo);
+    padding: 42px clamp(22px, 5vw, 56px) 40px;
+    transform: translateY(14px) scale(.98); transition: transform .3s ease;
+  }
+  .modal-back.open .modal{ transform: none; }
+  .modal .m-close{ position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 28px; line-height: 1; cursor: pointer; color: var(--ink-soft); }
+  .modal .m-close:hover{ color: var(--ink); }
+  .modal h2{ font-family: 'Bitter', serif; font-weight: 900; text-transform: uppercase; font-size: clamp(28px, 4vw, 42px); line-height: 1.05; margin: 0 0 22px; padding-bottom: 18px; border-bottom: 2px solid var(--ink); }
+  .modal .m-body p{ font-size: 17px; line-height: 1.7; margin: 0 0 16px; }
+
+  /* ---------- Small screens ---------- */
+  @media (max-width: 960px){
+    .analysis{ grid-template-columns: 1fr; padding-bottom: 50px; }
+    .col.side, .leaders{ display: none; }
+    .stage-col{ display: flex; flex-direction: column; align-items: center; }
+    .frame{ width: min(100%, calc(78vh * 0.736)); }
+    .panel{ position: relative; display: none; margin-top: 18px; width: 100%; transform: none; max-height: none; }
+    .is-zoomed .panel{ display: block; }
+    .kika-tab{ position: relative; left: auto; bottom: auto; transform: none; margin-top: -2px; }
+    .topics{ display: grid; gap: 10px; width: 100%; margin-top: 24px; }
+    .is-zoomed .topics{ display: none; }
+    .topics button{
+      display: flex; align-items: center; gap: 10px; text-align: left; width: 100%;
+      background: #fff; border: 1.5px solid var(--ink); border-radius: 2px; padding: 12px 14px; cursor: pointer;
+      font-family: 'Bitter', serif; font-weight: 800; font-size: 15px; text-transform: uppercase; color: var(--ink);
+    }
+    .topics .num{ display: inline-grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--red); color: #fff; font-family: 'Libre Franklin', sans-serif; font-size: 11px; font-weight: 800; }
+    .credit{ margin-top: 26px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .layer, .panel, .callout, .badge::after{ transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<a class="back-pill" href="../index.html">&larr;&nbsp;RACE GAMES</a>
+
+<div class="wrap">
+  <div class="langbar">
+    <div class="langtoggle" role="group" aria-label="Language">
+      <button type="button" data-lang="en" aria-pressed="true">EN</button>
+      <span class="sep">/</span>
+      <button type="button" data-lang="es" aria-pressed="false">ES</button>
+      <span class="sep">/</span>
+      <button type="button" data-lang="pt" aria-pressed="false">PT</button>
+    </div>
+  </div>
+
+  <header class="intro">
+    <p class="eyebrow" data-i18n="eyebrow">Let's analyze the game</p>
+    <h1>La Guerra de los Kikapoos</h1>
+    <div class="intro-row">
+      <p class="hint" data-i18n="hint">Click a numbered area — or one of the labels — to zoom in and read about it.</p>
+      <a class="play-link" href="la-guerra-de-los-kikapoos.html"><span data-i18n="playLink">Play the game</span> <span>→</span></a>
+    </div>
+  </header>
+
+  <section class="analysis" id="analysis">
+    <svg class="leaders" id="leaders" aria-hidden="true"></svg>
+
+    <div class="col side" id="colLeft"></div>
+
+    <div class="stage-col">
+      <div class="frame" id="frame">
+        <div class="layer" id="layer">
+          <img src="../images/la-guerra-de-los-kikapoos-board.jpg" alt="Lithograph board for La Guerra de los Kikapoos, Mexico, 19th century" id="boardImg">
+          <svg id="overlay" viewBox="0 0 1400 1867" preserveAspectRatio="none"></svg>
+        </div>
+        <button type="button" class="reset" id="reset">← <span data-i18n="reset">Full view</span></button>
+      </div>
+      <button type="button" class="kika-tab" id="kikaTab"><span data-i18n="kikaTab">Who were the Kikapoo?</span> <span class="plus">+</span></button>
+
+      <div class="topics" id="topics"></div>
+    </div>
+
+    <div class="col side" id="colRight">
+      <aside class="panel" id="panel" aria-live="polite">
+        <div class="p-top">
+          <span class="p-num" id="pNum"></span>
+          <button type="button" class="p-close" id="pClose" aria-label="Close">×</button>
+        </div>
+        <h2 id="pTitle"></h2>
+        <div class="p-body" id="pBody"></div>
+        <div class="p-nav">
+          <button type="button" id="pPrev">← <span data-i18n="prev">Previous</span></button>
+          <button type="button" id="pNext"><span data-i18n="next">Next</span> →</button>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <p class="credit" data-i18n="credit">Board photograph: Tulane University's Latin American Library. A book-bound version is held at the Museum of Archaeology and Anthropology, University of Cambridge.</p>
+</div>
+
+<div class="modal-back" id="modalBack" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <button type="button" class="m-close" id="mClose" aria-label="Close">×</button>
+    <p class="eyebrow" data-i18n="eyebrow">Let's analyze the game</p>
+    <h2 id="mTitle"></h2>
+    <div class="m-body" id="mBody"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  /* =====================================================================
+     ✏️  EDIT YOUR TEXT HERE
+     ---------------------------------------------------------------------
+     Each area has a short "label" (shown in the box beside the image)
+     and a "body" (shown when the area is clicked). "body" is a list of
+     paragraphs — add as many as you like, each in "quotes", separated
+     by commas. Any paragraph that starts with "[" is styled as a grey
+     placeholder, so you can see at a glance what still needs writing.
+     ===================================================================== */
+  var CONTENT = {
+    soldier: {
+      en: { title: "A Kickapoo soldier", label: "The game pictures Indigenous fighters as shirtless, armed and on the attack.",
+            body: ["Look closely at the fighters on the near bank of the river. They are drawn shirtless, in skirts and feathered headdresses, gripping rifles. Some are already wading into the water to cross. The game imagines the Kickapoo as warriors, and almost nothing else.",
+                   "The printmakers put us right behind them. Because the scene is seen from the Kickapoo side, the attackers loom large in the foreground while the soldiers in blue shrink into the distance. Anyone looking at the board effectively joins the Kickapoo army and watches the enemy run.",
+                   "That celebration has limits. Turning a people into a fighting force squeezes their politics, communities and ways of understanding the world into a single trait, which is their usefulness in battle on behalf of the Mexican state."] },
+      es: { title: "Un soldado kikapú", label: "El juego imagina a los combatientes indígenas sin camisa, armados y al ataque.",
+            body: ["Observa con atención a los combatientes en la orilla más cercana del río. Están dibujados sin camisa, con faldas y tocados de plumas, empuñando rifles. Algunos ya se meten al agua para cruzar. El juego imagina a los kikapú como guerreros, y casi nada más.",
+                   "Los grabadores nos colocan justo detrás de ellos. Como la escena se ve desde el lado kikapú, los atacantes aparecen grandes en primer plano, mientras los soldados de azul se encogen a lo lejos. Quien mira el tablero se suma, en efecto, al ejército kikapú y ve huir al enemigo.",
+                   "Esa celebración tiene límites. Convertir a un pueblo en una fuerza de combate reduce su política, sus comunidades y sus formas de entender el mundo a un solo rasgo, que es su utilidad en la batalla al servicio del Estado mexicano."] },
+      pt: { title: "Um soldado Kickapoo", label: "O jogo retrata os combatentes indígenas sem camisa, armados e no ataque.",
+            body: ["Observe com atenção os combatentes na margem mais próxima do rio. Eles aparecem sem camisa, de saia e cocares de penas, empunhando rifles. Alguns já entram na água para atravessar. O jogo imagina os Kickapoo como guerreiros, e quase nada além disso.",
+                   "Os gravadores nos colocam logo atrás deles. Como a cena é vista do lado Kickapoo, os atacantes aparecem grandes em primeiro plano, enquanto os soldados de azul encolhem ao fundo. Quem olha o tabuleiro passa, na prática, a fazer parte do exército Kickapoo e vê o inimigo fugir.",
+                   "Essa celebração tem limites. Transformar um povo em força de combate reduz sua política, suas comunidades e suas formas de entender o mundo a um único traço, que é sua utilidade na batalha a serviço do Estado mexicano."] }
+    },
+    scene: {
+      en: { title: "Where the scene sits", label: "The battle sits slightly above the middle of the board, and that shift matters.",
+            body: ["At first glance the battle scene seems to run straight across the middle of the board. Follow the grid lines and the numbered rows, though, and you'll see it isn't centered. The picture sits higher up, with noticeably more empty board below it than above.",
+                   "The shift is only about half a square, but it pushes the Kickapoo forward. Their army ends up filling more of the board's central area, while the retreating soldiers are crowded toward the edge.",
+                   "The rules are perfectly even, since both players get the same pieces and the same chance of winning. The picture is not. Every time you play, the image reminds you that the Kickapoo are the ones advancing, and the ones winning."] },
+      es: { title: "La ubicación de la escena", label: "La batalla está un poco por encima del centro del tablero, y ese desplazamiento importa.",
+            body: ["A primera vista, la escena de batalla parece atravesar justo el centro del tablero. Pero si sigues las líneas de la cuadrícula y las filas numeradas, verás que no está centrada. La imagen está más arriba, con bastante más tablero vacío debajo que encima.",
+                   "El desplazamiento es de apenas medio cuadro, pero basta para empujar a los kikapú hacia adelante. Su ejército termina ocupando más del área central del tablero, mientras los soldados en retirada quedan arrinconados hacia el borde.",
+                   "Las reglas son perfectamente equitativas, ya que ambos jugadores tienen las mismas piezas y las mismas posibilidades de ganar. La imagen no lo es. Cada vez que juegas, el dibujo te recuerda que son los kikapú quienes avanzan y quienes ganan."] },
+      pt: { title: "A posição da cena", label: "A batalha fica um pouco acima do centro do tabuleiro, e esse deslocamento importa.",
+            body: ["À primeira vista, a cena de batalha parece atravessar exatamente o meio do tabuleiro. Mas, seguindo as linhas da grade e as fileiras numeradas, você percebe que ela não está centralizada. A imagem fica mais acima, com bem mais tabuleiro vazio embaixo do que em cima.",
+                   "O deslocamento é de apenas meia casa, mas basta para empurrar os Kickapoo para a frente. O exército deles acaba ocupando mais da área central do tabuleiro, enquanto os soldados em retirada ficam espremidos contra a borda.",
+                   "As regras são perfeitamente equilibradas, já que os dois jogadores têm as mesmas peças e as mesmas chances de vencer. A imagem, não. Cada vez que você joga, o desenho lembra que são os Kickapoo que avançam, e que vencem."] }
+    },
+    river: {
+      en: { title: "The river", label: "The Rio Grande works as a national border, a battle line and the board's own dividing line.",
+            body: ["A band of blue water splits the battle in two. On the far bank, soldiers in blue jackets and red caps turn and flee, some with their hands in the air. On the near bank, the Kickapoo open fire and begin to swim across. Both sides have men on the ground, but the blue army has lost more, including two soldiers tumbling into the river.",
+                   "Read alongside the title, the river becomes the Rio Grande, and the fleeing troops become Texans or U.S. soldiers. The scene stages a fight on the U.S.–Mexico border, and it places the viewer, and the player, firmly on the Mexican side.",
+                   "The river also echoes the game itself. The board is split into two camps, each with rows numbered 1 to 4 from its own edge, and you win by moving your whole army across into enemy territory."] },
+      es: { title: "El río", label: "El Río Bravo funciona como frontera nacional, línea de batalla y línea divisoria del propio tablero.",
+            body: ["Una franja de agua azul parte la batalla en dos. En la orilla lejana, soldados con chaquetas azules y gorros rojos dan la vuelta y huyen, algunos con las manos en alto. En la orilla cercana, los kikapú abren fuego y empiezan a cruzar a nado. Ambos bandos tienen caídos, pero el ejército azul ha perdido más, incluidos dos soldados que se desploman en el río.",
+                   "Leído junto con el título, el río se convierte en el Río Bravo, y las tropas en fuga, en texanos o soldados estadounidenses. La escena representa un combate en la frontera entre México y Estados Unidos, y coloca a quien mira, y a quien juega, firmemente del lado mexicano.",
+                   "El río también refleja el propio juego. El tablero está dividido en dos campos, cada uno con filas numeradas del 1 al 4 desde su propio borde, y se gana llevando a todo tu ejército al territorio enemigo."] },
+      pt: { title: "O rio", label: "O Rio Grande funciona como fronteira nacional, linha de batalha e linha divisória do próprio tabuleiro.",
+            body: ["Uma faixa de água azul divide a batalha em duas. Na margem distante, soldados de casaco azul e boné vermelho dão meia-volta e fogem, alguns com as mãos para o alto. Na margem próxima, os Kickapoo abrem fogo e começam a atravessar a nado. Os dois lados têm baixas, mas o exército azul perdeu mais, incluindo dois soldados que caem no rio.",
+                   "Lido junto com o título, o rio se torna o Rio Grande, e as tropas em fuga, texanos ou soldados norte-americanos. A cena encena um combate na fronteira entre o México e os Estados Unidos e coloca quem olha, e quem joga, firmemente do lado mexicano.",
+                   "O rio também espelha o próprio jogo. O tabuleiro é dividido em dois campos, cada um com fileiras numeradas de 1 a 4 a partir de sua própria borda, e vence quem leva todo o seu exército para o território inimigo."] }
+    },
+    title: {
+      en: { title: "The title", label: "Only one of the two armies gets a name.",
+            body: ["“La Guerra de los Kikapoos” (“The Kickapoo War”) names only one of the two armies. Their opponents are never identified, not in the title and not anywhere else on the sheet.",
+                   "Historical context lets us guess that the soldiers in blue are Texans or Americans, but leaving them nameless pushes them into the background. The story belongs to the Kickapoo, and through them to the Mexico they are shown defending.",
+                   "The title was also a sales pitch. The Kickapoo were a popular subject in the Mexican press at the time, and putting their name at the top of the sheet tied the game to a group readers already knew from the headlines."] },
+      es: { title: "El título", label: "Solo uno de los dos ejércitos tiene nombre.",
+            body: ["«La Guerra de los Kikapoos» nombra únicamente a uno de los dos ejércitos. Sus adversarios nunca se identifican, ni en el título ni en ninguna otra parte de la hoja.",
+                   "El contexto histórico nos permite suponer que los soldados de azul son texanos o estadounidenses, pero dejarlos sin nombre los relega a un segundo plano. La historia pertenece a los kikapú y, a través de ellos, al México que aparecen defendiendo.",
+                   "El título era también un argumento de venta. Los kikapú eran un tema popular en la prensa mexicana de la época, y poner su nombre en lo alto de la hoja vinculaba el juego con un grupo que los lectores ya conocían por los periódicos."] },
+      pt: { title: "O título", label: "Só um dos dois exércitos tem nome.",
+            body: ["“La Guerra de los Kikapoos” (“A Guerra Kickapoo”) nomeia apenas um dos dois exércitos. Os adversários nunca são identificados, nem no título nem em qualquer outro lugar da folha.",
+                   "O contexto histórico nos permite supor que os soldados de azul são texanos ou norte-americanos, mas deixá-los sem nome os empurra para o fundo da cena. A história pertence aos Kickapoo e, por meio deles, ao México que eles aparecem defendendo.",
+                   "O título também era um argumento de venda. Os Kickapoo eram um tema popular na imprensa mexicana da época, e colocar o nome deles no alto da folha ligava o jogo a um grupo que os leitores já conheciam dos jornais."] }
+    },
+    kikapoo: {
+      en: { title: "Who were the Kikapoo?",
+            body: ["The Kickapoo are an Indigenous people whose homeland lies in the Great Lakes region of North America, far from the river border shown on this board. Their road to a Mexican board game runs through a century of migration and diplomacy.",
+                   "After the American Revolution they sided with the British, and later bargained with the U.S. government for land in Missouri. In the early 1800s, about 800 Kickapoo moved into Texas, which was still part of Mexico, after Mexican authorities invited them to help guard the northern frontier. When Texas broke away, many moved south into Mexico, and more followed from the United States in the 1850s and 1860s. President Benito Juárez granted them roughly 3,500 hectares in Coahuila, just across the border from Texas, in exchange for defending the region against raids by other Indigenous groups.",
+                   "Their presence alarmed some Texans, who complained of cross-border raids. In 1872 the U.S. Congress sent commissioners to investigate, and they recommended moving the Kickapoo to what the U.S. called “Indian Territory.” In 1873 the U.S. Army crossed into Mexico without asking the Mexican government, attacked Kickapoo settlements and took captives. A removal law followed in 1874, but without the cooperation of Mexico or of the Kickapoo in Coahuila it never fully worked. By the end of the century, about half of the roughly 1,000 Kickapoo lived in Mexico.",
+                   "In Mexico, people who read the newspapers would likely have known about them. Kickapoo leaders such as Mascuá held well-publicized meetings with Benito Juárez and later with Porfirio Díaz, and Emperor Maximilian hosted a group of them at Chapultepec Castle. Newspapers cast them as anti-imperialists, as defenders of the nation, as “civilized” Indians, and as proof that Mexico was less racist than the United States. This board game belongs to the same trend, in which the Kickapoo served as a political symbol and as a selling point.",
+                   "Both governments used the Kickapoo for their own ends. The United States wanted the Kickapoo removed so they could no longer raid Texas or guard Mexico's border. Mexico wanted them as frontier defenders and as settlers for its northern communities. The Kickapoo, for their part, played the two states off each other to hold on to land and autonomy. When they visited Maximilian in 1865, they described themselves as warriors who had already defended Mexican soil, and asked for his protection in return.",
+                   "The game's celebration also leaves a great deal out. Under Porfirio Díaz, Mexican governments took communal Indigenous lands, sent Maya rebels from Yucatán into exile and forced Yaqui people from Sonora into coerced labor. By spotlighting one Indigenous group that fought alongside the Mexican state, and against the United States, the board keeps that wider violence out of the picture."] },
+      es: { title: "¿Quiénes eran los kikapú?",
+            body: ["Los kikapú son un pueblo indígena originario de la región de los Grandes Lagos de Norteamérica, lejos de la frontera fluvial que aparece en este tablero. Su camino hasta un juego de mesa mexicano pasa por un siglo de migraciones y diplomacia.",
+                   "Tras la Revolución estadounidense se aliaron con los británicos y, más tarde, negociaron con el gobierno de Estados Unidos tierras en Misuri. A principios del siglo XIX, unos 800 kikapú se establecieron en Texas, que entonces aún formaba parte de México, después de que las autoridades mexicanas los invitaran a ayudar a resguardar la frontera norte. Cuando Texas se separó, muchos se trasladaron al sur, a México, y otros más llegaron desde Estados Unidos en las décadas de 1850 y 1860. El presidente Benito Juárez les otorgó unas 3,500 hectáreas en Coahuila, justo al otro lado de la frontera con Texas, a cambio de defender la región de las incursiones de otros grupos indígenas.",
+                   "Su presencia inquietaba a algunos texanos, que se quejaban de ataques transfronterizos. En 1872 el Congreso de Estados Unidos envió comisionados a investigar, y estos recomendaron trasladar a los kikapú al llamado “Territorio Indio”. En 1873 el ejército estadounidense entró en México sin consultar al gobierno mexicano, atacó asentamientos kikapú y tomó prisioneros. En 1874 se aprobó una ley de traslado, pero sin la cooperación de México ni de los kikapú de Coahuila nunca se cumplió del todo. A finales de siglo, cerca de la mitad de los aproximadamente 1,000 kikapú vivía en México.",
+                   "En México, quienes leían los periódicos probablemente sabían de ellos. Líderes kikapú como Mascuá tuvieron reuniones muy difundidas con Benito Juárez y, más tarde, con Porfirio Díaz, y el emperador Maximiliano recibió a un grupo de ellos en el Castillo de Chapultepec. La prensa los presentaba como antiimperialistas, defensores de la nación, indígenas “civilizados” y prueba de que México era menos racista que Estados Unidos. Este juego de mesa forma parte de la misma tendencia, en la que los kikapú servían como símbolo político y como reclamo comercial.",
+                   "Ambos gobiernos se valieron de los kikapú para sus propios fines. Estados Unidos quería trasladar a los kikapú para que dejaran de atacar Texas y de proteger la frontera mexicana. México los quería como defensores de la frontera y como pobladores de sus comunidades del norte. Los kikapú, por su parte, aprovecharon la rivalidad entre ambos Estados para conservar su tierra y su autonomía. Cuando visitaron a Maximiliano en 1865, se presentaron como guerreros que ya habían defendido el suelo mexicano y le pidieron su protección a cambio.",
+                   "La celebración del juego también deja mucho fuera. Durante el Porfiriato, los gobiernos mexicanos se apropiaron de tierras comunales indígenas, desterraron a rebeldes mayas de Yucatán y sometieron a trabajo forzado a yaquis de Sonora. Al poner en primer plano a un grupo indígena que luchó junto al Estado mexicano, y contra Estados Unidos, el tablero deja esa violencia más amplia fuera del cuadro."] },
+      pt: { title: "Quem eram os Kickapoo?",
+            body: ["Os Kickapoo são um povo indígena originário da região dos Grandes Lagos da América do Norte, longe da fronteira fluvial mostrada neste tabuleiro. O caminho que os levou a um jogo de tabuleiro mexicano passa por um século de migrações e diplomacia.",
+                   "Depois da Revolução Americana, aliaram-se aos britânicos e, mais tarde, negociaram com o governo dos Estados Unidos terras no Missouri. No início do século XIX, cerca de 800 Kickapoo se estabeleceram no Texas, que ainda fazia parte do México, depois que as autoridades mexicanas os convidaram para ajudar a proteger a fronteira norte. Quando o Texas se separou, muitos se mudaram para o sul, para o México, e outros vieram dos Estados Unidos nas décadas de 1850 e 1860. O presidente Benito Juárez concedeu-lhes cerca de 3.500 hectares em Coahuila, logo do outro lado da fronteira com o Texas, em troca da defesa da região contra incursões de outros grupos indígenas.",
+                   "A presença deles preocupava alguns texanos, que se queixavam de ataques além da fronteira. Em 1872, o Congresso dos Estados Unidos enviou comissários para investigar, e eles recomendaram transferir os Kickapoo para o chamado “Território Indígena”. Em 1873, o exército norte-americano entrou no México sem consultar o governo mexicano, atacou assentamentos Kickapoo e fez prisioneiros. Uma lei de remoção foi aprovada em 1874, mas, sem a cooperação do México nem dos Kickapoo de Coahuila, nunca foi totalmente cumprida. No fim do século, cerca de metade dos aproximadamente 1.000 Kickapoo vivia no México.",
+                   "No México, quem lia os jornais provavelmente sabia quem eles eram. Líderes Kickapoo como Mascuá tiveram encontros muito divulgados com Benito Juárez e, mais tarde, com Porfirio Díaz, e o imperador Maximiliano recebeu um grupo deles no Castelo de Chapultepec. A imprensa os apresentava como anti-imperialistas, defensores da nação, indígenas “civilizados” e prova de que o México era menos racista que os Estados Unidos. Este jogo de tabuleiro faz parte da mesma tendência, em que os Kickapoo serviam como símbolo político e como chamariz comercial.",
+                   "Os dois governos usaram os Kickapoo para seus próprios fins. Os Estados Unidos queriam remover os Kickapoo para que deixassem de atacar o Texas e de proteger a fronteira mexicana. O México os queria como defensores da fronteira e como povoadores de suas comunidades do norte. Os Kickapoo, por sua vez, jogaram um Estado contra o outro para manter suas terras e sua autonomia. Quando visitaram Maximiliano em 1865, apresentaram-se como guerreiros que já haviam defendido o solo mexicano e pediram sua proteção em troca.",
+                   "A celebração do jogo também deixa muita coisa de fora. Durante o Porfiriato, os governos mexicanos tomaram terras comunais indígenas, exilaram rebeldes maias de Yucatán e submeteram os yaquis de Sonora ao trabalho forçado. Ao destacar um grupo indígena que lutou ao lado do Estado mexicano, e contra os Estados Unidos, o tabuleiro deixa essa violência mais ampla fora do quadro."] }
+    }
+  };
+
+  var STRINGS = {
+    en: { eyebrow: "Let's analyze the game", hint: "Click a numbered area — or one of the labels — to zoom in and read about it.",
+          playLink: "Play the game", reset: "Full view", prev: "Previous", next: "Next", kikaTab: "Who were the Kikapoo?",
+          readMore: "Zoom in", of: "of", boardCenter: "Center of the board", sceneCenter: "Center of the scene", spaceAbove: "Space above", spaceBelow: "Space below",
+          credit: "Board photograph: Tulane University's Latin American Library. A book-bound version is held at the Museum of Archaeology and Anthropology, University of Cambridge." },
+    es: { eyebrow: "Analicemos el juego", hint: "Haz clic en un área numerada — o en una de las etiquetas — para acercarte y leer sobre ella.",
+          playLink: "Jugar", reset: "Vista completa", prev: "Anterior", next: "Siguiente", kikaTab: "¿Quiénes eran los kikapú?",
+          readMore: "Acercar", of: "de", boardCenter: "Centro del tablero", sceneCenter: "Centro de la escena", spaceAbove: "Espacio arriba", spaceBelow: "Espacio abajo",
+          credit: "Fotografía del tablero: Latin American Library de la Universidad de Tulane. Una versión encuadernada se conserva en el Museum of Archaeology and Anthropology de la Universidad de Cambridge." },
+    pt: { eyebrow: "Vamos analisar o jogo", hint: "Clique numa área numerada — ou num dos rótulos — para aproximar e ler sobre ela.",
+          playLink: "Jogar", reset: "Visão completa", prev: "Anterior", next: "Próximo", kikaTab: "Quem eram os Kickapoo?",
+          readMore: "Aproximar", of: "de", boardCenter: "Centro do tabuleiro", sceneCenter: "Centro da cena", spaceAbove: "Espaço acima", spaceBelow: "Espaço abaixo",
+          credit: "Fotografia do tabuleiro: Latin American Library da Universidade Tulane. Uma versão encadernada está no Museum of Archaeology and Anthropology da Universidade de Cambridge." }
+  };
+
+  /* =====================================================================
+     AREAS — positions are fractions of the photo (0 = left/top, 1 = right/bottom).
+     rect   = the clickable outline
+     zoom   = what the camera frames when the area is opened
+     anchor = where the numbered badge / leader line attaches
+     side   = which side of the image its label sits on
+     ===================================================================== */
+  var IMG_W = 1400, IMG_H = 1867;
+  var OVERVIEW = [0.125, 0.09, 0.925, 0.905];
+  var AREAS = [
+    { id: "soldier", rect: [0.528, 0.455, 0.588, 0.527], zoom: [0.470, 0.420, 0.645, 0.560], anchor: [0.588, 0.462], side: "right" },
+    { id: "scene",   rect: [0.170, 0.333, 0.890, 0.543], zoom: [0.125, 0.160, 0.925, 0.780], anchor: [0.890, 0.345], side: "right" },
+    { id: "river",   rect: [0.180, 0.426, 0.890, 0.470], zoom: [0.160, 0.370, 0.910, 0.530], anchor: [0.190, 0.448], side: "left"  },
+    { id: "title",   rect: [0.283, 0.128, 0.808, 0.206], zoom: [0.260, 0.105, 0.830, 0.225], anchor: [0.268, 0.160], side: "left"  }
+  ];
+  // Guides drawn on the "scene" view (fractions of photo height)
+  var BOARD_TOP = 0.197, BOARD_BOTTOM = 0.746, BOARD_X = [0.150, 0.900];
+  var SCENE_TOP = 0.337, SCENE_BOTTOM = 0.541;
+
+  var STORAGE_KEY = "race-games-lang";
+  var lang = "en";
+  try { var s = localStorage.getItem(STORAGE_KEY); if (s && STRINGS[s]) lang = s; } catch(e){}
+
+  var $ = function(id){ return document.getElementById(id); };
+  var analysis = $("analysis"), frame = $("frame"), layer = $("layer"), overlay = $("overlay");
+  var colLeft = $("colLeft"), colRight = $("colRight"), leaders = $("leaders"), topics = $("topics");
+  var NS = "http://www.w3.org/2000/svg";
+  var active = null;
+
+  function t(key){ return (STRINGS[lang] && STRINGS[lang][key]) || STRINGS.en[key] || ""; }
+  function c(id){ return (CONTENT[id] && (CONTENT[id][lang] || CONTENT[id].en)) || { title: "", body: [] }; }
+  function svgEl(tag, attrs){ var el = document.createElementNS(NS, tag); for (var k in attrs) el.setAttribute(k, attrs[k]); return el; }
+  function px(r){ return [r[0]*IMG_W, r[1]*IMG_H, (r[2]-r[0])*IMG_W, (r[3]-r[1])*IMG_H]; }
+  function fillParas(container, paras){
+    container.innerHTML = "";
+    (paras || []).forEach(function(p){
+      var el = document.createElement("p");
+      if (/^\s*\[/.test(p)){ var sp = document.createElement("span"); sp.className = "placeholder"; sp.textContent = p; el.appendChild(sp); }
+      else el.textContent = p;
+      container.appendChild(el);
+    });
+  }
+
+  /* ---------- Build overlay (dim mask, guides, hotspots) ---------- */
+  var dim = svgEl("path", { "class": "dim" });
+  overlay.appendChild(dim);
+
+  var guides = svgEl("g", { "class": "guides" });
+  var gx0 = BOARD_X[0]*IMG_W, gx1 = BOARD_X[1]*IMG_W;
+  var yB = (BOARD_TOP + BOARD_BOTTOM)/2*IMG_H, yS = (SCENE_TOP + SCENE_BOTTOM)/2*IMG_H;
+  guides.appendChild(svgEl("rect", { "class": "g-band", x: gx0, y: SCENE_TOP*IMG_H, width: gx1-gx0, height: (SCENE_BOTTOM-SCENE_TOP)*IMG_H }));
+  guides.appendChild(svgEl("line", { "class": "g-edge", x1: gx0, x2: gx1, y1: BOARD_TOP*IMG_H, y2: BOARD_TOP*IMG_H }));
+  guides.appendChild(svgEl("line", { "class": "g-edge", x1: gx0, x2: gx1, y1: BOARD_BOTTOM*IMG_H, y2: BOARD_BOTTOM*IMG_H }));
+  guides.appendChild(svgEl("line", { "class": "g-board", x1: gx0, x2: gx1, y1: yB, y2: yB }));
+  guides.appendChild(svgEl("line", { "class": "g-scene", x1: gx0, x2: gx1, y1: yS, y2: yS }));
+  // brackets measuring the empty space above and below the scene
+  var bx = gx1 - 60;
+  function bracket(y0, y1, cls){
+    guides.appendChild(svgEl("path", { "class": "g-arrow", d: "M"+(bx-14)+","+y0+" H"+(bx+14)+" M"+bx+","+y0+" V"+y1+" M"+(bx-14)+","+y1+" H"+(bx+14) }));
+  }
+  bracket(BOARD_TOP*IMG_H + 8, SCENE_TOP*IMG_H - 4);
+  bracket(SCENE_BOTTOM*IMG_H + 4, BOARD_BOTTOM*IMG_H - 8);
+  var tAbove = svgEl("text", { "class": "t-scene", x: bx - 24, y: (BOARD_TOP + SCENE_TOP)/2*IMG_H + 9, "text-anchor": "end" });
+  var tBelow = svgEl("text", { "class": "t-scene", x: bx - 24, y: (SCENE_BOTTOM + BOARD_BOTTOM)/2*IMG_H + 9, "text-anchor": "end" });
+  guides.appendChild(tAbove); guides.appendChild(tBelow);
+  var tBoard = svgEl("text", { "class": "t-board", x: gx0 + 20, y: yB + 34 });
+  var tScene = svgEl("text", { "class": "t-scene", x: gx0 + 20, y: yS - 14 });
+  guides.appendChild(tBoard); guides.appendChild(tScene);
+  overlay.appendChild(guides);
+
+  var hotEls = {};
+  AREAS.forEach(function(a){
+    var p = px(a.rect);
+    var r = svgEl("rect", { "class": "hot", x: p[0], y: p[1], width: p[2], height: p[3], rx: 4, tabindex: "-1" });
+    r.addEventListener("click", function(){ open(a.id); });
+    r.addEventListener("mouseenter", function(){ hover(a.id, true); });
+    r.addEventListener("mouseleave", function(){ hover(a.id, false); });
+    overlay.appendChild(r);   // added in AREAS order: soldier first → we re-append small ones last below
+    hotEls[a.id] = r;
+  });
+  // Stacking: biggest area at the back so smaller ones stay clickable
+  ["scene", "river", "title", "soldier"].forEach(function(id){ overlay.appendChild(hotEls[id]); });
+
+  /* ---------- Badges, callouts, topic buttons ---------- */
+  var badges = {}, callouts = {}, topicBtns = {};
+  AREAS.forEach(function(a, i){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "badge"; b.textContent = i + 1;
+    b.addEventListener("click", function(){ open(a.id); });
+    b.addEventListener("mouseenter", function(){ hover(a.id, true); });
+    b.addEventListener("mouseleave", function(){ hover(a.id, false); });
+    frame.appendChild(b); badges[a.id] = b;
+
+    var co = document.createElement("button");
+    co.type = "button"; co.className = "callout";
+    co.innerHTML = '<span class="num">' + (i+1) + '</span><span class="ct"></span><span class="cl"></span><span class="more"></span>';
+    co.addEventListener("click", function(){ open(a.id); });
+    co.addEventListener("mouseenter", function(){ hover(a.id, true); });
+    co.addEventListener("mouseleave", function(){ hover(a.id, false); });
+    (a.side === "left" ? colLeft : colRight).appendChild(co); callouts[a.id] = co;
+
+    var tb = document.createElement("button");
+    tb.type = "button"; tb.innerHTML = '<span class="num">' + (i+1) + '</span><span class="tt"></span>';
+    tb.addEventListener("click", function(){ open(a.id); });
+    topics.appendChild(tb); topicBtns[a.id] = tb;
+  });
+
+  function hover(id, on){ if (!active) hotEls[id].classList.toggle("hover", on); }
+
+  /* ---------- Camera ---------- */
+  var lastK = 1;
+  function camera(region){
+    var Fw = frame.clientWidth, Fh = frame.clientHeight;
+    var Lw = Fw / (OVERVIEW[2] - OVERVIEW[0]);
+    var Lh = Lw * IMG_H / IMG_W;
+    layer.style.width = Lw + "px"; layer.style.height = Lh + "px";
+    var rw = (region[2]-region[0]) * Lw, rh = (region[3]-region[1]) * Lh;
+    var k = Math.min(Fw / rw, Fh / rh);
+    var cx = (region[0]+region[2])/2 * Lw, cy = (region[1]+region[3])/2 * Lh;
+    var tx = Fw/2 - k*cx, ty = Fh/2 - k*cy;
+    // keep the photo covering the frame where possible
+    tx = Math.min(0, Math.max(Fw - k*Lw, tx)); ty = Math.min(0, Math.max(Fh - k*Lh, ty));
+    layer.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + k + ")";
+    lastK = k;
+    return { Lw: Lw, Lh: Lh, k: k, tx: tx, ty: ty };
+  }
+  var view = null;
+  function overviewPoint(fx, fy){ // photo fraction → frame px in overview
+    return [(fx - OVERVIEW[0]) * view.Lw, (fy - OVERVIEW[1]) * view.Lh];
+  }
+
+  function areaById(id){ for (var i = 0; i < AREAS.length; i++) if (AREAS[i].id === id) return AREAS[i]; return null; }
+
+  /* ---------- Open / close ---------- */
+  function setDim(a){
+    var o = "M0,0 H" + IMG_W + " V" + IMG_H + " H0 Z";
+    var p = px(a.rect), pad = 6;
+    var x = p[0]-pad, y = p[1]-pad, w = p[2]+2*pad, h = p[3]+2*pad;
+    dim.setAttribute("d", o + " M" + x + "," + y + " h" + w + " v" + h + " h" + (-w) + " Z");
+  }
+  function renderPanel(){
+    if (!active) return;
+    var i = AREAS.indexOf(areaById(active)), data = c(active);
+    $("pNum").textContent = (i+1) + " " + t("of") + " " + AREAS.length;
+    $("pTitle").textContent = data.title;
+    fillParas($("pBody"), data.body);
+  }
+  function open(id){
+    var a = areaById(id); if (!a) return;
+    active = id;
+    Object.keys(hotEls).forEach(function(k){ hotEls[k].classList.remove("hover"); hotEls[k].classList.toggle("active", k === id); });
+    setDim(a);
+    frame.classList.add("zoomed"); frame.setAttribute("data-active", id);
+    analysis.classList.add("is-zoomed");
+    renderPanel();
+    camera(a.zoom);
+    if (history.replaceState) history.replaceState(null, "", "#" + id);
+    if (window.innerWidth <= 960){
+      var top = frame.getBoundingClientRect().top + window.scrollY - 60;
+      if (Math.abs(window.scrollY - top) > 40) window.scrollTo({ top: top, behavior: "smooth" });
+    }
+  }
+  function close(){
+    if (!active) return;
+    var was = active; active = null;
+    frame.classList.remove("zoomed"); frame.removeAttribute("data-active");
+    analysis.classList.remove("is-zoomed");
+    Object.keys(hotEls).forEach(function(k){ hotEls[k].classList.remove("active"); });
+    camera(OVERVIEW);
+    if (history.replaceState) history.replaceState(null, "", location.pathname + location.search);
+    if (callouts[was] && getComputedStyle(colLeft).display !== "none") callouts[was].focus({ preventScroll: true });
+  }
+  function step(d){
+    if (!active) return;
+    var i = AREAS.indexOf(areaById(active));
+    open(AREAS[(i + d + AREAS.length) % AREAS.length].id);
+  }
+  $("reset").addEventListener("click", close);
+  $("pClose").addEventListener("click", close);
+  $("pPrev").addEventListener("click", function(){ step(-1); });
+  $("pNext").addEventListener("click", function(){ step(1); });
+
+  /* ---------- Kikapoo modal ---------- */
+  var modalBack = $("modalBack"), lastFocus = null;
+  function openModal(){
+    var d = c("kikapoo");
+    $("mTitle").textContent = d.title; fillParas($("mBody"), d.body);
+    lastFocus = document.activeElement;
+    modalBack.classList.add("open"); modalBack.setAttribute("aria-hidden", "false");
+    $("mClose").focus();
+  }
+  function closeModal(){
+    modalBack.classList.remove("open"); modalBack.setAttribute("aria-hidden", "true");
+    if (lastFocus) lastFocus.focus();
+  }
+  $("kikaTab").addEventListener("click", openModal);
+  $("mClose").addEventListener("click", closeModal);
+  modalBack.addEventListener("click", function(e){ if (e.target === modalBack) closeModal(); });
+
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape"){ if (modalBack.classList.contains("open")) closeModal(); else close(); }
+    else if (active && !modalBack.classList.contains("open")){
+      if (e.key === "ArrowRight") step(1);
+      if (e.key === "ArrowLeft") step(-1);
+    }
+  });
+
+  /* ---------- Language ---------- */
+  function applyLang(l){
+    lang = STRINGS[l] ? l : "en";
+    document.documentElement.setAttribute("lang", lang);
+    document.querySelectorAll("[data-i18n]").forEach(function(el){
+      var v = t(el.getAttribute("data-i18n")); if (v) el.textContent = v;
+    });
+    document.querySelectorAll(".langtoggle button").forEach(function(btn){
+      btn.setAttribute("aria-pressed", btn.getAttribute("data-lang") === lang ? "true" : "false");
+    });
+    AREAS.forEach(function(a){
+      var d = c(a.id);
+      callouts[a.id].querySelector(".ct").textContent = d.title;
+      var cl = callouts[a.id].querySelector(".cl");
+      cl.textContent = d.label || ""; cl.classList.toggle("placeholder", /^\s*\[/.test(d.label || ""));
+      callouts[a.id].querySelector(".more").textContent = t("readMore") + " →";
+      topicBtns[a.id].querySelector(".tt").textContent = d.title;
+      badges[a.id].setAttribute("aria-label", d.title);
+      hotEls[a.id].setAttribute("aria-label", d.title);
+    });
+    tBoard.textContent = t("boardCenter"); tScene.textContent = t("sceneCenter");
+    tAbove.textContent = t("spaceAbove"); tBelow.textContent = t("spaceBelow");
+    renderPanel();
+    if (modalBack.classList.contains("open")){ var d = c("kikapoo"); $("mTitle").textContent = d.title; fillParas($("mBody"), d.body); }
+    relayout();
+  }
+  document.querySelectorAll(".langtoggle button").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var l = btn.getAttribute("data-lang"); applyLang(l);
+      try { localStorage.setItem(STORAGE_KEY, l); } catch(e){}
+    });
+  });
+
+  /* ---------- Init ---------- */
+  function relayout(){
+    // compute overview geometry for badges/labels without disturbing the current zoom
+    var saveTransition = layer.style.transition;
+    layer.style.transition = "none";
+    view = camera(OVERVIEW);
+    AREAS.forEach(function(a){
+      var p = overviewPoint(a.anchor[0], a.anchor[1]);
+      badges[a.id].style.left = p[0] + "px"; badges[a.id].style.top = p[1] + "px";
+    });
+    if (active) camera(areaById(active).zoom);
+    layer.offsetHeight; // flush
+    layer.style.transition = saveTransition;
+    var panel = $("panel"), small = getComputedStyle(colLeft).display === "none";
+    if (small && panel.parentNode !== topics.parentNode) topics.parentNode.insertBefore(panel, topics);
+    if (!small && panel.parentNode !== colRight) colRight.appendChild(panel);
+    if (small){ leaders.innerHTML = ""; return; }
+    var aRect = analysis.getBoundingClientRect(), fRect = frame.getBoundingClientRect();
+    ["left", "right"].forEach(function(side){
+      var items = AREAS.filter(function(a){ return a.side === side; })
+        .map(function(a){ return { a: a, y: overviewPoint(a.anchor[0], a.anchor[1])[1] + (fRect.top - aRect.top), h: callouts[a.id].offsetHeight }; })
+        .sort(function(p, q){ return p.y - q.y; });
+      var cursor = 0;
+      items.forEach(function(it){
+        var top = Math.max(cursor, it.y - 24);
+        callouts[it.a.id].style.top = top + "px";
+        cursor = top + it.h + 18;
+      });
+    });
+    leaders.innerHTML = "";
+    AREAS.forEach(function(a){
+      var co = callouts[a.id].getBoundingClientRect();
+      var p = overviewPoint(a.anchor[0], a.anchor[1]);
+      var bx = fRect.left - aRect.left + frame.clientLeft + p[0], by = fRect.top - aRect.top + frame.clientTop + p[1];
+      var sx = (a.side === "left" ? co.right : co.left) - aRect.left;
+      var sy = co.top - aRect.top + 24;
+      var dx = bx - sx, dy = by - sy, len = Math.sqrt(dx*dx + dy*dy) || 1;
+      bx -= dx/len*15; by -= dy/len*15;
+      leaders.appendChild(svgEl("line", { x1: sx, y1: sy, x2: bx, y2: by }));
+      leaders.appendChild(svgEl("circle", { cx: sx, cy: sy, r: 3 }));
+    });
+  }
+
+  window.addEventListener("resize", relayout);
+  $("boardImg").addEventListener("load", relayout);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
+
+  applyLang(lang);
+  var h = (location.hash || "").replace("#", "");
+  if (h === "kikapoo") openModal();
+  else if (areaById(h)){ layer.style.transition = "none"; open(h); layer.offsetHeight; layer.style.transition = ""; }
+})();
+</script>
+</body>
+</html>
