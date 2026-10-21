@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Analyze: Enigma Pitoresco</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700;800;900&family=Libre+Franklin:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #FAFAF7;
+    --paper-dim: #F0EFEA;
+    --ink: #14161A;
+    --ink-soft: #55585F;
+    --line: #DCDBD4;
+    --red: #E8402C;
+    --river: #4E6B3A;
+    --ar: 2.875;
+  }
+  *{ box-sizing: border-box; }
+  html, body{ margin: 0; background: var(--paper); color: var(--ink); }
+  body{ font-family: 'Libre Franklin', system-ui, sans-serif; font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  button{ font-family: inherit; }
+
+  .back-pill{
+    position: fixed; top: 14px; left: 14px; z-index: 9999;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; background: var(--ink); color: var(--paper);
+    text-decoration: none; font-size: 12px; font-weight: 600; letter-spacing: 0.03em;
+    border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,0.25); opacity: 0.85;
+  }
+  .back-pill:hover{ opacity: 1; }
+
+  .wrap{ max-width: 1280px; margin: 0 auto; padding: 0 28px; }
+
+  .langbar{ display: flex; justify-content: flex-end; padding: 18px 0 0; }
+  .langtoggle{ display: inline-flex; align-items: center; gap: 2px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em; }
+  .langtoggle button{ font: inherit; letter-spacing: inherit; background: none; border: none; cursor: pointer; color: var(--ink-soft); padding: 6px 8px; border-radius: 6px; transition: color .15s ease, background .15s ease; }
+  .langtoggle button:hover{ color: var(--ink); }
+  .langtoggle button[aria-pressed="true"]{ color: var(--ink); background: var(--paper-dim); }
+  .langtoggle .sep{ color: var(--line); }
+
+  header.intro{ padding: 22px 0 26px; border-bottom: 2px solid var(--ink); margin-bottom: 20px; }
+  .eyebrow{ font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--river); margin: 0 0 10px; }
+  h1{ font-family: 'Bitter', serif; font-weight: 900; text-transform: uppercase; font-size: clamp(30px, 5vw, 54px); line-height: 1.02; letter-spacing: -0.01em; margin: 0 0 12px; }
+  .intro-row{ display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: flex-end; justify-content: space-between; }
+  .hint{ margin: 0; color: var(--ink-soft); font-size: 15px; max-width: 620px; }
+  .intro-actions{ display: flex; flex-wrap: wrap; gap: 10px; }
+  .play-link, .about-btn{
+    display: inline-flex; align-items: center; gap: 8px; text-decoration: none; cursor: pointer;
+    font-weight: 700; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 12px 18px; border-radius: 2px;
+  }
+  .play-link{ color: var(--paper); background: var(--river); border: 1.5px solid var(--river); }
+  .about-btn{ color: var(--river); background: transparent; border: 1.5px solid var(--river); }
+  .about-btn:hover{ background: var(--river); color: var(--paper); }
+  .play-link:hover{ transform: translateX(2px); }
+  .about-btn .plus{ display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--river); color: var(--paper); font-size: 14px; line-height: 1; }
+  .about-btn:hover .plus{ background: var(--paper); color: var(--river); }
+
+  /* ---------- Page tabs ---------- */
+  .pagetabs{ display: flex; gap: 0; margin: 0 0 -2px; position: relative; z-index: 5; }
+  .pagetabs button{
+    flex: 1 1 0; text-align: left; cursor: pointer;
+    background: var(--paper-dim); color: var(--ink-soft); border: 2px solid var(--ink); border-bottom: none;
+    padding: 9px 14px 8px; margin-right: -2px;
+    font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; line-height: 1.3;
+  }
+  .pagetabs button:first-child{ border-radius: 6px 0 0 0; }
+  .pagetabs button:last-child{ border-radius: 0 6px 0 0; margin-right: 0; }
+  .pagetabs button b{ display: block; font-family: 'Bitter', serif; font-size: 15px; letter-spacing: .01em; color: var(--ink); }
+  .pagetabs button[aria-selected="true"]{ background: var(--river); color: rgba(255,255,255,.8); }
+  .pagetabs button[aria-selected="true"] b{ color: #fff; }
+
+  /* ---------- Analysis layout ---------- */
+  .analysis{
+    position: relative; display: grid;
+    grid-template-columns: minmax(200px, 1fr) auto minmax(200px, 1fr);
+    gap: 0 36px; align-items: start; padding: 40px 0 70px;
+  }
+  .col{ position: relative; align-self: stretch; }
+  .leaders{ position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; z-index: 3; transition: opacity .3s ease; }
+  .leaders line{ stroke: var(--ink); stroke-width: 1.25; }
+  .leaders circle{ fill: var(--ink); }
+
+  .callout{
+    position: absolute; left: 0; right: 0; display: block; width: 100%; text-align: left;
+    background: #fff; border: 1.5px solid var(--ink); border-radius: 2px;
+    padding: 11px 13px 12px; cursor: pointer; z-index: 2; box-shadow: 3px 3px 0 var(--ink);
+    transition: transform .15s ease, box-shadow .15s ease, opacity .3s ease; color: var(--ink);
+  }
+  .callout[hidden]{ display: none; }
+  .callout:hover, .callout:focus-visible{ transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--river); outline: none; }
+  .callout .num{ display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--red); color: #fff; font-size: 11px; font-weight: 800; margin-right: 8px; vertical-align: 1px; }
+  .callout .ct{ font-family: 'Bitter', serif; font-weight: 800; font-size: 15.5px; text-transform: uppercase; letter-spacing: 0.01em; }
+  .callout .cl{ display: block; margin-top: 5px; font-size: 13px; line-height: 1.45; color: var(--ink-soft); }
+  .callout .more{ display: block; margin-top: 7px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--river); }
+
+  .stage-col{ position: relative; z-index: 2; min-width: 0; }
+  .frame{
+    position: relative;
+    width: min(calc((100vw - 56px) * 0.5), calc(78vh * var(--ar)), 640px);
+    aspect-ratio: var(--ar); overflow: hidden; background: #e4e2db;
+    border: 2px solid var(--ink); box-shadow: 6px 6px 0 var(--river); touch-action: manipulation;
+  }
+  .layer{ position: absolute; left: 0; top: 0; transform-origin: 0 0; transition: transform .75s cubic-bezier(.65,.05,.25,1); will-change: transform; }
+  .layer[hidden]{ display: none; }
+  .layer img{ display: block; width: 100%; height: 100%; user-select: none; -webkit-user-drag: none; }
+  .layer svg{ position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+
+  .hot{ fill: rgba(255,255,255,0); stroke: rgba(232,64,44,0); stroke-width: 2; vector-effect: non-scaling-stroke; cursor: pointer; transition: fill .2s ease, stroke .2s ease; }
+  .hot:hover, .hot.hover{ fill: rgba(232,64,44,0.10); stroke: rgba(232,64,44,0.9); stroke-dasharray: 5 4; }
+  .zoomed .hot{ pointer-events: none; }
+  .zoomed .hot.active{ stroke: var(--red); stroke-width: 3; stroke-dasharray: none; fill: none; }
+  .dim{ fill: rgba(20,22,26,0.55); fill-rule: evenodd; opacity: 0; transition: opacity .5s ease .25s; pointer-events: none; }
+  .zoomed .dim{ opacity: 1; }
+
+  .badge{
+    position: absolute; z-index: 3; width: 28px; height: 28px; margin: -14px 0 0 -14px;
+    border-radius: 50%; border: 2px solid #fff; background: var(--red); color: #fff;
+    font-weight: 800; font-size: 13px; cursor: pointer; display: grid; place-items: center; padding: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,.35); transition: opacity .25s ease, transform .2s ease;
+  }
+  .badge[hidden]{ display: none; }
+  .badge::after{ content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid var(--red); animation: pulse 2.4s ease-out infinite; opacity: 0; }
+  @keyframes pulse{ 0%{ transform: scale(.7); opacity: .8; } 80%,100%{ transform: scale(1.5); opacity: 0; } }
+  .badge:hover{ transform: scale(1.12); }
+  .zoomed .badge{ opacity: 0; pointer-events: none; }
+
+  .reset{
+    position: absolute; z-index: 4; top: 12px; left: 12px; display: inline-flex; align-items: center; gap: 6px;
+    background: var(--paper); color: var(--ink); border: 1.5px solid var(--ink); border-radius: 999px;
+    padding: 7px 13px; font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; cursor: pointer;
+    opacity: 0; pointer-events: none; transform: translateY(-6px); transition: opacity .25s ease, transform .25s ease;
+  }
+  .zoomed .reset{ opacity: 1; pointer-events: auto; transform: none; transition-delay: .4s; }
+
+  .panel{
+    position: absolute; z-index: 6; top: 0; left: 0; right: 0; background: #fff; border: 2px solid var(--ink); box-shadow: 6px 6px 0 var(--ink);
+    padding: 22px 22px 18px; opacity: 0; transform: translateX(14px); pointer-events: none;
+    transition: opacity .3s ease, transform .35s ease; max-height: 100%; overflow: auto;
+  }
+  .is-zoomed .panel{ opacity: 1; transform: none; pointer-events: auto; transition-delay: .35s; }
+  .panel .p-top{ display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .panel .p-num{ font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--red); }
+  .panel .p-close{ background: none; border: none; font-size: 22px; line-height: 1; cursor: pointer; color: var(--ink-soft); padding: 2px 4px; }
+  .panel .p-close:hover{ color: var(--ink); }
+  .panel h2{ font-family: 'Bitter', serif; font-weight: 800; font-size: 24px; line-height: 1.1; text-transform: uppercase; margin: 0 0 14px; }
+  .panel .p-body p{ margin: 0 0 12px; font-size: 15px; line-height: 1.62; }
+  .p-body p.quote, .m-body p.quote{ font-family: Georgia, 'Times New Roman', serif; font-style: italic; padding-left: 12px; border-left: 3px solid var(--river); color: var(--ink); }
+  .panel .p-nav{ display: flex; justify-content: space-between; gap: 8px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .panel .p-nav button{ background: none; border: 1.5px solid var(--ink); border-radius: 2px; padding: 8px 12px; cursor: pointer; font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
+  .panel .p-nav button:hover{ background: var(--ink); color: var(--paper); }
+
+  .is-zoomed .callout, .is-zoomed .leaders{ opacity: 0; pointer-events: none; }
+
+  .credit{ margin: 0; font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; max-width: 720px; }
+  .topics{ display: none; }
+
+  .modal-back{ position: fixed; inset: 0; z-index: 10000; background: rgba(20,22,26,.6); display: flex; align-items: center; justify-content: center; padding: 24px; opacity: 0; pointer-events: none; transition: opacity .25s ease; }
+  .modal-back.open{ opacity: 1; pointer-events: auto; }
+  .modal{ position: relative; width: min(820px, 100%); max-height: calc(100vh - 48px); overflow: auto; background: var(--paper); border: 2px solid var(--ink); box-shadow: 8px 8px 0 var(--river); padding: 42px clamp(22px, 5vw, 56px) 40px; transform: translateY(14px) scale(.98); transition: transform .3s ease; }
+  .modal-back.open .modal{ transform: none; }
+  .modal .m-close{ position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 28px; line-height: 1; cursor: pointer; color: var(--ink-soft); }
+  .modal .m-close:hover{ color: var(--ink); }
+  .modal h2{ font-family: 'Bitter', serif; font-weight: 900; text-transform: uppercase; font-size: clamp(28px, 4vw, 42px); line-height: 1.05; margin: 0 0 22px; padding-bottom: 18px; border-bottom: 2px solid var(--ink); }
+  .modal .m-body p{ font-size: 17px; line-height: 1.7; margin: 0 0 16px; }
+
+  /* Landscape scans use the stacked layout at every width */
+  .analysis.wide{ grid-template-columns: minmax(0, 1fr); padding: 0 0 40px; }
+  .analysis.wide .col.side, .analysis.wide .leaders{ display: none; }
+  .analysis.wide .stage-col{ display: flex; flex-direction: column; align-items: center; }
+  .analysis.wide .pagetabs, .analysis.wide .frame{ width: min(100%, calc(62vh * var(--ar)), 1100px); }
+  .analysis.wide .panel{ position: relative; display: none; margin-top: 18px; width: 100%; max-width: 1100px; transform: none; max-height: none; }
+  .analysis.wide.is-zoomed .panel{ display: block; }
+  .analysis.wide .topics{ display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; width: 100%; max-width: 1100px; margin-top: 24px; }
+  .analysis.wide.is-zoomed .topics{ display: none; }
+  .analysis.wide .topics button{ display: flex; align-items: flex-start; gap: 10px; text-align: left; width: 100%; background: #fff; border: 1.5px solid var(--ink); border-radius: 2px; padding: 12px 14px; cursor: pointer; font-family: 'Bitter', serif; font-weight: 800; font-size: 15px; text-transform: uppercase; color: var(--ink); }
+  .analysis.wide .topics button[hidden]{ display: none; }
+  .analysis.wide .topics .num{ display: inline-grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--red); color: #fff; font-family: 'Libre Franklin', sans-serif; font-size: 11px; font-weight: 800; }
+  .topics .tl{ display: block; font-family: 'Libre Franklin', sans-serif; font-weight: 400; font-size: 12.5px; text-transform: none; color: var(--ink-soft); margin-top: 3px; line-height: 1.4; }
+
+  @media (max-width: 960px){
+    .analysis{ grid-template-columns: minmax(0, 1fr); padding: 0 0 40px; }
+    .col.side, .leaders{ display: none; }
+    .stage-col{ display: flex; flex-direction: column; align-items: center; }
+    .pagetabs, .frame{ width: min(100%, calc(74vh * var(--ar))); }
+    .pagetabs{ width: min(100%, calc(74vh * var(--ar)) ); }
+    .panel{ position: relative; display: none; margin-top: 18px; width: 100%; transform: none; max-height: none; }
+    .is-zoomed .panel{ display: block; }
+    .topics{ display: grid; gap: 10px; width: 100%; margin-top: 24px; }
+    .is-zoomed .topics{ display: none; }
+    .topics button{ display: flex; align-items: center; gap: 10px; text-align: left; width: 100%; background: #fff; border: 1.5px solid var(--ink); border-radius: 2px; padding: 12px 14px; cursor: pointer; font-family: 'Bitter', serif; font-weight: 800; font-size: 15px; text-transform: uppercase; color: var(--ink); }
+    .topics button[hidden]{ display: none; }
+    .topics .num{ display: inline-grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--red); color: #fff; font-family: 'Libre Franklin', sans-serif; font-size: 11px; font-weight: 800; }
+    .credit{ margin-top: 26px; }
+  }
+  @media (max-width: 600px){
+    .wrap{ padding: 0 16px; }
+    .pagetabs button{ padding: 8px 10px 7px; font-size: 9.5px; }
+    .pagetabs button b{ font-size: 13.5px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .layer, .panel, .callout, .badge::after{ transition: none !important; animation: none !important; }
+  }
+</style>
+  <script data-goatcounter="https://race-games.goatcounter.com/count"
+          async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+
+<a class="back-pill" href="../index.html">&larr;&nbsp;RACE GAMES</a>
+
+<div class="wrap">
+  <div class="langbar">
+    <div class="langtoggle" role="group" aria-label="Language">
+      <button type="button" data-lang="en" aria-pressed="true">EN</button>
+      <span class="sep">/</span>
+      <button type="button" data-lang="es" aria-pressed="false">ES</button>
+      <span class="sep">/</span>
+      <button type="button" data-lang="pt" aria-pressed="false">PT</button>
+    </div>
+  </div>
+
+  <header class="intro">
+    <p class="eyebrow" data-i18n="eyebrow">Let's analyze the game</p>
+    <h1>Enigma Pitoresco</h1>
+    <div class="intro-row">
+      <p class="hint" data-i18n="hint">Switch between the enigma, the full page and the answer page, then click a numbered area to zoom in and read about it.</p>
+      <div class="intro-actions">
+        <button type="button" class="about-btn" id="aboutBtn"><span data-i18n="aboutBtn">What was Illustração Brazileira?</span> <span class="plus">+</span></button>
+        <a class="play-link" href="enigma-pitoresco.html"><span data-i18n="playLink">Play the game</span> <span>→</span></a>
+      </div>
+    </div>
+  </header>
+
+  <section class="analysis" id="analysis">
+    <svg class="leaders" id="leaders" aria-hidden="true"></svg>
+
+    <div class="col side" id="colLeft"></div>
+
+    <div class="stage-col">
+      <div class="pagetabs" role="tablist" id="pagetabs">
+        <button type="button" role="tab" data-page="enigma" aria-selected="true"><b data-i18n="tabEnigma">The enigma</b><span data-i18n="tabEnigmaDate">Lithograph, 1854</span></button>
+        <button type="button" role="tab" data-page="page" aria-selected="false"><b data-i18n="tabPage">The full page</b><span data-i18n="tabPageDate">Illustração Brazileira, 1854</span></button>
+        <button type="button" role="tab" data-page="answer" aria-selected="false"><b data-i18n="tabAnswer">The answer</b><span data-i18n="tabAnswerDate">Following issue, p. 72</span></button>
+      </div>
+      <div class="frame" id="frame">
+        <div class="layer" id="layer-enigma">
+          <img src="../images/enigma-pitoresco-recorte.jpg" alt="The Enigma pitoresco: three rows of small engravings, letters and musical notes, among them Mercury, a dog, a harbor city, a king, a sailing ship, a seated Black man beside a minus sign and a carnation, a millstone, a saw, a spinning wheel, a man in a top hat, a goat and Cupid." id="img-enigma">
+          <svg id="overlay-enigma" viewBox="0 0 1400 1069" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="layer" id="layer-page" hidden>
+          <img src="../images/enigma-pitoresco-pagina.jpg" alt="The full page of Illustração Brazileira: the masthead, the heading Enigma pitoresco with its dedication, the picture rebus, and the Charada pitoresca at the bottom." id="img-page">
+          <svg id="overlay-page" viewBox="0 0 1100 1657" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="layer" id="layer-answer" hidden>
+          <img src="../images/enigma-pitoresco-pagina-72.jpg" alt="Page 72 of the following issue: the end of an article on gas lighting, two verse charadas, and the printed solutions to the enigma and the charada." id="img-answer">
+          <svg id="overlay-answer" viewBox="0 0 1100 1656" preserveAspectRatio="none"></svg>
+        </div>
+        <button type="button" class="reset" id="reset">← <span data-i18n="reset">Full view</span></button>
+      </div>
+
+      <div class="topics" id="topics"></div>
+    </div>
+
+    <div class="col side" id="colRight">
+      <aside class="panel" id="panel" aria-live="polite">
+        <div class="p-top">
+          <span class="p-num" id="pNum"></span>
+          <button type="button" class="p-close" id="pClose" aria-label="Close">×</button>
+        </div>
+        <h2 id="pTitle"></h2>
+        <div class="p-body" id="pBody"></div>
+        <div class="p-nav">
+          <button type="button" id="pPrev">← <span data-i18n="prev">Previous</span></button>
+          <button type="button" id="pNext"><span data-i18n="next">Next</span> →</button>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <p class="credit" data-i18n="credit"></p>
+</div>
+
+<div class="modal-back" id="modalBack" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <button type="button" class="m-close" id="mClose" aria-label="Close">×</button>
+    <p class="eyebrow" data-i18n="eyebrow">Let's analyze the game</p>
+    <h2 id="mTitle"></h2>
+    <div class="m-body" id="mBody"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  /* =====================================================================
+     ✏️  EDIT YOUR TEXT HERE
+     ---------------------------------------------------------------------
+     Each area has a short "label" (shown in the box beside the image)
+     and a "body" (shown when the area is clicked). "body" is a list of
+     paragraphs. A paragraph that starts with ">" is styled as a quotation
+     from the source. One that starts with "[" is styled as a placeholder.
+     ===================================================================== */
+  var CONTENT = {
+    rules: {
+      en: { title: "How to read an enigma pitoresco", label: "Pictures, letters, notes and small signs spell out a sentence, one sound at a time.",
+            body: ["An enigma pitoresco is a rebus. Each picture stands for a word, and only the sound of that word matters. Read left to right, row by row, the sounds spell out a hidden sentence.",
+                   "Small printed signs tell the solver how to change a sound. Beside the dog, “−õ +m” turns cão into cam. A minus sign subtracts one picture's name from another's, and a tilde above the ship turns nau into não. Letters and musical notes (fá, ré, mi) fill in the rest.",
+                   "Like the charada printed below it, the format looks like a neutral test of wit. But every picture has exactly one acceptable name, and the solver has to know it. The puzzle quietly tests whether you share its maker's way of seeing."] },
+      es: { title: "Cómo leer un enigma pitoresco", label: "Imágenes, letras, notas y pequeños signos forman una frase, sonido a sonido.",
+            body: ["Un enigma pitoresco es un jeroglífico. Cada imagen representa una palabra, y solo importa su sonido. Leídos de izquierda a derecha, fila por fila, los sonidos forman una frase oculta.",
+                   "Unos pequeños signos impresos indican cómo cambiar un sonido. Junto al perro, «−õ +m» convierte cão en cam. Un signo de menos resta el nombre de una imagen al de otra, y una tilde sobre el barco convierte nau en não. Letras y notas musicales (fá, ré, mi) completan el resto.",
+                   "Como la charada impresa debajo, el formato parece una prueba neutral de ingenio. Pero cada imagen tiene un único nombre aceptable, y quien resuelve tiene que conocerlo. El acertijo pone a prueba, sin decirlo, si compartes la manera de ver de su autor."] },
+      pt: { title: "Como ler um enigma pitoresco", label: "Imagens, letras, notas e pequenos sinais formam uma frase, som a som.",
+            body: ["O enigma pitoresco é um rébus. Cada imagem representa uma palavra, e só o som dela importa. Lidos da esquerda para a direita, linha por linha, os sons formam uma frase escondida.",
+                   "Pequenos sinais impressos dizem como mudar um som. Ao lado do cão, “−õ +m” transforma cão em cam. Um sinal de menos subtrai o nome de uma imagem do de outra, e o til sobre o navio transforma nau em não. Letras e notas musicais (fá, ré, mi) completam o resto.",
+                   "Como a charada impressa logo abaixo, o formato parece um teste neutro de engenho. Mas cada imagem tem um único nome aceitável, e quem resolve precisa conhecê-lo. O enigma testa, sem dizer, se você partilha o modo de ver do autor."] }
+    },
+    escravo: {
+      en: { title: "Escravo minus cravo", label: "A seated Black man, a minus sign and a carnation: the only way to get ES.",
+            body: ["In the second row, a Black man sits on a stump with his head lowered onto his hand. A minus sign and a carnation follow him. The sentence needs the syllable ES, and there is only one way to get it: escravo (slave) minus cravo (carnation).",
+                   "Nothing in the drawing shows enslavement: no chains, no overseer, no work underway. The king needs a crown, a scepter and an ermine robe to read as rei. This man needs only his skin. Other names fail the arithmetic, since homem, negro and africano contain no cravo to subtract. The puzzle counts on every reader turning Blackness into a legal status, at once and without doubt.",
+                   "In 1854 that assumption described the city outside the reader's window. At the 1849 census, close to two in five residents of Rio de Janeiro were enslaved. The puzzle treats that fact as common knowledge, usable as a syllable.",
+                   "Then the puzzle cuts him down. A person becomes a word, the word loses most of its letters, and what is left, ES, is a meaningless fragment inside a love note."] },
+      es: { title: "Escravo menos cravo", label: "Un hombre negro sentado, un signo de menos y un clavel: la única manera de obtener ES.",
+            body: ["En la segunda fila, un hombre negro está sentado en un tocón con la cabeza apoyada en la mano. Lo siguen un signo de menos y un clavel. La frase necesita la sílaba ES, y solo hay una manera de obtenerla: escravo (esclavo) menos cravo (clavel).",
+                   "Nada en el dibujo muestra la esclavitud: ni cadenas, ni capataz, ni trabajo en curso. El rey necesita corona, cetro y manto de armiño para leerse como rei. A este hombre le basta su piel. Otros nombres no cuadran con la cuenta, porque homem, negro y africano no contienen cravo que restar. El acertijo cuenta con que todo lector convierta la negritud en una condición legal, de inmediato y sin dudar.",
+                   "En 1854 esa suposición describía la ciudad que el lector tenía delante. En el censo de 1849, casi dos de cada cinco habitantes de Río de Janeiro eran esclavizados. El acertijo trata ese hecho como un saber común, utilizable como sílaba.",
+                   "Después, el acertijo lo recorta. Una persona se convierte en palabra, la palabra pierde casi todas sus letras y lo que queda, ES, es un fragmento sin sentido dentro de una nota de amor."] },
+      pt: { title: "Escravo menos cravo", label: "Um homem negro sentado, um sinal de menos e um cravo: o único jeito de obter ES.",
+            body: ["Na segunda linha, um homem negro está sentado num toco, com a cabeça apoiada na mão. Seguem-no um sinal de menos e um cravo. A frase precisa da sílaba ES, e só há um jeito de obtê-la: escravo menos cravo.",
+                   "Nada no desenho mostra a escravidão: nem correntes, nem feitor, nem trabalho em curso. O rei precisa de coroa, cetro e manto de arminho para ser lido como rei. A este homem basta a pele. Outros nomes não fecham a conta, porque homem, negro e africano não contêm cravo para subtrair. O enigma conta que todo leitor transforme a cor da pele numa condição jurídica, na hora e sem dúvida.",
+                   "Em 1854, essa suposição descrevia a cidade diante do leitor. No censo de 1849, quase dois em cada cinco moradores do Rio de Janeiro eram escravizados. O enigma trata esse fato como saber comum, utilizável como sílaba.",
+                   "Depois, o enigma o corta. Uma pessoa vira palavra, a palavra perde quase todas as letras, e o que sobra, ES, é um fragmento sem sentido dentro de um bilhete de amor."] }
+    },
+    nau: {
+      en: { title: "The ship beside him", label: "A tall sailing ship sits next to the enslaved man. Readers in 1854 knew what ships like it had carried.",
+            body: ["The three-masted ship gives nau, an old word for a great ship, and the tilde above it turns the sound into não, “not.” It sits directly beside the enslaved man.",
+                   "Brazil received more captive Africans than any other country in the Americas, close to five million, carried on ships like this one. The Atlantic slave trade was banned by law in 1831 but went on illegally on a vast scale until the Eusébio de Queirós Law of 1850 and British naval pressure finally choked it off, four years before this page was printed.",
+                   "The puzzle-maker probably did not plan the pairing; the ship is there for its sound. But it shows how the imagery of slavery ran through the ordinary visual stock of an illustrated magazine."] },
+      es: { title: "El barco a su lado", label: "Un gran velero está junto al hombre esclavizado. Los lectores de 1854 sabían lo que barcos así habían transportado.",
+            body: ["El barco de tres mástiles da nau, palabra antigua para un gran navío, y la tilde de encima convierte el sonido en não, «no». Está justo al lado del hombre esclavizado.",
+                   "Brasil recibió más africanos cautivos que ningún otro país de América, cerca de cinco millones, transportados en barcos como este. La trata atlántica se prohibió por ley en 1831, pero siguió de forma ilegal y a gran escala hasta que la Ley Eusébio de Queirós de 1850 y la presión naval británica la ahogaron, cuatro años antes de que se imprimiera esta página.",
+                   "Probablemente el autor no buscó esa vecindad; el barco está ahí por su sonido. Pero muestra cómo las imágenes de la esclavitud recorrían el repertorio visual corriente de una revista ilustrada."] },
+      pt: { title: "O navio ao lado dele", label: "Um grande navio a vela está junto ao homem escravizado. Os leitores de 1854 sabiam o que navios assim tinham transportado.",
+            body: ["O navio de três mastros dá nau, nome antigo de um grande navio, e o til acima transforma o som em não. Ele está logo ao lado do homem escravizado.",
+                   "O Brasil recebeu mais africanos cativos do que qualquer outro país das Américas, perto de cinco milhões, trazidos em navios como este. O tráfico atlântico foi proibido por lei em 1831, mas continuou ilegalmente e em enorme escala até que a Lei Eusébio de Queirós, de 1850, e a pressão naval britânica o sufocaram, quatro anos antes da impressão desta página.",
+                   "Provavelmente o autor não planejou essa vizinhança; o navio está ali pelo som. Mas ela mostra como as imagens da escravidão atravessavam o repertório visual comum de uma revista ilustrada."] }
+    },
+    tools: {
+      en: { title: "Tools of work", label: "A millstone, a frame saw and a spinning wheel: tools of labor, with no one using them.",
+            body: ["Several of the enigma's objects are tools: a millstone (mó), a frame saw (serra) and, in the third row, a spinning wheel (roca). They were chosen for their sounds, but together they make a small inventory of manual work.",
+                   "In Brazil in the 1850s, grinding, sawing and spinning were overwhelmingly the work of enslaved people. In the puzzle the tools appear with no one using them. The labor is present as objects and syllables; the people who did it appear once, cut down to ES."] },
+      es: { title: "Herramientas de trabajo", label: "Una muela de molino, una sierra y una rueca: herramientas de trabajo que nadie usa.",
+            body: ["Varios objetos del enigma son herramientas: una muela de molino (mó), una sierra de bastidor (serra) y, en la tercera fila, una rueca (roca). Se eligieron por su sonido, pero juntas forman un pequeño inventario del trabajo manual.",
+                   "En el Brasil de la década de 1850, moler, serrar e hilar eran sobre todo tareas de personas esclavizadas. En el acertijo las herramientas aparecen sin nadie que las use. El trabajo está presente como objetos y sílabas; quienes lo hacían aparecen una sola vez, reducidos a ES."] },
+      pt: { title: "Ferramentas de trabalho", label: "Uma mó, uma serra e uma roca: ferramentas de trabalho que ninguém usa.",
+            body: ["Vários objetos do enigma são ferramentas: uma mó, uma serra de quadro e, na terceira linha, uma roca. Foram escolhidas pelo som, mas juntas formam um pequeno inventário do trabalho manual.",
+                   "No Brasil da década de 1850, moer, serrar e fiar eram sobretudo tarefas de pessoas escravizadas. No enigma, as ferramentas aparecem sem ninguém que as use. O trabalho está presente como objetos e sílabas; quem o fazia aparece uma única vez, reduzido a ES."] }
+    },
+    roer: {
+      en: { title: "Who stands for what", label: "A white man in a top hat stands for an action. The Black man stands for a condition.",
+            body: ["Mercury stands for the knot on his staff, Cupid for love, the crowned man for kingship. The man in the top hat, seated by a tree with his hand at his mouth, stands for an everyday action, probably roer, to gnaw or bite one's nails.",
+                   "Compare him with the seated Black man in the row above. Both are drawn alone, seated and pensive. The white man gives a verb, something anyone might do. The Black man gives a status, something he is assumed to be. The puzzle's picture vocabulary reproduces the social order of the city that read it.",
+                   "The reading of the top-hat figure is a best guess. The printed solution confirms the sound RO but not the word behind it."] },
+      es: { title: "Quién representa qué", label: "Un hombre blanco con sombrero de copa representa una acción. El hombre negro, una condición.",
+            body: ["Mercurio representa el nudo de su bastón, Cupido el amor, el hombre coronado la realeza. El hombre del sombrero de copa, sentado junto a un árbol con la mano en la boca, representa una acción cotidiana, probablemente roer, morderse las uñas.",
+                   "Compáralo con el hombre negro sentado en la fila de arriba. Los dos están dibujados solos, sentados y pensativos. El hombre blanco da un verbo, algo que cualquiera podría hacer. El hombre negro da una condición, algo que se supone que es. El vocabulario de imágenes del acertijo reproduce el orden social de la ciudad que lo leía.",
+                   "La lectura de la figura del sombrero de copa es una hipótesis. La solución impresa confirma el sonido RO, pero no la palabra que hay detrás."] },
+      pt: { title: "Quem representa o quê", label: "Um homem branco de cartola representa uma ação. O homem negro, uma condição.",
+            body: ["Mercúrio representa o nó do seu bastão, Cupido o amor, o homem coroado a realeza. O homem de cartola, sentado junto a uma árvore com a mão na boca, representa uma ação cotidiana, provavelmente roer as unhas.",
+                   "Compare-o com o homem negro sentado na linha de cima. Os dois estão desenhados sozinhos, sentados e pensativos. O homem branco dá um verbo, algo que qualquer um poderia fazer. O homem negro dá uma condição, algo que se supõe que ele seja. O vocabulário de imagens do enigma reproduz a ordem social da cidade que o lia.",
+                   "A leitura da figura de cartola é uma hipótese. A decifração impressa confirma o som RO, mas não a palavra por trás dele."] }
+    },
+    amor: {
+      en: { title: "A love note in the campo", label: "The sentence ends with Cupid: “dear Ramiro, my love.”",
+            body: ["Solved, the enigma reads:",
+                   "> No campo entre flores mil farei não esmorecer, Ramiro caro, o meo amor.",
+                   "A woman promises her beloved Ramiro that, in the countryside among a thousand flowers, she will not lose heart. Cupid, called Amor by poets writing in Portuguese, gives the last word.",
+                   "The campo of the sentence is a pastoral fantasy of flowers and longing. The real Brazilian countryside of 1854 was a world of coffee and sugar plantations, worked overwhelmingly by enslaved people. The puzzle builds its romance from that world's pieces, including one syllable taken from an enslaved man, and the sentence itself never mentions him."] },
+      es: { title: "Una nota de amor en el campo", label: "La frase termina con Cupido: «querido Ramiro, mi amor».",
+            body: ["Resuelto, el enigma dice:",
+                   "> No campo entre flores mil farei não esmorecer, Ramiro caro, o meo amor.",
+                   "Una mujer le promete a su amado Ramiro que, en el campo, entre mil flores, no se desanimará. Cupido, a quien los poetas en portugués llamaban Amor, da la última palabra.",
+                   "El campo de la frase es una fantasía pastoral de flores y añoranza. El campo brasileño real de 1854 era un mundo de plantaciones de café y azúcar, trabajado sobre todo por personas esclavizadas. El acertijo arma su romance con piezas de ese mundo, incluida una sílaba tomada de un hombre esclavizado, y la frase nunca lo menciona."] },
+      pt: { title: "Um bilhete de amor no campo", label: "A frase termina com Cupido: “Ramiro caro, o meo amor”.",
+            body: ["Decifrado, o enigma diz:",
+                   "> No campo entre flores mil farei não esmorecer, Ramiro caro, o meo amor.",
+                   "Uma mulher promete ao amado Ramiro que, no campo, entre mil flores, não vai esmorecer. Cupido, que os poetas chamavam de Amor, dá a última palavra.",
+                   "O campo da frase é uma fantasia pastoral de flores e saudade. O campo brasileiro real de 1854 era um mundo de fazendas de café e de engenhos de açúcar, trabalhado sobretudo por pessoas escravizadas. O enigma monta seu romance com peças desse mundo, inclusive uma sílaba tirada de um homem escravizado, e a frase nunca fala dele."] }
+    },
+    dedication: {
+      en: { title: "Offered to a friend", label: "João José de Moraes Tavares dedicated the enigma to the magazine's co-editor.",
+            body: ["Under the heading, the puzzle is offered “to my friend the Most Illustrious Dr. Ernesto de S. Oliveira Coutinho” by João José de Moraes Tavares. Coutinho was the magazine's co-editor.",
+                   "> Offerecido ao meu amigo o Ill.mo Sr. Dr. Ernesto de S. Oliv.a Coutinho por João José de Moraes Tavares",
+                   "The dedication shows who the puzzle was made for: educated, titled men writing for one another and for the literate, mostly well-off readers of a Rio magazine. The solver the enigma imagines sees enslaved people from the outside, as a category with a name. Nothing in it imagines an enslaved person, or a free Black Brazilian, as the one holding the magazine."] },
+      es: { title: "Ofrecido a un amigo", label: "João José de Moraes Tavares dedicó el enigma al coeditor de la revista.",
+            body: ["Bajo el título, João José de Moraes Tavares ofrece el acertijo «a mi amigo el Ilustrísimo Dr. Ernesto de S. Oliveira Coutinho». Coutinho era el coeditor de la revista.",
+                   "> Offerecido ao meu amigo o Ill.mo Sr. Dr. Ernesto de S. Oliv.a Coutinho por João José de Moraes Tavares",
+                   "La dedicatoria muestra para quién se hizo el acertijo: hombres instruidos y con títulos que escribían unos para otros y para los lectores alfabetizados, en su mayoría acomodados, de una revista de Río. Quien resuelve, tal como lo imagina el enigma, ve a las personas esclavizadas desde fuera, como una categoría con nombre. Nada en él imagina a una persona esclavizada, o a un brasileño negro libre, como quien sostiene la revista."] },
+      pt: { title: "Oferecido a um amigo", label: "João José de Moraes Tavares dedicou o enigma ao coeditor da revista.",
+            body: ["Sob o título, João José de Moraes Tavares oferece o enigma “ao meu amigo o Ilustríssimo Sr. Dr. Ernesto de S. Oliveira Coutinho”. Coutinho era o coeditor da revista.",
+                   "> Offerecido ao meu amigo o Ill.mo Sr. Dr. Ernesto de S. Oliv.a Coutinho por João José de Moraes Tavares",
+                   "A dedicatória mostra para quem o enigma foi feito: homens instruídos e titulados, escrevendo uns para os outros e para os leitores letrados, em geral abastados, de uma revista carioca. O leitor que o enigma imagina vê as pessoas escravizadas de fora, como uma categoria com nome. Nada nele imagina uma pessoa escravizada, ou um brasileiro negro livre, como quem segura a revista."] }
+    },
+    charada: {
+      en: { title: "Two puzzles, one page", label: "Below the enigma, the charada pitoresca adds up to brazileira.",
+            body: ["The enigma shares its page with the charada pitoresca, whose answer is brazileira: an idealized Indigenous man plus cultivated land equals a white, Europeanized Brazilian woman.",
+                   "Read together, the two puzzles divide the work. The charada defines who the Brazilian is, and Black Brazilians do not appear in it at all. The enigma is where a Black man does appear, and only as escravo, a syllable in someone else's love note. Between them, they draw the boundaries of the nation the magazine imagined."] },
+      es: { title: "Dos acertijos, una página", label: "Debajo del enigma, la charada pitoresca suma brazileira.",
+            body: ["El enigma comparte página con la charada pitoresca, cuya respuesta es brazileira: un hombre indígena idealizado más una tierra cultivada da como resultado una mujer brasileña blanca y europeizada.",
+                   "Leídos juntos, los dos acertijos se reparten el trabajo. La charada define quién es brasileño, y los brasileños negros no aparecen en ella. El enigma es donde sí aparece un hombre negro, y solo como escravo, una sílaba en la nota de amor de otra persona. Entre los dos trazan los límites de la nación que imaginaba la revista."] },
+      pt: { title: "Dois enigmas, uma página", label: "Abaixo do enigma, a charada pitoresca soma brazileira.",
+            body: ["O enigma divide a página com a charada pitoresca, cuja resposta é brazileira: um homem indígena idealizado mais a terra cultivada resulta numa mulher brasileira branca e europeizada.",
+                   "Lidos juntos, os dois enigmas dividem o trabalho. A charada define quem é brasileiro, e os brasileiros negros não aparecem nela. O enigma é onde um homem negro aparece, e só como escravo, uma sílaba no bilhete de amor de outra pessoa. Juntos, eles traçam os limites da nação que a revista imaginava."] }
+    },
+    solution: {
+      en: { title: "The answer, one issue later", label: "The magazine printed the solution in its following number, with two slips.",
+            body: ["The solution appeared near the bottom of page 72 of the following issue, beside the answer to the charada, Brasileira.",
+                   "> No campo entre flores mil farei no esmorrecer, Ramiro caro, o meo amor.",
+                   "Even the printed answer has slips. It says no (in) where the tilde over the ship asks for não (not), and it doubles the r in esmorecer.",
+                   "The magazine gave only the sentence, not the reasoning. Readers worked out for themselves how each picture became a sound, which is why a few readings, such as Mercury as nó, are still uncertain today."] },
+      es: { title: "La respuesta, un número después", label: "La revista imprimió la solución en el número siguiente, con dos erratas.",
+            body: ["La solución apareció cerca del pie de la página 72 del número siguiente, junto a la respuesta de la charada, Brasileira.",
+                   "> No campo entre flores mil farei no esmorrecer, Ramiro caro, o meo amor.",
+                   "Incluso la respuesta impresa tiene erratas. Dice no (en) donde la tilde sobre el barco pide não (no), y duplica la r de esmorecer.",
+                   "La revista dio solo la frase, no el razonamiento. Los lectores averiguaban por su cuenta cómo cada imagen se convertía en sonido, y por eso algunas lecturas, como Mercurio por nó, siguen siendo inciertas."] },
+      pt: { title: "A resposta, um número depois", label: "A revista publicou a decifração no número seguinte, com dois erros.",
+            body: ["A decifração saiu perto do pé da página 72 do número seguinte, ao lado da resposta da charada, Brasileira.",
+                   "> No campo entre flores mil farei no esmorrecer, Ramiro caro, o meo amor.",
+                   "Até a resposta impressa tem erros. Diz no onde o til sobre o navio pede não, e dobra o r de esmorecer.",
+                   "A revista deu só a frase, não o raciocínio. Os leitores descobriam sozinhos como cada imagem virava som, e por isso algumas leituras, como Mercúrio por nó, continuam incertas."] }
+    },
+    gas: {
+      en: { title: "In the same issue: gas light", label: "Above the solution, an article argues over who deserves credit for lighting Rio with gas.",
+            body: ["The solution shares its page with the end of an article about gas lighting in Rio de Janeiro. The writer argues that the credit belongs to “Conselheiro Euzebio,” who made the contract, and not to the businessman Irineu, who in the writer's view cared only about profit.",
+                   "Conselheiro Euzebio was very likely Eusébio de Queirós, the minister of justice whose name is on the 1850 law that ended Brazil's Atlantic slave trade. Irineu was Irineu Evangelista de Sousa, later the Baron of Mauá, Brazil's best-known industrialist.",
+                   "The page holds two pictures of the nation side by side: a modern capital, argued over in the language of progress and public good, and a puzzle that still needs an enslaved man to complete a love note."] },
+      es: { title: "En el mismo número: la luz de gas", label: "Sobre la solución, un artículo discute a quién corresponde el mérito de iluminar Río con gas.",
+            body: ["La solución comparte página con el final de un artículo sobre el alumbrado a gas en Río de Janeiro. El autor sostiene que el mérito es del «Conselheiro Euzebio», que firmó el contrato, y no del empresario Irineu, que según él solo buscaba el lucro.",
+                   "El Conselheiro Euzebio era muy probablemente Eusébio de Queirós, el ministro de Justicia que da nombre a la ley de 1850 que acabó con la trata atlántica en Brasil. Irineu era Irineu Evangelista de Sousa, luego barón de Mauá, el industrial más conocido de Brasil.",
+                   "La página reúne dos imágenes de la nación: una capital moderna, discutida en el lenguaje del progreso y del bien público, y un acertijo que todavía necesita a un hombre esclavizado para completar una nota de amor."] },
+      pt: { title: "No mesmo número: a luz a gás", label: "Acima da decifração, um artigo discute a quem cabe o mérito de iluminar o Rio a gás.",
+            body: ["A decifração divide a página com o fim de um artigo sobre a iluminação a gás no Rio de Janeiro. O autor defende que o mérito é do “Conselheiro Euzebio”, que celebrou o contrato, e não do empresário Irineu, que, para ele, só visava à especulação.",
+                   "O Conselheiro Euzebio era muito provavelmente Eusébio de Queirós, o ministro da Justiça que dá nome à lei de 1850 que acabou com o tráfico atlântico no Brasil. Irineu era Irineu Evangelista de Sousa, depois barão de Mauá, o industrial mais conhecido do Brasil.",
+                   "A página reúne dois retratos da nação: uma capital moderna, discutida na linguagem do progresso e do bem público, e um enigma que ainda precisa de um homem escravizado para completar um bilhete de amor."] }
+    },
+    about: {
+      en: { title: "What was Illustração Brazileira?",
+            body: ["Illustração Brazileira was published in Rio de Janeiro in 1854 and 1855 and is often described as one of Brazil's first illustrated magazines. It belonged to Ciro Cardoso de Meneses, from Bahia, and was co-edited by Ernesto de Souza e Oliveira Coutinho. Its text was printed on the Rua d'Ajuda, and its lithographs were made by a few foreign lithographers.",
+                   "Cheaper lithographic printing made images affordable in the press, and puzzles were among the first things magazines used it for. By the end of the 1850s more than forty Brazilian newspapers and magazines, from Pernambuco and Bahia to Rio Grande do Sul, were publishing charades, alongside rising literacy and growing cities.",
+                   "Picture charades asked readers to translate images into words. That made them a powerful vehicle for allegory, because the solver had to accept the puzzle-maker's symbolism in order to find the answer. In this enigma, that symbolism included reading a Black man as a slave."] },
+      es: { title: "¿Qué era Illustração Brazileira?",
+            body: ["Illustração Brazileira se publicó en Río de Janeiro en 1854 y 1855 y suele describirse como una de las primeras revistas ilustradas de Brasil. Pertenecía a Ciro Cardoso de Meneses, de Bahía, y la coeditaba Ernesto de Souza e Oliveira Coutinho. Su texto se imprimía en la Rua d'Ajuda, y sus litografías las hacían unos pocos litógrafos extranjeros.",
+                   "La litografía más barata hizo asequibles las imágenes en la prensa, y los acertijos estuvieron entre lo primero que las revistas imprimieron con ella. A fines de la década de 1850, más de cuarenta periódicos y revistas brasileños, de Pernambuco y Bahía a Rio Grande do Sul, publicaban charadas, al tiempo que crecían la alfabetización y las ciudades.",
+                   "Las charadas ilustradas pedían a los lectores traducir imágenes en palabras. Eso las convertía en un vehículo poderoso para la alegoría, porque quien las resolvía tenía que aceptar el simbolismo del autor para dar con la respuesta. En este enigma, ese simbolismo incluía leer a un hombre negro como esclavo."] },
+      pt: { title: "O que era a Illustração Brazileira?",
+            body: ["A Illustração Brazileira foi publicada no Rio de Janeiro em 1854 e 1855 e costuma ser descrita como uma das primeiras revistas ilustradas do Brasil. Pertencia ao baiano Ciro Cardoso de Meneses e era coeditada por Ernesto de Souza e Oliveira Coutinho. O texto era impresso na Rua d'Ajuda, e as litografias, feitas por alguns poucos litógrafos estrangeiros.",
+                   "A litografia mais barata tornou as imagens acessíveis na imprensa, e as charadas estiveram entre as primeiras coisas que as revistas imprimiram com ela. No fim da década de 1850, mais de quarenta jornais e revistas brasileiros, de Pernambuco e da Bahia ao Rio Grande do Sul, publicavam charadas, enquanto cresciam a alfabetização e as cidades.",
+                   "As charadas ilustradas pediam ao leitor que traduzisse imagens em palavras. Isso fazia delas um veículo poderoso para a alegoria, porque quem as resolvia precisava aceitar o simbolismo do autor para chegar à resposta. Neste enigma, esse simbolismo incluía ler um homem negro como escravo."] }
+    }
+  };
+
+  var STRINGS = {
+    en: { eyebrow: "Let's analyze the game", hint: "Switch between the enigma, the full page and the answer page, then click a numbered area to zoom in and read about it.",
+          playLink: "Play the game", aboutBtn: "What was Illustração Brazileira?", reset: "Full view", prev: "Previous", next: "Next",
+          tabEnigma: "The enigma", tabEnigmaDate: "Lithograph, 1854", tabPage: "The full page", tabPageDate: "Illustração Brazileira, 1854", tabAnswer: "The answer", tabAnswerDate: "Following issue, p. 72",
+          readMore: "Zoom in and learn more", of: "of",
+          credit: "“Enigma pitoresco,” Illustração Brazileira, Rio de Janeiro, 1854, and its solution in the following issue, p. 72. Biblioteca Nacional Digital do Brasil. Background on the magazine: Benedita de Cássia Lima Sant'Anna, Revista Ágora 9 (2009)." },
+    es: { eyebrow: "Analicemos el juego", hint: "Cambia entre el enigma, la página completa y la página de la respuesta, y haz clic en un área numerada para acercarte y leer sobre ella.",
+          playLink: "Jugar", aboutBtn: "¿Qué era Illustração Brazileira?", reset: "Vista completa", prev: "Anterior", next: "Siguiente",
+          tabEnigma: "El enigma", tabEnigmaDate: "Litografía, 1854", tabPage: "La página completa", tabPageDate: "Illustração Brazileira, 1854", tabAnswer: "La respuesta", tabAnswerDate: "Número siguiente, p. 72",
+          readMore: "Acercar y saber más", of: "de",
+          credit: "«Enigma pitoresco», Illustração Brazileira, Río de Janeiro, 1854, y su solución en el número siguiente, p. 72. Biblioteca Nacional Digital do Brasil. Sobre la revista: Benedita de Cássia Lima Sant'Anna, Revista Ágora 9 (2009)." },
+    pt: { eyebrow: "Vamos analisar o jogo", hint: "Alterne entre o enigma, a página inteira e a página da resposta e clique numa área numerada para aproximar e ler sobre ela.",
+          playLink: "Jogar", aboutBtn: "O que era a Illustração Brazileira?", reset: "Visão completa", prev: "Anterior", next: "Próximo",
+          tabEnigma: "O enigma", tabEnigmaDate: "Litografia, 1854", tabPage: "A página inteira", tabPageDate: "Illustração Brazileira, 1854", tabAnswer: "A resposta", tabAnswerDate: "Número seguinte, p. 72",
+          readMore: "Aproximar e saber mais", of: "de",
+          credit: "“Enigma pitoresco”, Illustração Brazileira, Rio de Janeiro, 1854, e sua decifração no número seguinte, p. 72. Biblioteca Nacional Digital do Brasil. Sobre a revista: Benedita de Cássia Lima Sant'Anna, Revista Ágora 9 (2009)." }
+  };
+
+  /* =====================================================================
+     PAGES & AREAS — positions are fractions of each scan (0 = left/top, 1 = right/bottom).
+     rect   = the clickable outline
+     zoom   = what the camera frames when the area is opened
+     anchor = where the numbered badge / leader line attaches
+     side   = which side of the image its label sits on
+     ===================================================================== */
+  var PAGES = {
+    enigma: { W: 1400, H: 1069, overview: [0, 0, 1, 1] },
+    page:   { W: 1100, H: 1657, overview: [0, 0, 1, 1] },
+    answer: { W: 1100, H: 1656, overview: [0, 0, 1, 1] }
+  };
+  var AREAS = [
+    { id: "rules",      page: "enigma", rect: [0.188, 0.197, 0.425, 0.345], zoom: [0.10, 0.10, 0.52, 0.45], anchor: [0.425, 0.220], side: "right" },
+    { id: "escravo",    page: "enigma", rect: [0.394, 0.457, 0.675, 0.664], zoom: [0.34, 0.40, 0.73, 0.70], anchor: [0.400, 0.480], side: "left"  },
+    { id: "nau",        page: "enigma", rect: [0.156, 0.375, 0.380, 0.637], zoom: [0.08, 0.33, 0.46, 0.68], anchor: [0.170, 0.400], side: "left"  },
+    { id: "tools",      page: "enigma", rect: [0.702, 0.538, 0.966, 0.655], zoom: [0.66, 0.46, 1.00, 0.70], anchor: [0.950, 0.550], side: "right" },
+    { id: "roer",       page: "enigma", rect: [0.380, 0.709, 0.555, 0.990], zoom: [0.30, 0.66, 0.64, 1.00], anchor: [0.390, 0.730], side: "left"  },
+    { id: "amor",       page: "enigma", rect: [0.798, 0.664, 0.997, 0.964], zoom: [0.70, 0.62, 1.00, 1.00], anchor: [0.810, 0.690], side: "right" },
+    { id: "dedication", page: "page",   rect: [0.175, 0.150, 0.755, 0.205], zoom: [0.10, 0.10, 0.84, 0.25], anchor: [0.755, 0.170], side: "right" },
+    { id: "charada",    page: "page",   rect: [0.050, 0.711, 0.970, 0.915], zoom: [0.02, 0.68, 0.99, 0.94], anchor: [0.060, 0.730], side: "left"  },
+    { id: "gas",        page: "answer", rect: [0.120, 0.100, 0.880, 0.355], zoom: [0.08, 0.08, 0.92, 0.37], anchor: [0.120, 0.120], side: "left"  },
+    { id: "solution",   page: "answer", rect: [0.120, 0.845, 0.880, 0.886], zoom: [0.08, 0.80, 0.92, 0.93], anchor: [0.880, 0.860], side: "right" }
+  ];
+  var STACK = ["charada", "gas", "escravo", "nau", "roer", "amor", "tools", "rules", "dedication", "solution"];
+
+  var STORAGE_KEY = "race-games-lang";
+  var lang = "en";
+  try { var s = localStorage.getItem(STORAGE_KEY); if (s && STRINGS[s]) lang = s; } catch(e){}
+
+  var $ = function(id){ return document.getElementById(id); };
+  var analysis = $("analysis"), frame = $("frame");
+  var colLeft = $("colLeft"), colRight = $("colRight"), leaders = $("leaders"), topics = $("topics");
+  var NS = "http://www.w3.org/2000/svg";
+  var active = null, page = "enigma";
+  var layers = { enigma: $("layer-enigma"), page: $("layer-page"), answer: $("layer-answer") };
+  var overlays = { enigma: $("overlay-enigma"), page: $("overlay-page"), answer: $("overlay-answer") };
+
+  function t(key){ return (STRINGS[lang] && STRINGS[lang][key]) || STRINGS.en[key] || ""; }
+  function c(id){ return (CONTENT[id] && (CONTENT[id][lang] || CONTENT[id].en)) || { title: "", body: [] }; }
+  function svgEl(tag, attrs){ var el = document.createElementNS(NS, tag); for (var k in attrs) el.setAttribute(k, attrs[k]); return el; }
+  function px(a){ var P = PAGES[a.page], r = a.rect; return [r[0]*P.W, r[1]*P.H, (r[2]-r[0])*P.W, (r[3]-r[1])*P.H]; }
+  function fillParas(container, paras){
+    container.innerHTML = "";
+    (paras || []).forEach(function(p){
+      var el = document.createElement("p");
+      if (/^\s*>/.test(p)){ el.className = "quote"; el.lang = "pt"; el.textContent = p.replace(/^\s*>\s*/, ""); }
+      else if (/^\s*\[/.test(p)){ var sp = document.createElement("span"); sp.className = "placeholder"; sp.textContent = p; el.appendChild(sp); }
+      else el.textContent = p;
+      container.appendChild(el);
+    });
+  }
+  function areaById(id){ for (var i = 0; i < AREAS.length; i++) if (AREAS[i].id === id) return AREAS[i]; return null; }
+
+  /* ---------- Overlays ---------- */
+  var dims = {};
+  Object.keys(PAGES).forEach(function(k){
+    dims[k] = svgEl("path", { "class": "dim" });
+    overlays[k].appendChild(dims[k]);
+  });
+  var hotEls = {};
+  AREAS.forEach(function(a){
+    var p = px(a);
+    var r = svgEl("rect", { "class": "hot", x: p[0], y: p[1], width: p[2], height: p[3], rx: 4 });
+    r.addEventListener("click", function(){ open(a.id); });
+    r.addEventListener("mouseenter", function(){ hover(a.id, true); });
+    r.addEventListener("mouseleave", function(){ hover(a.id, false); });
+    hotEls[a.id] = r;
+  });
+  STACK.forEach(function(id){ var a = areaById(id); overlays[a.page].appendChild(hotEls[id]); });
+
+  /* ---------- Badges, callouts, topic buttons ---------- */
+  var badges = {}, callouts = {}, topicBtns = {};
+  AREAS.forEach(function(a, i){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "badge"; b.textContent = i + 1;
+    b.addEventListener("click", function(){ open(a.id); });
+    b.addEventListener("mouseenter", function(){ hover(a.id, true); });
+    b.addEventListener("mouseleave", function(){ hover(a.id, false); });
+    frame.appendChild(b); badges[a.id] = b;
+
+    var co = document.createElement("button");
+    co.type = "button"; co.className = "callout";
+    co.innerHTML = '<span class="num">' + (i+1) + '</span><span class="ct"></span><span class="cl"></span><span class="more"></span>';
+    co.addEventListener("click", function(){ open(a.id); });
+    co.addEventListener("mouseenter", function(){ hover(a.id, true); });
+    co.addEventListener("mouseleave", function(){ hover(a.id, false); });
+    (a.side === "left" ? colLeft : colRight).appendChild(co); callouts[a.id] = co;
+
+    var tb = document.createElement("button");
+    tb.type = "button"; tb.innerHTML = '<span class="num">' + (i+1) + '</span><span><span class="tt"></span><span class="tl"></span></span>';
+    tb.addEventListener("click", function(){ open(a.id); });
+    topics.appendChild(tb); topicBtns[a.id] = tb;
+  });
+
+  function hover(id, on){ if (!active) hotEls[id].classList.toggle("hover", on); }
+
+  /* ---------- Page switching ---------- */
+  function setPage(p){
+    if (!PAGES[p]) return;
+    page = p;
+    var P = PAGES[p], ov = P.overview;
+    var ar = ((ov[2]-ov[0]) * P.W) / ((ov[3]-ov[1]) * P.H);
+    document.documentElement.style.setProperty("--ar", ar.toFixed(4));
+    analysis.classList.toggle("wide", ar > 1.3);
+    Object.keys(layers).forEach(function(k){ layers[k].hidden = k !== p; });
+    AREAS.forEach(function(a){
+      var on = a.page === p;
+      badges[a.id].hidden = !on; callouts[a.id].hidden = !on; topicBtns[a.id].hidden = !on;
+    });
+    document.querySelectorAll("#pagetabs button").forEach(function(b){ b.setAttribute("aria-selected", b.getAttribute("data-page") === p ? "true" : "false"); });
+    relayout();
+  }
+  document.querySelectorAll("#pagetabs button").forEach(function(b){
+    b.addEventListener("click", function(){
+      var p = b.getAttribute("data-page");
+      if (p === page) return;
+      if (active) close(true);
+      setPage(p);
+      if (history.replaceState) history.replaceState(null, "", "#" + p);
+    });
+  });
+
+  /* ---------- Camera ---------- */
+  function camera(region){
+    var P = PAGES[page], OV = P.overview, layer = layers[page];
+    var Fw = frame.clientWidth, Fh = frame.clientHeight;
+    var Lw = Fw / (OV[2] - OV[0]);
+    var Lh = Lw * P.H / P.W;
+    layer.style.width = Lw + "px"; layer.style.height = Lh + "px";
+    var rw = (region[2]-region[0]) * Lw, rh = (region[3]-region[1]) * Lh;
+    var k = Math.min(Fw / rw, Fh / rh);
+    var cx = (region[0]+region[2])/2 * Lw, cy = (region[1]+region[3])/2 * Lh;
+    var tx = Fw/2 - k*cx, ty = Fh/2 - k*cy;
+    tx = Math.min(0, Math.max(Fw - k*Lw, tx)); ty = Math.min(0, Math.max(Fh - k*Lh, ty));
+    layer.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + k + ")";
+    return { Lw: Lw, Lh: Lh };
+  }
+  var view = null;
+  function overviewPoint(fx, fy){ var OV = PAGES[page].overview; return [(fx - OV[0]) * view.Lw, (fy - OV[1]) * view.Lh]; }
+
+  /* ---------- Open / close ---------- */
+  function setDim(a){
+    var P = PAGES[a.page], o = "M0,0 H" + P.W + " V" + P.H + " H0 Z";
+    var p = px(a), pad = 6;
+    var x = p[0]-pad, y = p[1]-pad, w = p[2]+2*pad, h = p[3]+2*pad;
+    dims[a.page].setAttribute("d", o + " M" + x + "," + y + " h" + w + " v" + h + " h" + (-w) + " Z");
+  }
+  function renderPanel(){
+    if (!active) return;
+    var i = AREAS.indexOf(areaById(active)), data = c(active);
+    $("pNum").textContent = (i+1) + " " + t("of") + " " + AREAS.length;
+    $("pTitle").textContent = data.title;
+    fillParas($("pBody"), data.body);
+  }
+  function open(id){
+    var a = areaById(id); if (!a) return;
+    if (a.page !== page){
+      var layer = layers[a.page];
+      layer.style.transition = "none";
+      setPage(a.page);
+      layer.offsetHeight; layer.style.transition = "";
+    }
+    active = id;
+    Object.keys(hotEls).forEach(function(k){ hotEls[k].classList.remove("hover"); hotEls[k].classList.toggle("active", k === id); });
+    setDim(a);
+    frame.classList.add("zoomed");
+    analysis.classList.add("is-zoomed");
+    renderPanel();
+    camera(a.zoom);
+    if (history.replaceState) history.replaceState(null, "", "#" + id);
+    if (window.innerWidth <= 960){
+      var top = frame.getBoundingClientRect().top + window.scrollY - 110;
+      if (Math.abs(window.scrollY - top) > 40) window.scrollTo({ top: top, behavior: "smooth" });
+    }
+  }
+  function close(quiet){
+    if (!active) return;
+    var was = active; active = null;
+    frame.classList.remove("zoomed");
+    analysis.classList.remove("is-zoomed");
+    Object.keys(hotEls).forEach(function(k){ hotEls[k].classList.remove("active"); });
+    camera(PAGES[page].overview);
+    if (quiet === true) return;
+    if (history.replaceState) history.replaceState(null, "", location.pathname + location.search);
+    if (callouts[was] && getComputedStyle(colLeft).display !== "none") callouts[was].focus({ preventScroll: true });
+  }
+  function step(d){
+    if (!active) return;
+    var i = AREAS.indexOf(areaById(active));
+    open(AREAS[(i + d + AREAS.length) % AREAS.length].id);
+  }
+  $("reset").addEventListener("click", function(){ close(); });
+  $("pClose").addEventListener("click", function(){ close(); });
+  $("pPrev").addEventListener("click", function(){ step(-1); });
+  $("pNext").addEventListener("click", function(){ step(1); });
+
+  /* ---------- About modal ---------- */
+  var modalBack = $("modalBack"), lastFocus = null;
+  function openModal(){
+    var d = c("about");
+    $("mTitle").textContent = d.title; fillParas($("mBody"), d.body);
+    lastFocus = document.activeElement;
+    modalBack.classList.add("open"); modalBack.setAttribute("aria-hidden", "false");
+    $("mClose").focus();
+  }
+  function closeModal(){
+    modalBack.classList.remove("open"); modalBack.setAttribute("aria-hidden", "true");
+    if (lastFocus) lastFocus.focus();
+  }
+  $("aboutBtn").addEventListener("click", openModal);
+  $("mClose").addEventListener("click", closeModal);
+  modalBack.addEventListener("click", function(e){ if (e.target === modalBack) closeModal(); });
+
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape"){ if (modalBack.classList.contains("open")) closeModal(); else close(); }
+    else if (active && !modalBack.classList.contains("open")){
+      if (e.key === "ArrowRight") step(1);
+      if (e.key === "ArrowLeft") step(-1);
+    }
+  });
+
+  /* ---------- Language ---------- */
+  function applyLang(l){
+    lang = STRINGS[l] ? l : "en";
+    document.documentElement.setAttribute("lang", lang);
+    document.querySelectorAll("[data-i18n]").forEach(function(el){ var v = t(el.getAttribute("data-i18n")); if (v) el.textContent = v; });
+    document.querySelectorAll(".langtoggle button").forEach(function(btn){ btn.setAttribute("aria-pressed", btn.getAttribute("data-lang") === lang ? "true" : "false"); });
+    AREAS.forEach(function(a){
+      var d = c(a.id);
+      callouts[a.id].querySelector(".ct").textContent = d.title;
+      callouts[a.id].querySelector(".cl").textContent = d.label || "";
+      callouts[a.id].querySelector(".more").textContent = t("readMore") + " →";
+      topicBtns[a.id].querySelector(".tt").textContent = d.title;
+      topicBtns[a.id].querySelector(".tl").textContent = d.label || "";
+      badges[a.id].setAttribute("aria-label", d.title);
+      hotEls[a.id].setAttribute("aria-label", d.title);
+    });
+    renderPanel();
+    if (modalBack.classList.contains("open")){ var d = c("about"); $("mTitle").textContent = d.title; fillParas($("mBody"), d.body); }
+    relayout();
+  }
+  document.querySelectorAll(".langtoggle button").forEach(function(btn){
+    btn.addEventListener("click", function(){ var l = btn.getAttribute("data-lang"); applyLang(l); try { localStorage.setItem(STORAGE_KEY, l); } catch(e){} });
+  });
+
+  /* ---------- Layout ---------- */
+  function relayout(){
+    var layer = layers[page], save = layer.style.transition;
+    layer.style.transition = "none";
+    view = camera(PAGES[page].overview);
+    AREAS.forEach(function(a){
+      if (a.page !== page) return;
+      var p = overviewPoint(a.anchor[0], a.anchor[1]);
+      badges[a.id].style.left = p[0] + "px"; badges[a.id].style.top = p[1] + "px";
+    });
+    if (active) camera(areaById(active).zoom);
+    layer.offsetHeight;
+    layer.style.transition = save;
+    var panel = $("panel"), small = getComputedStyle(colLeft).display === "none";
+    if (small && panel.parentNode !== topics.parentNode) topics.parentNode.insertBefore(panel, topics);
+    if (!small && panel.parentNode !== colRight) colRight.appendChild(panel);
+    leaders.innerHTML = "";
+    if (small) return;
+    var aRect = analysis.getBoundingClientRect(), fRect = frame.getBoundingClientRect();
+    var here = AREAS.filter(function(a){ return a.page === page; });
+    ["left", "right"].forEach(function(side){
+      var items = here.filter(function(a){ return a.side === side; })
+        .map(function(a){ return { a: a, y: overviewPoint(a.anchor[0], a.anchor[1])[1] + (fRect.top - aRect.top), h: callouts[a.id].offsetHeight }; })
+        .sort(function(p, q){ return p.y - q.y; });
+      // place top-down, then pull up if the last one runs past the bottom of the image
+      var cursor = 0, limit = fRect.bottom - aRect.top;
+      items.forEach(function(it){ it.top = Math.max(cursor, it.y - 24); cursor = it.top + it.h + 18; });
+      for (var i = items.length - 1; i >= 0; i--){
+        var maxTop = (i === items.length - 1 ? limit : items[i+1].top - 18) - items[i].h;
+        if (items[i].top > maxTop) items[i].top = Math.max(0, maxTop);
+      }
+      items.forEach(function(it){ callouts[it.a.id].style.top = it.top + "px"; });
+    });
+    here.forEach(function(a){
+      var co = callouts[a.id].getBoundingClientRect();
+      var p = overviewPoint(a.anchor[0], a.anchor[1]);
+      var bx = fRect.left - aRect.left + frame.clientLeft + p[0], by = fRect.top - aRect.top + frame.clientTop + p[1];
+      var sx = (a.side === "left" ? co.right : co.left) - aRect.left;
+      var sy = Math.min(Math.max(by, co.top - aRect.top + 18), co.bottom - aRect.top - 18);
+      var dx = bx - sx, dy = by - sy, len = Math.sqrt(dx*dx + dy*dy) || 1;
+      bx -= dx/len*15; by -= dy/len*15;
+      leaders.appendChild(svgEl("line", { x1: sx, y1: sy, x2: bx, y2: by }));
+      leaders.appendChild(svgEl("circle", { cx: sx, cy: sy, r: 3 }));
+    });
+  }
+
+  window.addEventListener("resize", relayout);
+  ["enigma", "page", "answer"].forEach(function(k){ $("img-" + k).addEventListener("load", function(){ if (page === k) relayout(); }); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
+
+  var h = (location.hash || "").replace("#", "");
+  setPage(PAGES[h] ? h : (areaById(h) ? areaById(h).page : "enigma"));
+  applyLang(lang);
+  if (h === "about") openModal();
+  else if (areaById(h)){ layers[page].style.transition = "none"; open(h); layers[page].offsetHeight; layers[page].style.transition = ""; }
+})();
+</script>
+</body>
+</html>
