@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enigma Pitoresco</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #ECEAE3;
+    --paper-light: #F6F5F0;
+    --paper-dark: #DEDBD1;
+    --ink: #1B1B1A;
+    --ink-soft: #4B4A46;
+    --line: rgba(27,27,26,0.28);
+    --mato: #4E6B3A;
+    --mato-dark: #3B5229;
+    --alarm: #A3271C;
+    --guess: #7A5C0E;
+  }
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+  body{ margin: 0; background: var(--paper); color: var(--ink); font-family: 'EB Garamond', Georgia, serif; font-size: 18px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  button{ font-family: inherit; color: inherit; }
+  a{ color: inherit; }
+
+  .back-pill{
+    position: fixed; top: 14px; left: 14px; z-index: 9999; display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; background: #14161A; color: #FAFAF7; text-decoration: none;
+    font-family: system-ui, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.03em;
+    border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,0.25); opacity: 0.85;
+  }
+  .back-pill:hover{ opacity: 1; }
+  .app{ max-width: 1080px; margin: 0 auto; padding: 0 20px 60px; }
+
+  .langbar{ display: flex; justify-content: flex-end; padding: 18px 0 0; }
+  .langtoggle{ display: inline-flex; align-items: center; gap: 2px; font-family: system-ui, sans-serif; font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em; }
+  .langtoggle button{ font: inherit; letter-spacing: inherit; background: none; border: none; cursor: pointer; color: var(--ink-soft); padding: 6px 8px; border-radius: 6px; }
+  .langtoggle button:hover{ color: var(--ink); }
+  .langtoggle button[aria-pressed="true"]{ color: var(--ink); background: var(--paper-dark); }
+  .langtoggle .sep{ color: var(--line); }
+
+  header.mast{ text-align: center; padding: 18px 0 8px; }
+  .eyebrow{ font-family: 'IM Fell English SC', serif; font-size: 15px; letter-spacing: 0.14em; color: var(--mato); margin: 0 0 6px; }
+  h1{ font-family: 'IM Fell English SC', serif; font-weight: 400; font-size: clamp(38px, 7vw, 68px); line-height: 1; letter-spacing: 0.04em; margin: 0; }
+  .subtitle{ font-family: 'IM Fell English', serif; font-style: italic; font-size: clamp(18px, 2.4vw, 23px); color: var(--ink-soft); margin: 6px 0 0; }
+  .rule{ height: 7px; margin: 18px auto 0; max-width: 520px; border-top: 1px solid var(--ink); border-bottom: 3px double var(--ink); }
+
+  .why{ margin: 26px auto 0; max-width: 760px; padding: 18px 22px; border: 1.5px dashed var(--line); border-radius: 10px; background: var(--paper-light); }
+  .label{ font-family: system-ui, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 8px; }
+  .why p.text{ margin: 0; font-style: italic; color: var(--ink-soft); }
+
+  .how{ margin: 30px 0 0; padding: 22px 24px; background: var(--paper-light); border: 1px solid var(--line); }
+  .how ol{ margin: 0; padding-left: 22px; }
+  .how li{ margin: 0 0 6px; }
+  .how .note{ margin: 12px 0 0; font-size: 15.5px; font-style: italic; color: var(--ink-soft); }
+
+  /* ---------- Hidden sentence ---------- */
+  .sentence-wrap{ position: sticky; top: 0; z-index: 50; margin: 30px -20px 0; padding: 14px 20px 12px; background: var(--paper); border-bottom: 1px solid var(--line); }
+  .sentence-head{ display: flex; justify-content: flex-end; align-items: baseline; gap: 14px; flex-wrap: wrap; padding-left: 150px; }
+  .progress{ font-family: system-ui, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .06em; color: var(--ink-soft); }
+  .sentence{ font-family: 'IM Fell English', serif; font-size: clamp(19px, 2.6vw, 27px); line-height: 1.5; margin: 2px 0 0; }
+  .sentence .pc{ border: none; background: none; padding: 0; font: inherit; cursor: pointer; }
+  .sentence .pc.todo{ display: inline-block; height: 1.05em; vertical-align: -0.14em; margin: 0 1px; background: var(--paper-dark); border-bottom: 2px solid var(--ink-soft); border-radius: 2px 2px 0 0; }
+  .sentence .pc.todo:hover{ background: #D2CEC2; }
+  .sentence .pc.todo:hover{ color: var(--ink); }
+  .sentence .pc.todo.sel{ background: #CFE0C2; border-bottom-color: var(--mato); }
+  .sentence .pc.done{ cursor: default; }
+  .sentence .pc.fresh{ animation: fresh 1.2s ease; }
+  @keyframes fresh{ 0%{ background: #CFE0C2; } 100%{ background: transparent; } }
+  .sentence .orphan{ color: var(--ink-soft); }
+  .sentence sup{ font-family: system-ui, sans-serif; font-size: 11px; }
+
+  /* ---------- Board ---------- */
+  .board{ margin: 20px 0 0; display: flex; flex-direction: column; gap: 14px; }
+  .brow{ display: flex; gap: 12px; align-items: stretch; }
+  .tilecard{
+    position: relative; display: flex; flex-direction: column; min-width: 0; padding: 0; cursor: pointer; text-align: center;
+    background: var(--paper-light); border: 2px solid var(--ink); transition: box-shadow .2s ease, transform .12s ease;
+  }
+  .tilecard:hover{ transform: translate(-1px,-1px); }
+  .tilecard.sel{ box-shadow: 6px 6px 0 var(--mato); }
+  .tilecard .pic{ height: 150px; display: grid; place-items: center; padding: 8px; background: #fff; border-bottom: 1.5px solid var(--ink); }
+  .tilecard .pic img{ max-width: 100%; max-height: 134px; mix-blend-mode: multiply; }
+  .tilecard .cap{ min-height: 44px; padding: 6px 4px; display: flex; flex-direction: column; justify-content: center; }
+  .tilecard .cap .w{ font-family: 'IM Fell English SC', serif; font-size: 20px; letter-spacing: .08em; line-height: 1.1; }
+  .tilecard .cap .g{ font-family: system-ui, sans-serif; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
+  .tilecard.done .cap .w{ color: var(--mato-dark); }
+  .tilecard.done.quiet .cap .w{ color: var(--ink); }
+  .tilecard .badge{
+    position: absolute; top: 6px; left: 6px; font-family: system-ui, sans-serif; font-size: 9.5px; font-weight: 700; letter-spacing: .08em;
+    text-transform: uppercase; background: #F2EBD3; color: var(--guess); padding: 3px 6px; border-radius: 999px;
+  }
+
+  /* ---------- Step panel ---------- */
+  .step{ margin: 22px 0 0; padding: 20px 22px; background: var(--paper-light); border: 2px solid var(--ink); box-shadow: 6px 6px 0 var(--mato); }
+  .step[hidden]{ display: none; }
+  .step-grid{ display: grid; grid-template-columns: 200px minmax(0,1fr); gap: 22px; align-items: start; }
+  .step .big{ background: #fff; border: 1.5px solid var(--ink); height: 200px; display: grid; place-items: center; padding: 10px; }
+  .step .big img{ max-width: 100%; max-height: 180px; mix-blend-mode: multiply; }
+  .step h2{ font-family: 'IM Fell English SC', serif; font-weight: 400; font-size: 26px; line-height: 1.1; margin: 0 0 4px; }
+  .step .sub{ margin: 0 0 14px; color: var(--ink-soft); }
+  .options{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .opt{
+    text-align: left; cursor: pointer; background: #fff; border: 1.5px solid var(--ink); border-radius: 2px; padding: 10px 12px 11px;
+    transition: transform .12s ease, box-shadow .12s ease, background .15s ease;
+  }
+  .opt:hover:not(:disabled){ transform: translate(-1px,-1px); box-shadow: 3px 3px 0 var(--ink); }
+  .opt .ow{ display: block; font-family: 'IM Fell English', serif; font-size: 22px; line-height: 1.15; }
+  .opt .og{ display: block; font-size: 15px; font-style: italic; color: var(--ink-soft); margin-top: 2px; }
+  .opt.wrong{ background: #F3E3E0; border-color: var(--alarm); }
+  .opt.right{ background: #E5EDDF; border-color: var(--mato); }
+  .opt:disabled{ cursor: default; }
+  .feedback{ margin: 14px 0 0; min-height: 1.5em; font-size: 17px; }
+  .feedback.bad{ color: var(--alarm); }
+  .feedback.good{ color: var(--mato-dark); }
+  .feedback .gives{ display: block; font-family: 'IM Fell English SC', serif; font-size: 22px; letter-spacing: .06em; color: var(--ink); margin: 0 0 4px; }
+  .feedback .guess{ display: inline-block; font-family: system-ui, sans-serif; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; background: #F2EBD3; color: var(--guess); padding: 2px 7px; border-radius: 999px; margin-right: 6px; vertical-align: 2px; }
+  .hint{ margin: 12px 0 0; padding: 10px 14px; border-left: 3px solid var(--line); font-style: italic; color: var(--ink-soft); }
+  .hint[hidden]{ display: none; }
+  .step-actions{ display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0 0; }
+
+  /* The pause after the escravo picture: deliberately quiet */
+  .pause{ margin: 16px 0 0; padding: 18px 20px; background: var(--ink); color: var(--paper-light); }
+  .pause[hidden]{ display: none; }
+  .pause h3{ font-family: 'IM Fell English SC', serif; font-weight: 400; font-size: 24px; margin: 0 0 8px; }
+  .pause p{ margin: 0 0 10px; font-size: 17px; }
+  .pause .btn{ border-color: var(--paper-light); color: var(--paper-light); }
+  .pause .btn:hover{ background: var(--paper-light); color: var(--ink); }
+
+  .controls{ display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 18px 0 0; }
+  .btn{
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none;
+    font-family: system-ui, sans-serif; font-weight: 700; font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase;
+    padding: 11px 16px; border-radius: 2px; border: 1.5px solid var(--ink); cursor: pointer; background: transparent; color: var(--ink);
+  }
+  .btn:hover{ background: var(--ink); color: var(--paper-light); }
+  .btn[hidden]{ display: none; }
+  .linkish{ margin-left: auto; background: none; border: none; cursor: pointer; font-size: 16px; color: var(--ink-soft); text-decoration: underline; text-underline-offset: 3px; padding: 6px 2px; }
+  .linkish:hover{ color: var(--ink); }
+
+  /* ---------- Reveal ---------- */
+  .reveal{ margin: 54px 0 0; padding-top: 30px; border-top: 3px double var(--ink); }
+  .reveal[hidden]{ display: none; }
+  .reveal h2{ font-family: 'IM Fell English SC', serif; font-weight: 400; font-size: clamp(30px, 4.6vw, 44px); line-height: 1; margin: 0 0 14px; }
+  .reveal h3{ font-family: 'IM Fell English SC', serif; font-weight: 400; font-size: 26px; margin: 40px 0 12px; }
+  .reveal p{ margin: 0 0 14px; }
+  .answer{ font-family: 'IM Fell English', serif; font-size: clamp(26px, 4.2vw, 40px); line-height: 1.3; text-align: center; margin: 6px auto 8px; max-width: 900px; }
+  .answer-g{ text-align: center; font-style: italic; color: var(--ink-soft); margin: 0 0 28px; }
+  .clip{ margin: 0 0 8px; background: #fff; border: 1px solid var(--line); padding: 10px; }
+  .clip img{ display: block; width: 100%; height: auto; mix-blend-mode: multiply; }
+  .clipcap{ font-size: 14.5px; font-style: italic; color: var(--ink-soft); margin: 0 0 10px; }
+  .key{ display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .key .k{ background: var(--paper-light); border: 1px solid var(--line); padding: 8px; text-align: center; }
+  .key .k .im{ height: 90px; display: grid; place-items: center; background: #fff; margin: 0 0 6px; }
+  .key .k img{ max-width: 100%; max-height: 82px; mix-blend-mode: multiply; }
+  .key .k .w{ font-family: 'IM Fell English', serif; font-size: 18px; line-height: 1.2; }
+  .key .k .r{ font-family: 'IM Fell English SC', serif; font-size: 17px; letter-spacing: .06em; color: var(--mato-dark); }
+  .key .k .q{ font-family: system-ui, sans-serif; font-size: 9.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--guess); }
+  .reveal ul{ margin: 0 0 14px; padding-left: 22px; }
+  .reveal li{ margin: 0 0 8px; }
+  .reflect{ font-style: italic; color: var(--ink-soft); padding-left: 14px; border-left: 3px solid var(--mato); }
+  .analyze{ margin-top: 30px; padding: 20px 22px; background: var(--ink); color: var(--paper-light); display: flex; flex-direction: column; gap: 12px; }
+  .analyze p{ margin: 0; font-size: 17px; }
+  .analyze .links{ display: flex; flex-wrap: wrap; gap: 10px; }
+  .analyze a{
+    display: inline-flex; gap: 8px; align-items: center; text-decoration: none;
+    font-family: system-ui, sans-serif; font-weight: 700; font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase;
+    background: var(--paper-light); color: var(--ink); padding: 12px 18px; border-radius: 2px;
+  }
+  .credit{ margin: 40px 0 0; font-size: 14px; color: var(--ink-soft); }
+
+  @media (max-width: 760px){
+    body{ font-size: 17px; }
+    .brow{ flex-wrap: wrap; gap: 8px; }
+    .tilecard{ flex: 1 1 calc(33.333% - 8px) !important; }
+    .tilecard .pic{ height: 92px; padding: 4px; }
+    .tilecard .pic img{ max-height: 84px; }
+    .tilecard .cap{ min-height: 38px; }
+    .tilecard .cap .w{ font-size: 16px; }
+    .step-grid{ grid-template-columns: 1fr; gap: 12px; }
+    .step .big{ height: 150px; max-width: 260px; }
+    .step .big img{ max-height: 132px; }
+    .options{ grid-template-columns: 1fr 1fr; }
+    .opt .ow{ font-size: 19px; }
+    .linkish{ margin-left: 0; }
+  }
+  @media (prefers-reduced-motion: reduce){ .sentence .pc.fresh{ animation: none; } .tilecard:hover{ transform: none; } }
+</style>
+  <script data-goatcounter="https://race-games.goatcounter.com/count"
+          async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+
+<a class="back-pill" href="../index.html">&larr;&nbsp;RACE GAMES</a>
+
+<div class="app">
+  <div class="langbar">
+    <div class="langtoggle" role="group" aria-label="Language">
+      <button type="button" data-lang="en" aria-pressed="true">EN</button>
+      <span class="sep">/</span>
+      <button type="button" data-lang="es" aria-pressed="false">ES</button>
+      <span class="sep">/</span>
+      <button type="button" data-lang="pt" aria-pressed="false">PT</button>
+    </div>
+  </div>
+
+  <header class="mast">
+    <p class="eyebrow" data-i18n="eyebrow">Illustração Brazileira · Rio de Janeiro · 1854</p>
+    <h1>Enigma Pitoresco</h1>
+    <p class="subtitle" data-i18n="subtitle">A picture enigma</p>
+    <div class="rule"></div>
+  </header>
+
+  <section class="why">
+    <p class="label" data-i18n="whyLabel">Why am I playing?</p>
+    <p class="text" data-i18n="whyText"></p>
+  </section>
+
+  <section class="how" aria-labelledby="howLabel">
+    <p class="label" id="howLabel" data-i18n="howLabel">How an enigma pitoresco works</p>
+    <ol>
+      <li data-i18n="how1"></li>
+      <li data-i18n="how2"></li>
+      <li data-i18n="how3"></li>
+      <li data-i18n="how4"></li>
+    </ol>
+    <p class="note" data-i18n="langNote"></p>
+  </section>
+
+  <div class="sentence-wrap">
+    <div class="sentence-head">
+      <p class="label" data-i18n="sentenceLabel" style="margin:0">The hidden sentence</p>
+      <span class="progress" id="progress"></span>
+    </div>
+    <p class="sentence" id="sentence" lang="pt"></p>
+  </div>
+
+  <section class="board" id="board" aria-label="Puzzle"></section>
+
+  <section class="step" id="step" aria-live="polite">
+    <div class="step-grid">
+      <div class="big"><img id="bigImg" src="" alt=""></div>
+      <div>
+        <h2 id="stepTitle"></h2>
+        <p class="sub" id="stepSub"></p>
+        <div class="options" id="options"></div>
+        <p class="hint" id="hint" hidden></p>
+        <div class="feedback" id="feedback"></div>
+        <div class="pause" id="pause" hidden>
+          <h3 data-i18n="pauseTitle">Pause here</h3>
+          <p data-i18n="pause1"></p>
+          <p data-i18n="pause2"></p>
+          <button type="button" class="btn" id="pauseContinue" data-i18n="pauseContinue">Continue</button>
+        </div>
+        <div class="step-actions">
+          <button type="button" class="btn" id="hintBtn" data-i18n="hintBtn">Hint</button>
+          <button type="button" class="btn" id="nextBtn" hidden><span data-i18n="nextBtn">Next picture</span> <span>→</span></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="controls">
+    <button type="button" class="btn" id="restartBtn" data-i18n="restart">Start over</button>
+    <button type="button" class="linkish" id="giveUp" data-i18n="giveUp">Show me the answer</button>
+  </div>
+
+  <section class="reveal" id="reveal" hidden aria-labelledby="revealTitle">
+    <p class="eyebrow" data-i18n="revealEyebrow">The answer</p>
+    <p class="answer" lang="pt">No campo entre flores mil farei não esmorecer, Ramiro caro, o meo amor.</p>
+    <p class="answer-g" data-i18n="answerGloss"></p>
+
+    <h2 id="revealTitle" data-i18n="publishedTitle">As the magazine printed it</h2>
+    <div class="clip"><img src="../images/enigma-pitoresco-solucao.jpg" alt="Printed solution: A decifração do enigma pitoresco do segundo numero é No campo entre flores mil farei no esmorrecer, Ramiro caro, o meo amor; e da charada: Brasileira." width="1332" height="95"></div>
+    <p class="clipcap" data-i18n="publishedCap"></p>
+
+    <h3 data-i18n="keyTitle">Picture by picture</h3>
+    <div class="key" id="key"></div>
+
+    <h3 data-i18n="looseTitle">Loose ends</h3>
+    <ul>
+      <li data-i18n="loose1"></li>
+      <li data-i18n="loose2"></li>
+      <li data-i18n="loose3"></li>
+    </ul>
+
+    <h3 data-i18n="readTitle">What the sentence hides</h3>
+    <p data-i18n="read1"></p>
+    <p data-i18n="read2"></p>
+    <p data-i18n="read3"></p>
+    <p class="reflect" data-i18n="reflect"></p>
+
+    <div class="analyze">
+      <p data-i18n="analyzeText"></p>
+      <div class="links">
+        <a href="charada-pitoresca.html"><span data-i18n="charadaCta">Play the charada</span> <span>→</span></a>
+        <a href="charada-pitoresca-analysis.html"><span data-i18n="analyzeCta">Analyze the page</span> <span>→</span></a>
+      </div>
+    </div>
+  </section>
+
+  <p class="credit" data-i18n="credit"></p>
+</div>
+
+<script>
+(function(){
+  /* =====================================================================
+     TEXT — the puzzle words stay in Portuguese in every language;
+     everything around them is translated.
+     ===================================================================== */
+  var STRINGS = {
+    en: {
+      eyebrow: "Illustração Brazileira · Rio de Janeiro · 1854",
+      subtitle: "A picture enigma",
+      whyLabel: "Why am I playing?",
+      whyText: "In the 1850s, readers of Rio de Janeiro's illustrated magazines solved picture puzzles like this one at home. This enigma hides a whole sentence in seventeen pictures. Most of them are ordinary things: a dog, a ship, a goat. One is not. As you solve it, notice which pictures you can read only by thinking the way the puzzle's maker did.",
+      howLabel: "How an enigma pitoresco works",
+      how1: "Each picture stands for a word, and the sound of that word becomes part of a hidden sentence, read left to right, row by row.",
+      how2: "Small signs change the sound: “−õ +m” means take away õ and add m; a minus sign subtracts one picture's name from another's; a tilde (~) above a picture makes its sound nasal.",
+      how3: "Position counts too. A letter placed between two pictures is “between” them.",
+      how4: "Solve the pictures in any order. Each one fills its piece of the sentence above the board.",
+      langNote: "The puzzle only works in Portuguese, so you'll solve it in Portuguese. Every word comes with its meaning.",
+      sentenceLabel: "The hidden sentence",
+      progress: "{n} of {t} pictures solved",
+      stepTitle: "Which word does this picture give?",
+      stepSub: "Choose the Portuguese word that makes the sound the sentence needs.",
+      hintBtn: "Hint", nextBtn: "Next picture",
+      right: "Right.", wrong: "Not this one.", tryHint: "Try the hint.",
+      bestGuess: "Best guess",
+      gives: "gives",
+      pauseTitle: "Pause here",
+      pause1: "Look at what you just had to do. The man wears no chains and is doing no work. The only way to reach escravo, “slave,” was to read the color of his skin as a legal status. The puzzle's maker counted on every reader making that leap at once, and in Rio de Janeiro in 1854, where enslaved people made up a large share of the city, they did.",
+      pause2: "Then notice what the puzzle does with him: a person becomes a word, the word is cut down, and what remains is ES, a meaningless fragment of a love note. The carnation he is subtracted against is drawn with more care than his face.",
+      pauseContinue: "Continue",
+      restart: "Start over", giveUp: "Show me the answer",
+      revealEyebrow: "The answer",
+      answerGloss: "“In the field among a thousand flowers I will not lose heart, dear Ramiro, my love.”",
+      publishedTitle: "As the magazine printed it",
+      publishedCap: "The solution, printed in the following issue of Illustração Brazileira (p. 72).",
+      keyTitle: "Picture by picture",
+      looseTitle: "Loose ends",
+      loose1: "Three readings are best guesses: Mercury as nó, the Italian city as Pó, and the seated man as roer. The printed solution confirms the sounds, not the words behind them.",
+      loose2: "The article o before meo has no picture of its own. Either readers supplied it, or one of the pictures did double duty.",
+      loose3: "The magazine printed “no” (in) where the tilde on the ship asks for não (not), and spelled esmorecer as “esmorrecer.” Typesetters made mistakes too.",
+      readTitle: "What the sentence hides",
+      read1: "The finished sentence is a love note: a woman promises Ramiro she will not lose heart, waiting in the countryside among a thousand flowers. Nothing in it mentions slavery.",
+      read2: "Yet the sentence cannot be built without it. ES, the first syllable of esmorecer, comes only from reading a Black man as escravo. Every other human figure stands for something else: gods for love and for a knot, a crowned man for kingship, a white man in a top hat for an everyday action. Only the Black figure stands for a condition of servitude.",
+      read3: "In 1854 the Brazilian campo, the field of the love note, was worked overwhelmingly by enslaved people. The puzzle turns that labor into one disposable syllable inside a romance.",
+      reflect: "To finish the sentence, you had to read one man the way a slaveholding society read him. What else in these pictures did you accept without noticing?",
+      analyzeText: "This enigma shares a page with the charada pitoresca, whose answer is brazileira. Play it next, or zoom in on the whole page.",
+      charadaCta: "Play the charada", analyzeCta: "Analyze the page",
+      credit: "“Enigma pitoresco,” offered by João José de Moraes Tavares to Dr. Ernesto de S. Oliveira Coutinho, Illustração Brazileira, Rio de Janeiro, 1854; solution from the following issue. Biblioteca Nacional Digital do Brasil.",
+      orphan: "No picture gives this o."
+    },
+    es: {
+      eyebrow: "Illustração Brazileira · Río de Janeiro · 1854",
+      subtitle: "Un enigma ilustrado",
+      whyLabel: "¿Por qué estoy jugando?",
+      whyText: "En la década de 1850, los lectores de las revistas ilustradas de Río de Janeiro resolvían en casa acertijos como este. Este enigma esconde una frase entera en diecisiete imágenes. Casi todas son cosas comunes: un perro, un barco, una cabra. Una no lo es. Mientras lo resuelves, fíjate en qué imágenes solo puedes leer si piensas como el autor del acertijo.",
+      howLabel: "Cómo funciona un enigma pitoresco",
+      how1: "Cada imagen representa una palabra, y el sonido de esa palabra pasa a formar parte de una frase oculta, que se lee de izquierda a derecha, fila por fila.",
+      how2: "Unos signos pequeños cambian el sonido: «−õ +m» significa quitar õ y añadir m; un signo de menos resta el nombre de una imagen al de otra; una tilde (~) sobre una imagen vuelve nasal su sonido.",
+      how3: "La posición también cuenta. Una letra colocada entre dos imágenes está «entre» ellas.",
+      how4: "Resuelve las imágenes en el orden que quieras. Cada una completa su parte de la frase, arriba del tablero.",
+      langNote: "El acertijo solo funciona en portugués, así que lo resolverás en portugués. Cada palabra viene con su significado.",
+      sentenceLabel: "La frase oculta",
+      progress: "{n} de {t} imágenes resueltas",
+      stepTitle: "¿Qué palabra da esta imagen?",
+      stepSub: "Elige la palabra portuguesa que produce el sonido que la frase necesita.",
+      hintBtn: "Pista", nextBtn: "Siguiente imagen",
+      right: "Correcto.", wrong: "Esta no.", tryHint: "Prueba la pista.",
+      bestGuess: "Mejor hipótesis",
+      gives: "da",
+      pauseTitle: "Detente aquí",
+      pause1: "Mira lo que acabas de tener que hacer. El hombre no lleva cadenas ni está trabajando. La única forma de llegar a escravo, «esclavo», era leer el color de su piel como una condición legal. El autor del acertijo contaba con que todos los lectores dieran ese salto de inmediato, y en el Río de Janeiro de 1854, donde las personas esclavizadas eran una gran parte de la ciudad, lo daban.",
+      pause2: "Luego observa lo que el acertijo hace con él: una persona se convierte en palabra, la palabra se recorta y lo que queda es ES, un fragmento sin sentido de una nota de amor. El clavel que se le resta está dibujado con más cuidado que su cara.",
+      pauseContinue: "Continuar",
+      restart: "Empezar de nuevo", giveUp: "Muéstrame la respuesta",
+      revealEyebrow: "La respuesta",
+      answerGloss: "«En el campo, entre mil flores, no me desanimaré, querido Ramiro, mi amor.»",
+      publishedTitle: "Tal como lo imprimió la revista",
+      publishedCap: "La solución, impresa en el número siguiente de Illustração Brazileira (p. 72).",
+      keyTitle: "Imagen por imagen",
+      looseTitle: "Cabos sueltos",
+      loose1: "Tres lecturas son hipótesis: Mercurio como nó, la ciudad italiana como Pó y el hombre sentado como roer. La solución impresa confirma los sonidos, no las palabras que hay detrás.",
+      loose2: "El artículo o antes de meo no tiene imagen propia. O bien los lectores lo suplían, o bien alguna imagen cumplía doble función.",
+      loose3: "La revista imprimió «no» (en) donde la tilde sobre el barco pide não (no), y escribió esmorecer como «esmorrecer». Los tipógrafos también se equivocaban.",
+      readTitle: "Lo que la frase esconde",
+      read1: "La frase terminada es una nota de amor: una mujer le promete a Ramiro que no se desanimará mientras espera en el campo, entre mil flores. Nada en ella menciona la esclavitud.",
+      read2: "Sin embargo, la frase no puede construirse sin ella. ES, la primera sílaba de esmorecer, sale solo de leer a un hombre negro como escravo. Todas las demás figuras humanas representan otra cosa: dioses para el amor y para un nudo, un hombre coronado para la realeza, un hombre blanco con sombrero de copa para una acción cotidiana. Solo la figura negra representa una condición de servidumbre.",
+      read3: "En 1854, el campo brasileño, el campo de la nota de amor, lo trabajaban sobre todo personas esclavizadas. El acertijo convierte ese trabajo en una sílaba desechable dentro de un romance.",
+      reflect: "Para terminar la frase, tuviste que leer a un hombre como lo leía una sociedad esclavista. ¿Qué más aceptaste en estas imágenes sin darte cuenta?",
+      analyzeText: "Este enigma comparte página con la charada pitoresca, cuya respuesta es brazileira. Juégala ahora o acércate a la página completa.",
+      charadaCta: "Jugar la charada", analyzeCta: "Analizar la página",
+      credit: "«Enigma pitoresco», ofrecido por João José de Moraes Tavares al Dr. Ernesto de S. Oliveira Coutinho, Illustração Brazileira, Río de Janeiro, 1854; solución del número siguiente. Biblioteca Nacional Digital do Brasil.",
+      orphan: "Ninguna imagen da esta o."
+    },
+    pt: {
+      eyebrow: "Illustração Brazileira · Rio de Janeiro · 1854",
+      subtitle: "Um enigma ilustrado",
+      whyLabel: "Por que estou jogando?",
+      whyText: "Na década de 1850, os leitores das revistas ilustradas do Rio de Janeiro resolviam em casa enigmas como este. Este esconde uma frase inteira em dezessete imagens. Quase todas são coisas comuns: um cão, um navio, um bode. Uma não é. Enquanto resolve, repare em quais imagens você só consegue ler pensando como o autor do enigma.",
+      howLabel: "Como funciona um enigma pitoresco",
+      how1: "Cada imagem representa uma palavra, e o som dessa palavra passa a fazer parte de uma frase escondida, lida da esquerda para a direita, linha por linha.",
+      how2: "Pequenos sinais mudam o som: “−õ +m” quer dizer tirar õ e acrescentar m; um sinal de menos subtrai o nome de uma imagem do de outra; um til (~) sobre uma imagem torna o som nasal.",
+      how3: "A posição também conta. Uma letra colocada entre duas imagens está “entre” elas.",
+      how4: "Resolva as imagens na ordem que quiser. Cada uma preenche a sua parte da frase, acima do tabuleiro.",
+      langNote: "As palavras aparecem na grafia de 1854, como “meo” por “meu”.",
+      sentenceLabel: "A frase escondida",
+      progress: "{n} de {t} imagens resolvidas",
+      stepTitle: "Que palavra esta imagem dá?",
+      stepSub: "Escolha a palavra que produz o som de que a frase precisa.",
+      hintBtn: "Dica", nextBtn: "Próxima imagem",
+      right: "Certo.", wrong: "Esta não.", tryHint: "Experimente a dica.",
+      bestGuess: "Melhor hipótese",
+      gives: "dá",
+      pauseTitle: "Pare aqui",
+      pause1: "Veja o que você acabou de ter de fazer. O homem não usa correntes nem está trabalhando. O único caminho até escravo era ler a cor da pele dele como uma condição jurídica. O autor do enigma contava que todo leitor desse esse salto na hora, e no Rio de Janeiro de 1854, onde as pessoas escravizadas eram uma grande parte da cidade, davam.",
+      pause2: "Depois repare no que o enigma faz com ele: uma pessoa vira palavra, a palavra é cortada e o que sobra é ES, um fragmento sem sentido de um bilhete de amor. O cravo que se subtrai dele foi desenhado com mais cuidado que o rosto dele.",
+      pauseContinue: "Continuar",
+      restart: "Recomeçar", giveUp: "Mostrar a resposta",
+      revealEyebrow: "A resposta",
+      answerGloss: "“No campo, entre mil flores, não vou esmorecer, Ramiro querido, meu amor.”",
+      publishedTitle: "Como a revista publicou",
+      publishedCap: "A decifração, publicada no número seguinte da Illustração Brazileira (p. 72).",
+      keyTitle: "Imagem por imagem",
+      looseTitle: "Pontas soltas",
+      loose1: "Três leituras são hipóteses: Mercúrio como nó, a cidade italiana como Pó e o homem sentado como roer. A decifração impressa confirma os sons, não as palavras por trás deles.",
+      loose2: "O artigo o antes de meo não tem imagem própria. Ou os leitores o supriam, ou alguma imagem fazia dupla função.",
+      loose3: "A revista imprimiu “no” onde o til sobre o navio pede não, e grafou esmorecer como “esmorrecer”. Os tipógrafos também erravam.",
+      readTitle: "O que a frase esconde",
+      read1: "A frase pronta é um bilhete de amor: uma mulher promete a Ramiro que não vai esmorecer, esperando no campo, entre mil flores. Nada nela fala de escravidão.",
+      read2: "Mas a frase não se monta sem ela. ES, a primeira sílaba de esmorecer, só sai de ler um homem negro como escravo. Todas as outras figuras humanas representam outra coisa: deuses para o amor e para um nó, um homem coroado para a realeza, um homem branco de cartola para uma ação cotidiana. Só a figura negra representa uma condição de servidão.",
+      read3: "Em 1854, o campo brasileiro, o campo do bilhete de amor, era trabalhado sobretudo por pessoas escravizadas. O enigma transforma esse trabalho numa sílaba descartável dentro de um romance.",
+      reflect: "Para terminar a frase, você teve de ler um homem como uma sociedade escravista o lia. O que mais nestas imagens você aceitou sem perceber?",
+      analyzeText: "Este enigma divide a página com a charada pitoresca, cuja resposta é brazileira. Jogue-a agora ou examine a página inteira.",
+      charadaCta: "Jogar a charada", analyzeCta: "Analisar a página",
+      credit: "“Enigma pitoresco”, oferecido por João José de Moraes Tavares ao Dr. Ernesto de S. Oliveira Coutinho, Illustração Brazileira, Rio de Janeiro, 1854; decifração do número seguinte. Biblioteca Nacional Digital do Brasil.",
+      orphan: "Nenhuma imagem dá este o."
+    }
+  };
+
+  /* Shared hint for the three music notes */
+  var NOTE_HINT = {
+    en: "Solfège names: dó, ré, mi, fá, sol, lá, si. On this treble staff, the bottom space is fá, the second line from the top is ré, and the top space is mi.",
+    es: "Nombres del solfeo: do, re, mi, fa, sol, la, si. En este pentagrama en clave de sol, el espacio de abajo es fa, la segunda línea desde arriba es re y el espacio de arriba es mi.",
+    pt: "Nomes do solfejo: dó, ré, mi, fá, sol, lá, si. Nesta pauta em clave de sol, o espaço de baixo é fá, a segunda linha de cima é ré e o espaço de cima é mi."
+  };
+
+  /* =====================================================================
+     TILES — one per clue, in the order they appear on the page.
+     w = word; g = meaning; ok = the puzzle's answer; f = feedback for that choice.
+     ===================================================================== */
+  var TILES = [
+    { id: "mercurio", row: 1, flex: 1.0, gives: "NO", guess: true,
+      alt: { en: "A winged god with a winged helmet, holding a staff wrapped by two serpents", es: "Un dios alado con casco alado, sosteniendo un bastón rodeado por dos serpientes", pt: "Um deus alado de capacete alado, segurando um bastão envolvido por duas serpentes" },
+      hint: { en: "Never mind who he is. Look at the staff he holds and how the serpents are tied around it.", es: "No importa quién es. Mira el bastón que sostiene y cómo se enroscan las serpientes.", pt: "Não importa quem ele é. Olhe o bastão que ele segura e como as serpentes se enlaçam." },
+      explain: { en: "Nó, a knot: the serpents knotted around Mercury's staff. It gives NO, the first word, “in.” This is the shakiest reading on the page; the printed solution confirms the sound, not the picture's name.",
+                 es: "Nó, un nudo: las serpientes anudadas al bastón de Mercurio. Da NO, la primera palabra, «en». Es la lectura más dudosa de la página: la solución impresa confirma el sonido, no el nombre de la imagen.",
+                 pt: "Nó: as serpentes atadas ao bastão de Mercúrio. Dá NO, a primeira palavra. É a leitura mais incerta da página: a decifração impressa confirma o som, não o nome da imagem." },
+      options: [
+        { w: "Mercúrio", g: { en: "Mercury", es: "Mercurio", pt: "o deus Mercúrio" },
+          f: { en: "That's who he is, but the sentence doesn't start with “Mercúrio.” Look at his staff.", es: "Es quien es, pero la frase no empieza con «Mercúrio». Mira su bastón.", pt: "É quem ele é, mas a frase não começa com “Mercúrio”. Olhe o bastão." } },
+        { w: "asas", g: { en: "wings", es: "alas", pt: "asas" } },
+        { w: "nó", ok: true, g: { en: "a knot", es: "un nudo", pt: "nó, laço apertado" } },
+        { w: "deus", g: { en: "god", es: "dios", pt: "deus" } }
+      ]},
+    { id: "cao", row: 1, flex: 1.4, gives: "CAM",
+      alt: { en: "A large dog standing in grass, followed by the printed signs “−õ +m”", es: "Un perro grande de pie entre la hierba, seguido de los signos impresos «−õ +m»", pt: "Um cão grande de pé na relva, seguido dos sinais impressos “−õ +m”" },
+      hint: { en: "Name the animal, then follow the signs printed beside it: take away õ, add m.", es: "Nombra al animal y luego sigue los signos impresos a su lado: quita õ, añade m.", pt: "Diga o nome do animal e siga os sinais ao lado: tire õ, acrescente m." },
+      explain: { en: "Cão, dog. Take away õ and add m: cão → ca → CAM. With the next picture it makes CAMPO, “field.”", es: "Cão, perro. Quita õ y añade m: cão → ca → CAM. Con la imagen siguiente forma CAMPO, «campo».", pt: "Cão. Tire õ e acrescente m: cão → ca → CAM. Com a imagem seguinte forma CAMPO." },
+      options: [
+        { w: "boi", g: { en: "ox", es: "buey", pt: "boi" } },
+        { w: "cão", ok: true, g: { en: "dog", es: "perro", pt: "cão" } },
+        { w: "urso", g: { en: "bear", es: "oso", pt: "urso" } },
+        { w: "cavalo", g: { en: "horse", es: "caballo", pt: "cavalo" } }
+      ]},
+    { id: "italia", row: 1, flex: 1.8, gives: "PO", guess: true,
+      alt: { en: "A harbor city with domes and sailing ships, labeled “Italia”", es: "Una ciudad portuaria con cúpulas y barcos de vela, con el rótulo «Italia»", pt: "Uma cidade portuária com cúpulas e veleiros, com a legenda “Italia”" },
+      hint: { en: "The label says Italia. Think of a very short Italian name: a river.", es: "El rótulo dice Italia. Piensa en un nombre italiano muy corto: un río.", pt: "A legenda diz Italia. Pense num nome italiano bem curto: um rio." },
+      explain: { en: "Pó, the Po, Italy's longest river. The label points you to Italy; the name gives PO, finishing CAMPO. A best guess: the printed solution confirms the sound.", es: "Pó, el Po, el río más largo de Italia. El rótulo te lleva a Italia y el nombre da PO, que completa CAMPO. Es una hipótesis: la solución impresa confirma el sonido.", pt: "Pó, o maior rio da Itália. A legenda aponta para a Itália e o nome dá PO, que completa CAMPO. É uma hipótese: a decifração impressa confirma o som." },
+      options: [
+        { w: "Roma", g: { en: "Rome", es: "Roma", pt: "Roma" } },
+        { w: "porto", g: { en: "harbor", es: "puerto", pt: "porto" },
+          f: { en: "Porto does start with po, but these puzzles use a whole word unless a sign says to cut it. And why would the picture be labeled Italia?", es: "Porto empieza con po, pero estos acertijos usan la palabra entera salvo que un signo diga que se recorte. ¿Y por qué llevaría el rótulo Italia?", pt: "Porto começa com po, mas esses enigmas usam a palavra inteira, a menos que um sinal mande cortar. E por que a legenda diria Italia?" } },
+        { w: "Pó", ok: true, g: { en: "the Po, Italy's great river", es: "el Po, el gran río de Italia", pt: "o rio Pó" } },
+        { w: "Veneza", g: { en: "Venice", es: "Venecia", pt: "Veneza" } }
+      ]},
+    { id: "flores", row: 1, flex: 1.1, gives: "ENTRE FLORES MIL",
+      alt: { en: "A capital letter M standing between two flowering plants", es: "Una letra M mayúscula entre dos plantas en flor", pt: "Uma letra M maiúscula entre duas plantas floridas" },
+      hint: { en: "Where does the M stand? And what is M in Roman numerals?", es: "¿Dónde está la M? ¿Y qué es M en números romanos?", pt: "Onde está o M? E o que é M em algarismos romanos?" },
+      explain: { en: "The M stands between flowers, entre flores, and M is the Roman numeral for a thousand, mil. Together: ENTRE FLORES MIL, “among a thousand flowers.”", es: "La M está entre flores, entre flores, y M es el número romano mil. Juntos: ENTRE FLORES MIL, «entre mil flores».", pt: "O M está entre flores, e M é o algarismo romano para mil. Juntos: ENTRE FLORES MIL." },
+      options: [
+        { w: "flores e eme", g: { en: "flowers and an M", es: "flores y una M", pt: "flores e um M" } },
+        { w: "mil flores", g: { en: "a thousand flowers", es: "mil flores", pt: "mil flores" },
+          f: { en: "Right value for the M, but you skipped where it sits. Position is part of the clue.", es: "El valor de la M es correcto, pero te saltaste dónde está. La posición es parte de la pista.", pt: "O valor do M está certo, mas você esqueceu onde ele está. A posição faz parte da pista." } },
+        { w: "jardim", g: { en: "garden", es: "jardín", pt: "jardim" } },
+        { w: "entre flores mil", ok: true, g: { en: "among a thousand flowers", es: "entre mil flores", pt: "entre mil flores" } }
+      ]},
+    { id: "fa", row: 1, flex: 0.8, gives: "FA", note: true,
+      alt: { en: "A treble staff with one note in the bottom space", es: "Un pentagrama en clave de sol con una nota en el espacio de abajo", pt: "Uma pauta em clave de sol com uma nota no espaço de baixo" },
+      explain: { en: "The note sits in the bottom space of the staff: fá. FA begins FAREI, “I will.”", es: "La nota está en el espacio de abajo del pentagrama: fá. FA empieza FAREI, «haré».", pt: "A nota está no espaço de baixo da pauta: fá. FA começa FAREI." },
+      options: [ "dó", "ré", "mi", "fá" ], ok: "fá" },
+
+    { id: "rei", row: 2, flex: 1.0, gives: "REI",
+      alt: { en: "A bearded man with a crown, scepter and ermine robe", es: "Un hombre barbado con corona, cetro y manto de armiño", pt: "Um homem barbado de coroa, cetro e manto de arminho" },
+      hint: { en: "Crown, scepter, ermine robe. Use the shortest title.", es: "Corona, cetro, manto de armiño. Usa el título más corto.", pt: "Coroa, cetro, manto de arminho. Use o título mais curto." },
+      explain: { en: "Rei, king. FA + REI = FAREI, “I will.”", es: "Rei, rey. FA + REI = FAREI, «haré».", pt: "Rei. FA + REI = FAREI." },
+      options: [
+        { w: "imperador", g: { en: "emperor", es: "emperador", pt: "imperador" },
+          f: { en: "Brazil's own ruler in 1854 was an emperor, Pedro II, but im·pe·ra·dor doesn't fit the sentence. Try a shorter title.", es: "El gobernante de Brasil en 1854 era un emperador, Pedro II, pero im·pe·ra·dor no encaja en la frase. Prueba un título más corto.", pt: "O governante do Brasil em 1854 era um imperador, Pedro II, mas im·pe·ra·dor não cabe na frase. Tente um título mais curto." } },
+        { w: "coroa", g: { en: "crown", es: "corona", pt: "coroa" } },
+        { w: "rei", ok: true, g: { en: "king", es: "rey", pt: "rei" } },
+        { w: "cetro", g: { en: "scepter", es: "cetro", pt: "cetro" } }
+      ]},
+    { id: "nau", row: 2, flex: 1.7, gives: "NÃO",
+      alt: { en: "A three-masted sailing warship with a small tilde (~) floating above its masts", es: "Un buque de guerra de tres mástiles con una pequeña tilde (~) sobre los mástiles", pt: "Um navio de guerra de três mastros com um pequeno til (~) acima dos mastros" },
+      hint: { en: "Look above the masts: a small mark floats there. And use the old, one-syllable word for a great ship.", es: "Mira encima de los mástiles: allí flota una pequeña marca. Y usa la palabra antigua, de una sílaba, para un gran navío.", pt: "Olhe acima dos mastros: há um pequeno sinal ali. E use a palavra antiga, de uma sílaba, para um grande navio." },
+      explain: { en: "Nau, an old word for a great sailing ship. The tilde above it makes the sound nasal: nau → NÃO, “not.”", es: "Nau, palabra antigua para un gran barco de vela. La tilde de encima vuelve nasal el sonido: nau → NÃO, «no».", pt: "Nau, nome antigo de um grande navio a vela. O til acima dela nasaliza o som: nau → NÃO." },
+      options: [
+        { w: "navio", g: { en: "ship", es: "barco", pt: "navio" },
+          f: { en: "Right object, wrong word. Try the older, one-syllable word for a ship like this, then apply the mark above it.", es: "Objeto correcto, palabra equivocada. Prueba la palabra antigua de una sílaba para un barco así, y luego aplica la marca de encima.", pt: "Objeto certo, palavra errada. Tente a palavra antiga, de uma sílaba, e depois aplique o sinal de cima." } },
+        { w: "nau", ok: true, g: { en: "a great sailing ship (archaic)", es: "nao, gran barco de vela", pt: "nau, grande navio a vela" } },
+        { w: "barco", g: { en: "boat", es: "barca", pt: "barco" } },
+        { w: "vela", g: { en: "sail", es: "vela", pt: "vela" } }
+      ]},
+    { id: "escravo", row: 2, flex: 2.0, gives: "ES", pause: true,
+      alt: { en: "A Black man seated on a stump, head lowered and resting on his hand; a minus sign; a carnation", es: "Un hombre negro sentado en un tocón, con la cabeza baja apoyada en la mano; un signo de menos; un clavel", pt: "Um homem negro sentado num toco, de cabeça baixa apoiada na mão; um sinal de menos; um cravo" },
+      hint: { en: "Name the flower first: it's a carnation, cravo. Then find the word for the man that contains it.", es: "Primero nombra la flor: es un clavel, cravo. Luego busca la palabra para el hombre que la contenga.", pt: "Primeiro diga o nome da flor: cravo. Depois procure a palavra para o homem que contenha essa." },
+      explain: { en: "Escravo, “slave,” minus cravo, “carnation,” leaves ES. It begins ESMORECER, “to lose heart.”", es: "Escravo, «esclavo», menos cravo, «clavel», deja ES. Empieza ESMORECER, «desanimarse».", pt: "Escravo menos cravo deixa ES, que começa ESMORECER." },
+      options: [
+        { w: "homem", g: { en: "man", es: "hombre", pt: "homem" },
+          f: { en: "Homem has no cravo inside it to subtract. The equation only works with one word.", es: "Homem no contiene cravo para restar. La ecuación solo funciona con una palabra.", pt: "Homem não tem cravo dentro para subtrair. A equação só funciona com uma palavra." } },
+        { w: "africano", g: { en: "African", es: "africano", pt: "africano" },
+          f: { en: "Africano − cravo doesn't work either. The puzzle needs one specific word, and it isn't a description of the man.", es: "Africano − cravo tampoco funciona. El acertijo necesita una palabra concreta, y no es una descripción del hombre.", pt: "Africano − cravo também não funciona. O enigma precisa de uma palavra específica, e não é uma descrição do homem." } },
+        { w: "escravo", ok: true, g: { en: "enslaved man; “slave”", es: "esclavo", pt: "escravo" } },
+        { w: "negro", g: { en: "Black man", es: "hombre negro", pt: "homem negro" },
+          f: { en: "Negro − cravo doesn't work. The puzzle isn't asking for his color; it's asking for what its readers assumed his color meant.", es: "Negro − cravo no funciona. El acertijo no pide su color, sino lo que sus lectores suponían que ese color significaba.", pt: "Negro − cravo não funciona. O enigma não pede a cor dele, e sim o que os leitores supunham que essa cor significava." } }
+      ]},
+    { id: "mo", row: 2, flex: 0.75, gives: "MO",
+      alt: { en: "A thick stone disc with a square hole at its center", es: "Un grueso disco de piedra con un agujero cuadrado en el centro", pt: "Um disco grosso de pedra com um furo quadrado no centro" },
+      hint: { en: "A heavy stone wheel with a square hole for its axle. It grinds grain.", es: "Una pesada rueda de piedra con un agujero cuadrado para el eje. Muele el grano.", pt: "Uma roda pesada de pedra com um furo quadrado para o eixo. Ela moi o grão." },
+      explain: { en: "Mó, millstone. ES + MO…", es: "Mó, piedra de molino, muela. ES + MO…", pt: "Mó, pedra de moinho. ES + MO…" },
+      options: [
+        { w: "roda", g: { en: "wheel", es: "rueda", pt: "roda" } },
+        { w: "moeda", g: { en: "coin", es: "moneda", pt: "moeda" },
+          f: { en: "Moeda does start with mo, but these puzzles use the whole word. This is the stone that grinds grain.", es: "Moeda empieza con mo, pero estos acertijos usan la palabra entera. Es la piedra que muele el grano.", pt: "Moeda começa com mo, mas esses enigmas usam a palavra inteira. É a pedra que moi o grão." } },
+        { w: "pedra", g: { en: "stone", es: "piedra", pt: "pedra" } },
+        { w: "mó", ok: true, g: { en: "millstone", es: "muela de molino", pt: "mó, pedra de moinho" } }
+      ]},
+    { id: "re", row: 2, flex: 0.85, gives: "RE", note: true,
+      alt: { en: "A treble staff with one note on the second line from the top", es: "Un pentagrama en clave de sol con una nota en la segunda línea desde arriba", pt: "Uma pauta em clave de sol com uma nota na segunda linha de cima" },
+      explain: { en: "The note sits on the second line from the top: ré. ES·MO·RE…", es: "La nota está en la segunda línea desde arriba: ré. ES·MO·RE…", pt: "A nota está na segunda linha de cima: ré. ES·MO·RE…" },
+      options: [ "dó", "ré", "mi", "sol" ], ok: "ré" },
+    { id: "serra", row: 2, flex: 0.75, gives: "CER · RA",
+      alt: { en: "A tall frame saw: a toothed blade held upright in a wooden frame", es: "Una sierra de bastidor alta: una hoja dentada vertical en un marco de madera", pt: "Uma serra de quadro alta: uma lâmina dentada em pé numa armação de madeira" },
+      hint: { en: "Name the tool, then say it aloud. Spelling doesn't matter in a rebus; sound does. Its two syllables land in two different words.", es: "Nombra la herramienta y dila en voz alta. En un jeroglífico no importa la ortografía, sino el sonido. Sus dos sílabas caen en dos palabras distintas.", pt: "Diga o nome da ferramenta em voz alta. Num enigma, a grafia não importa; o som sim. As duas sílabas caem em palavras diferentes." },
+      explain: { en: "Serra, saw. Said aloud, ser·ra sounds like CER + RA: it ends ESMORECER and starts RAMIRO. Rebuses match sounds, so s and c can trade places.", es: "Serra, sierra. En voz alta, ser·ra suena como CER + RA: termina ESMORECER y empieza RAMIRO. Los jeroglíficos juegan con el sonido, así que s y c pueden intercambiarse.", pt: "Serra. Em voz alta, ser·ra soa como CER + RA: termina ESMORECER e começa RAMIRO. Enigmas jogam com o som, então s e c podem trocar de lugar." },
+      options: [
+        { w: "prensa", g: { en: "press", es: "prensa", pt: "prensa" } },
+        { w: "tear", g: { en: "loom", es: "telar", pt: "tear" } },
+        { w: "serra", ok: true, g: { en: "saw", es: "sierra", pt: "serra" } },
+        { w: "grade", g: { en: "grate", es: "reja", pt: "grade" } }
+      ]},
+
+    { id: "mi", row: 3, flex: 0.9, gives: "MI", note: true,
+      alt: { en: "A treble staff with one note in the top space", es: "Un pentagrama en clave de sol con una nota en el espacio de arriba", pt: "Uma pauta em clave de sol com uma nota no espaço de cima" },
+      explain: { en: "The note sits in the top space: mi. RA·MI…", es: "La nota está en el espacio de arriba: mi. RA·MI…", pt: "A nota está no espaço de cima: mi. RA·MI…" },
+      options: [ "lá", "si", "mi", "dó" ], ok: "mi" },
+    { id: "roca", row: 3, flex: 1.0, gives: "RO · CA",
+      alt: { en: "A spinning wheel on three turned legs, with a bundle of fiber on a stick", es: "Un torno de hilar sobre tres patas torneadas, con un manojo de fibra en un palo", pt: "Uma roda de fiar sobre três pernas torneadas, com um feixe de fibra numa haste" },
+      hint: { en: "An old household tool for spinning thread. Its two syllables land in two different words.", es: "Una vieja herramienta doméstica para hilar. Sus dos sílabas caen en dos palabras distintas.", pt: "Uma velha ferramenta doméstica para fiar. As duas sílabas caem em palavras diferentes." },
+      explain: { en: "Roca, spinning wheel (strictly, the distaff that holds the fiber). It splits in two: RO ends RAMIRO, CA starts CARO, “dear.”", es: "Roca, rueca. Se parte en dos: RO termina RAMIRO y CA empieza CARO, «querido».", pt: "Roca. Ela se divide em duas: RO termina RAMIRO e CA começa CARO." },
+      options: [
+        { w: "roda", g: { en: "wheel", es: "rueda", pt: "roda" } },
+        { w: "roca", ok: true, g: { en: "spinning wheel, distaff", es: "rueca", pt: "roca de fiar" } },
+        { w: "fuso", g: { en: "spindle", es: "huso", pt: "fuso" } },
+        { w: "tear", g: { en: "loom", es: "telar", pt: "tear" } }
+      ]},
+    { id: "roer", row: 3, flex: 1.2, gives: "RO", guess: true,
+      alt: { en: "A white man in a top hat seated by a tree, hand raised to his mouth", es: "Un hombre blanco con sombrero de copa sentado junto a un árbol, con la mano en la boca", pt: "Um homem branco de cartola sentado junto a uma árvore, com a mão na boca" },
+      hint: { en: "Don't name him. Name what he's doing with his hand at his mouth.", es: "No lo nombres a él. Nombra lo que hace con la mano en la boca.", pt: "Não diga quem ele é. Diga o que ele está fazendo com a mão na boca." },
+      explain: { en: "Roer, to gnaw, as in biting one's nails. Only its first sound is used: RO finishes CARO. A best guess; no reading of this picture fits perfectly.", es: "Roer, roer, como quien se muerde las uñas. Solo se usa su primer sonido: RO completa CARO. Es una hipótesis: ninguna lectura de esta imagen encaja del todo.", pt: "Roer, como quem rói as unhas. Só se usa o primeiro som: RO completa CARO. É uma hipótese: nenhuma leitura desta imagem encaixa perfeitamente." },
+      options: [
+        { w: "pensar", g: { en: "to think", es: "pensar", pt: "pensar" } },
+        { w: "fumar", g: { en: "to smoke", es: "fumar", pt: "fumar" } },
+        { w: "homem", g: { en: "man", es: "hombre", pt: "homem" } },
+        { w: "roer", ok: true, g: { en: "to gnaw, to bite (one's nails)", es: "roer, morderse (las uñas)", pt: "roer (as unhas)" } }
+      ]},
+    { id: "bode", row: 3, flex: 1.3, gives: "ME",
+      alt: { en: "A billy goat with long curved horns and a beard", es: "Un macho cabrío de cuernos largos y curvos, con barba", pt: "Um bode de chifres longos e curvos, com barba" },
+      hint: { en: "Not what the animal is called, but what it says.", es: "No cómo se llama el animal, sino lo que dice.", pt: "Não o nome do animal, mas o que ele diz." },
+      explain: { en: "Mé, the goat's bleat. It gives ME, the start of MEO, the old spelling of meu, “my.”", es: "Mé, el balido de la cabra. Da ME, el comienzo de MEO, grafía antigua de meu, «mi».", pt: "Mé, o balido do bode. Dá ME, o começo de MEO, grafia antiga de meu." },
+      options: [
+        { w: "bode", g: { en: "billy goat", es: "macho cabrío", pt: "bode" } },
+        { w: "mé", ok: true, g: { en: "baa (a goat's bleat)", es: "bee (el balido)", pt: "mé, o balido" } },
+        { w: "cabra", g: { en: "goat", es: "cabra", pt: "cabra" } },
+        { w: "carneiro", g: { en: "ram", es: "carnero", pt: "carneiro" } }
+      ]},
+    { id: "o", row: 3, flex: 0.45, gives: "O",
+      alt: { en: "A single printed letter o", es: "Una sola letra o impresa", pt: "Uma única letra o impressa" },
+      hint: { en: "Sometimes a letter is just a letter.", es: "A veces una letra es solo una letra.", pt: "Às vezes uma letra é só uma letra." },
+      explain: { en: "The letter O. It finishes ME·O, “my.”", es: "La letra O. Completa ME·O, «mi».", pt: "A letra O. Completa ME·O." },
+      options: [
+        { w: "zero", g: { en: "zero", es: "cero", pt: "zero" } },
+        { w: "o", ok: true, g: { en: "the letter o", es: "la letra o", pt: "a letra o" } },
+        { w: "ovo", g: { en: "egg", es: "huevo", pt: "ovo" } },
+        { w: "anel", g: { en: "ring", es: "anillo", pt: "anel" } }
+      ]},
+    { id: "amor", row: 3, flex: 1.4, gives: "AMOR",
+      alt: { en: "A winged boy with a bow and arrows leaning on an altar where a flame burns", es: "Un niño alado con arco y flechas apoyado en un altar donde arde una llama", pt: "Um menino alado com arco e flechas apoiado num altar onde arde uma chama" },
+      hint: { en: "A winged boy with arrows. What do Portuguese poets call him?", es: "Un niño alado con flechas. ¿Cómo lo llaman los poetas portugueses?", pt: "Um menino alado com flechas. Como os poetas o chamam?" },
+      explain: { en: "Amor, “love”: the Roman god Cupid, whom poets writing in Portuguese called Amor. He gives the last word.", es: "Amor: el dios romano Cupido, a quien los poetas en portugués llamaban Amor. Da la última palabra.", pt: "Amor: o deus romano Cupido, que os poetas chamavam de Amor. Ele dá a última palavra." },
+      options: [
+        { w: "anjo", g: { en: "angel", es: "ángel", pt: "anjo" } },
+        { w: "Cupido", g: { en: "Cupid", es: "Cupido", pt: "Cupido" },
+          f: { en: "Same figure, but the sentence uses his poetic name.", es: "La misma figura, pero la frase usa su nombre poético.", pt: "A mesma figura, mas a frase usa o nome poético dele." } },
+        { w: "altar", g: { en: "altar", es: "altar", pt: "altar" } },
+        { w: "Amor", ok: true, g: { en: "Love, the god Cupid", es: "Amor, el dios Cupido", pt: "Amor, o deus Cupido" } }
+      ]}
+  ];
+
+  /* Notes: expand to the same option shape */
+  var NOTE_G = { "dó": "do", "ré": "re", "mi": "mi", "fá": "fa", "sol": "sol", "lá": "la", "si": "si" };
+  TILES.forEach(function(tl){
+    if (tl.note){
+      tl.hint = NOTE_HINT;
+      tl.options = tl.options.map(function(n){
+        return { w: n, ok: n === tl.ok, g: { en: "the note " + NOTE_G[n], es: "la nota " + NOTE_G[n], pt: "a nota " + n } };
+      });
+    }
+  });
+  var BY = {}; TILES.forEach(function(tl){ BY[tl.id] = tl; });
+
+  /* The hidden sentence. tile: null = plain text; orphan = no picture gives it */
+  var SENT = [
+    { t: "No", tile: "mercurio" }, " ",
+    { t: "cam", tile: "cao" }, { t: "po", tile: "italia" }, " ",
+    { t: "entre flores mil", tile: "flores" }, " ",
+    { t: "fa", tile: "fa" }, { t: "rei", tile: "rei" }, " ",
+    { t: "não", tile: "nau" }, " ",
+    { t: "es", tile: "escravo" }, { t: "mo", tile: "mo" }, { t: "re", tile: "re" }, { t: "cer", tile: "serra" }, ", ",
+    { t: "Ra", tile: "serra" }, { t: "mi", tile: "mi" }, { t: "ro", tile: "roca" }, " ",
+    { t: "ca", tile: "roca" }, { t: "ro", tile: "roer" }, ", ",
+    { t: "o", orphan: true }, " ",
+    { t: "me", tile: "bode" }, { t: "o", tile: "o" }, " ",
+    { t: "amor", tile: "amor" }, "."
+  ];
+
+  var $ = function(id){ return document.getElementById(id); };
+  var lang = "en", cur = "mercurio", solved = {}, tried = {}, hintShown = {}, fresh = null, paused = false, allShown = false;
+  function t(k){ var d = STRINGS[lang] || STRINGS.en; return d[k] !== undefined ? d[k] : STRINGS.en[k]; }
+  function pick(o){ return o ? (o[lang] || o.en) : ""; }
+  function nSolved(){ return TILES.filter(function(tl){ return solved[tl.id]; }).length; }
+  function okOpt(tl){ return tl.options.filter(function(o){ return o.ok; })[0]; }
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  /* ---------- Build the board once ---------- */
+  function buildBoard(){
+    var board = $("board"); board.innerHTML = "";
+    [1,2,3].forEach(function(r){
+      var row = document.createElement("div"); row.className = "brow";
+      TILES.filter(function(tl){ return tl.row === r; }).forEach(function(tl){
+        var b = document.createElement("button");
+        b.type = "button"; b.className = "tilecard"; b.id = "tile-" + tl.id; b.style.flex = tl.flex + " 1 0";
+        b.innerHTML = '<span class="pic"><img src="../images/enigma-pitoresco-' + tl.id + '.jpg" alt=""></span><span class="cap"></span>';
+        b.addEventListener("click", function(){ select(tl.id, true); });
+        row.appendChild(b);
+      });
+      board.appendChild(row);
+    });
+  }
+
+  /* ---------- Rendering ---------- */
+  function renderSentence(){
+    var p = $("sentence"); p.innerHTML = "";
+    SENT.forEach(function(s){
+      if (typeof s === "string"){ p.appendChild(document.createTextNode(s)); return; }
+      if (s.orphan){
+        var o = document.createElement("span"); o.className = "orphan"; o.title = t("orphan");
+        var done = nSolved() === TILES.length;
+        o.innerHTML = done ? 'o<sup>*</sup>' : '<span class="pc todo" style="cursor:default;width:.8em"></span>';
+        p.appendChild(o); return;
+      }
+      var b = document.createElement("button"); b.type = "button";
+      if (solved[s.tile]){
+        b.className = "pc done" + (fresh === s.tile ? " fresh" : ""); b.textContent = s.t; b.tabIndex = -1;
+      } else {
+        b.className = "pc todo" + (cur === s.tile ? " sel" : "");
+        b.style.width = (s.t.length * 0.52 + 0.3) + "em";
+        b.setAttribute("aria-label", "?");
+        b.addEventListener("click", function(){ select(s.tile, true); });
+      }
+      p.appendChild(b);
+    });
+    $("progress").textContent = t("progress").replace("{n}", nSolved()).replace("{t}", TILES.length);
+  }
+  function renderBoard(){
+    TILES.forEach(function(tl){
+      var b = $("tile-" + tl.id), done = !!solved[tl.id];
+      b.classList.toggle("done", done); b.classList.toggle("quiet", !!tl.pause); b.classList.toggle("sel", tl.id === cur && !allShown);
+      b.querySelector("img").alt = pick(tl.alt);
+      var cap = b.querySelector(".cap");
+      cap.innerHTML = done ? '<span class="w" lang="pt">' + esc(tl.gives) + '</span>' : '<span class="w">?</span>';
+      var badge = b.querySelector(".badge");
+      if (done && tl.guess){ if (!badge){ badge = document.createElement("span"); badge.className = "badge"; b.appendChild(badge); } badge.textContent = t("bestGuess"); }
+      else if (badge){ badge.remove(); }
+    });
+  }
+  function renderStep(){
+    var box = $("step");
+    if (allShown){ box.hidden = true; return; }
+    box.hidden = false;
+    var tl = BY[cur], done = !!solved[cur];
+    $("bigImg").src = "../images/enigma-pitoresco-" + tl.id + ".jpg";
+    $("bigImg").alt = pick(tl.alt);
+    $("stepTitle").textContent = t("stepTitle");
+    $("stepSub").textContent = t("stepSub");
+    var wrap = $("options"); wrap.innerHTML = "";
+    tl.options.forEach(function(o, i){
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "opt";
+      b.innerHTML = '<span class="ow" lang="pt"></span><span class="og"></span>';
+      b.querySelector(".ow").textContent = o.w;
+      b.querySelector(".og").textContent = pick(o.g);
+      if (tried[cur + ":" + i]) b.classList.add("wrong");
+      if (done && o.ok) b.classList.add("right");
+      b.disabled = done;
+      b.addEventListener("click", function(){ choose(i); });
+      wrap.appendChild(b);
+    });
+    var h = $("hint"); h.textContent = pick(tl.hint); h.hidden = !hintShown[cur] || done;
+    $("hintBtn").hidden = done || !!hintShown[cur];
+    var fb = $("feedback");
+    if (done){
+      fb.className = tl.pause ? "feedback" : "feedback good";
+      fb.innerHTML = '<span class="gives" lang="pt">' + esc(okOpt(tl).w) + ' → ' + esc(tl.gives) + '</span>' +
+        (tl.guess ? '<span class="guess">' + esc(t("bestGuess")) + '</span>' : '') + esc(pick(tl.explain));
+    } else if (tried.last && tried.last.tile === cur){
+      var wo = tl.options[tried.last.i];
+      fb.className = "feedback bad";
+      fb.textContent = t("wrong") + " " + (wo.f ? pick(wo.f) : (hintShown[cur] ? "" : t("tryHint")));
+    } else { fb.className = "feedback"; fb.textContent = ""; }
+    $("pause").hidden = !(done && tl.pause && paused);
+    $("nextBtn").hidden = !done || (tl.pause && paused) || nSolved() === TILES.length;
+  }
+  function render(){ renderSentence(); renderBoard(); renderStep(); }
+
+  /* ---------- Actions ---------- */
+  function select(id, scroll){
+    if (paused && cur !== id) paused = false;
+    cur = id; fresh = null; render();
+    if (scroll) $("step").scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+  function choose(i){
+    var tl = BY[cur], o = tl.options[i];
+    if (o.ok){
+      solved[cur] = true; tried.last = null; fresh = tl.pause ? null : cur;
+      if (tl.pause) paused = true;
+      render();
+      if (nSolved() === TILES.length && !tl.pause) finish();
+    } else {
+      tried[cur + ":" + i] = true; tried.last = { tile: cur, i: i }; renderStep();
+    }
+  }
+  function nextUnsolved(){
+    var idx = TILES.findIndex(function(tl){ return tl.id === cur; });
+    for (var k = 1; k <= TILES.length; k++){ var tl = TILES[(idx + k) % TILES.length]; if (!solved[tl.id]) return tl.id; }
+    return null;
+  }
+  function finish(){
+    allShown = true; render();
+    $("reveal").hidden = false;
+    setTimeout(function(){ $("reveal").scrollIntoView({ behavior: "smooth", block: "start" }); }, 400);
+  }
+  function renderKey(){
+    var k = $("key"); k.innerHTML = "";
+    TILES.forEach(function(tl){
+      var d = document.createElement("div"); d.className = "k";
+      d.innerHTML = '<div class="im"><img src="../images/enigma-pitoresco-' + tl.id + '.jpg" alt=""></div>' +
+        '<div class="w" lang="pt">' + esc(okOpt(tl).w) + '</div><div class="r" lang="pt">→ ' + esc(tl.gives) + '</div>' +
+        (tl.guess ? '<div class="q">' + esc(t("bestGuess")) + '</div>' : '');
+      d.querySelector("img").alt = pick(tl.alt);
+      k.appendChild(d);
+    });
+  }
+
+  $("hintBtn").addEventListener("click", function(){ hintShown[cur] = true; renderStep(); });
+  $("nextBtn").addEventListener("click", function(){ var n = nextUnsolved(); if (n) select(n, false); });
+  $("pauseContinue").addEventListener("click", function(){
+    paused = false;
+    if (nSolved() === TILES.length){ finish(); return; }
+    var n = nextUnsolved(); if (n) select(n, false);
+  });
+  $("restartBtn").addEventListener("click", function(){
+    solved = {}; tried = {}; hintShown = {}; fresh = null; paused = false; allShown = false; cur = TILES[0].id;
+    $("reveal").hidden = true; render();
+    $("board").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  $("giveUp").addEventListener("click", function(){
+    TILES.forEach(function(tl){ solved[tl.id] = true; }); paused = false; fresh = null; finish();
+  });
+
+  /* ---------- Language ---------- */
+  var STORAGE_KEY = "race-games-lang";
+  function applyLang(l){
+    lang = STRINGS[l] ? l : "en";
+    document.documentElement.setAttribute("lang", lang);
+    document.querySelectorAll("[data-i18n]").forEach(function(el){ var v = t(el.getAttribute("data-i18n")); if (typeof v === "string") el.textContent = v; });
+    document.querySelectorAll(".langtoggle button").forEach(function(btn){ btn.setAttribute("aria-pressed", btn.getAttribute("data-lang") === lang ? "true" : "false"); });
+    fresh = null; render(); renderKey();
+  }
+  document.querySelectorAll(".langtoggle button").forEach(function(btn){
+    btn.addEventListener("click", function(){ var l = btn.getAttribute("data-lang"); applyLang(l); try { localStorage.setItem(STORAGE_KEY, l); } catch(e){} });
+  });
+  buildBoard();
+  var saved = "en";
+  try { var s = localStorage.getItem(STORAGE_KEY); if (s && STRINGS[s]) saved = s; } catch(e){}
+  applyLang(saved);
+})();
+</script>
+</body>
+</html>
