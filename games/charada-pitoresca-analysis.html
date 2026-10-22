@@ -97,7 +97,7 @@
   .callout .cl{ display: block; margin-top: 5px; font-size: 13px; line-height: 1.45; color: var(--ink-soft); }
   .callout .more{ display: block; margin-top: 7px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--river); }
 
-  .stage-col{ position: relative; z-index: 2; }
+  .stage-col{ position: relative; z-index: 2; min-width: 0; }
   .frame{
     position: relative;
     width: min(calc((100vw - 56px) * 0.5), calc(78vh * var(--ar)), 640px);
@@ -168,7 +168,7 @@
   .modal .m-body p{ font-size: 17px; line-height: 1.7; margin: 0 0 16px; }
 
   /* Landscape scans use the stacked layout at every width */
-  .analysis.wide{ grid-template-columns: 1fr; padding: 0 0 40px; }
+  .analysis.wide{ grid-template-columns: minmax(0, 1fr); padding: 0 0 40px; }
   .analysis.wide .col.side, .analysis.wide .leaders{ display: none; }
   .analysis.wide .stage-col{ display: flex; flex-direction: column; align-items: center; }
   .analysis.wide .pagetabs, .analysis.wide .frame{ width: min(100%, calc(62vh * var(--ar)), 1100px); }
@@ -182,7 +182,7 @@
   .topics .tl{ display: block; font-family: 'Libre Franklin', sans-serif; font-weight: 400; font-size: 12.5px; text-transform: none; color: var(--ink-soft); margin-top: 3px; line-height: 1.4; }
 
   @media (max-width: 960px){
-    .analysis{ grid-template-columns: 1fr; padding: 0 0 40px; }
+    .analysis{ grid-template-columns: minmax(0, 1fr); padding: 0 0 40px; }
     .col.side, .leaders{ display: none; }
     .stage-col{ display: flex; flex-direction: column; align-items: center; }
     .pagetabs, .frame{ width: min(100%, calc(74vh * var(--ar))); }
@@ -369,15 +369,15 @@
     enigma: {
       en: { title: "A page of puzzles", label: "Above the charada, a picture rebus offered to the magazine's co-editor.",
             body: ["The charada shares the page with an “Enigma pitoresco,” a longer picture puzzle that João José de Moraes Tavares offered to his friend Ernesto de Souza e Oliveira Coutinho, the magazine's co-editor. Puzzles like these appeared on the last page of the magazine's issues, and many were written by its editors and their circle.",
-                   "The rebus mixes letters and musical notes with pictures: an allegorical figure, a bull, a city on the water, a crowned monarch, a sailing ship, a goat and, in the second row, what appears to be a Black man at work. Racialized figures were part of the stock of images these puzzles drew on.",
+                   "The rebus mixes letters and musical notes with pictures: an allegorical figure, a dog, a city on the water, a crowned monarch, a sailing ship, a goat and, in the second row, a Black man seated with his head resting on his hand, whom the puzzle requires the solver to read as escravo, “slave.” Racialized figures were part of the stock of images these puzzles drew on.",
                    "Games like these were a social world. Puzzle-makers dedicated them to friends, readers sent in solutions, and a small community of players formed around a shared set of images of the nation."] },
       es: { title: "Una página de acertijos", label: "Sobre la charada, un jeroglífico ilustrado dedicado al coeditor de la revista.",
             body: ["La charada comparte la página con un «Enigma pitoresco», un acertijo ilustrado más largo que João José de Moraes Tavares ofreció a su amigo Ernesto de Souza e Oliveira Coutinho, coeditor de la revista. Acertijos como estos aparecían en la última página de los números, y muchos los escribían los editores y su círculo.",
-                   "El jeroglífico combina letras y notas musicales con imágenes: una figura alegórica, un toro, una ciudad junto al agua, un monarca coronado, un velero, una cabra y, en la segunda fila, lo que parece ser un hombre negro trabajando. Las figuras racializadas formaban parte del repertorio de imágenes de estos acertijos.",
+                   "El jeroglífico combina letras y notas musicales con imágenes: una figura alegórica, un perro, una ciudad junto al agua, un monarca coronado, un velero, una cabra y, en la segunda fila, un hombre negro sentado con la cabeza apoyada en la mano, a quien el acertijo obliga a leer como escravo, «esclavo». Las figuras racializadas formaban parte del repertorio de imágenes de estos acertijos.",
                    "Juegos como estos eran un mundo social. Sus autores los dedicaban a amigos, los lectores enviaban soluciones y se formaba una pequeña comunidad de jugadores en torno a un repertorio compartido de imágenes de la nación."] },
       pt: { title: "Uma página de charadas", label: "Acima da charada, um enigma ilustrado oferecido ao coeditor da revista.",
             body: ["A charada divide a página com um “Enigma pitoresco”, um enigma ilustrado mais longo que João José de Moraes Tavares ofereceu ao amigo Ernesto de Souza e Oliveira Coutinho, coeditor da revista. Enigmas assim apareciam na última página dos números, e muitos eram escritos pelos editores e seu círculo.",
-                   "O enigma mistura letras e notas musicais com imagens: uma figura alegórica, um touro, uma cidade à beira d'água, um monarca coroado, um navio a vela, um bode e, na segunda fileira, o que parece ser um homem negro trabalhando. Figuras racializadas faziam parte do repertório de imagens desses jogos.",
+                   "O enigma mistura letras e notas musicais com imagens: uma figura alegórica, um cão, uma cidade à beira d'água, um monarca coroado, um navio a vela, um bode e, na segunda fileira, um homem negro sentado, com a cabeça apoiada na mão, que o enigma obriga o leitor a ler como escravo. Figuras racializadas faziam parte do repertório de imagens desses jogos.",
                    "Jogos como esses eram um mundo social. Os autores os dedicavam a amigos, os leitores mandavam soluções, e formava-se uma pequena comunidade de jogadores em torno de um repertório comum de imagens da nação."] }
     },
     about: {
